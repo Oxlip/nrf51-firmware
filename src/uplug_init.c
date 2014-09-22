@@ -4,151 +4,35 @@
  * found in the license.txt file.
  */
 
-#include "ble_lbs.h"
 #include <string.h>
 #include "nordic_common.h"
 #include "ble_srv_common.h"
 #include "app_util.h"
+#include "app_error.h"
+#include "device.h"
+#include "nrf.h"
 
-static ble_lbs_t m_lbs;
+extern device_t device;
 
-/**@brief Function for handling the Connect event.
- *
- * @param[in]   p_lbs       LED Button Service structure.
- * @param[in]   p_ble_evt   Event received from the BLE stack.
- */
-static void on_connect(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
+ble_uuid_t adv_uuid;
+ble_uuid_t *service_get_uuids(void)
 {
-    p_lbs->conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+    adv_uuid.uuid = LBS_UUID_UPLUG_SERVICE;
+    adv_uuid.type = device.uuid_type;
+    return &adv_uuid;
 }
 
-
-/**@brief Function for handling the Disconnect event.
- *
- * @param[in]   p_lbs       LED Button Service structure.
- * @param[in]   p_ble_evt   Event received from the BLE stack.
- */
-static void on_disconnect(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
+static void on_write(ble_gatts_evt_write_t *evt)
 {
-    UNUSED_PARAMETER(p_ble_evt);
-    p_lbs->conn_handle = BLE_CONN_HANDLE_INVALID;
-}
-
-
-/**@brief Function for handling the Write event.
- *
- * @param[in]   p_lbs       LED Button Service structure.
- * @param[in]   p_ble_evt   Event received from the BLE stack.
- */
-static void on_write(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
-{
-    ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
-
-    if ((p_evt_write->handle == p_lbs->led_char_handles.value_handle) &&
-        (p_evt_write->len == 1) &&
-        (p_lbs->led_write_handler != NULL))
-    {
-        p_lbs->led_write_handler(p_lbs, p_evt_write->data[0]);
-    }
-}
-
-
-void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
-{
-    switch (p_ble_evt->header.evt_id)
-    {
-        case BLE_GAP_EVT_CONNECTED:
-            on_connect(p_lbs, p_ble_evt);
-            break;
-
-        case BLE_GAP_EVT_DISCONNECTED:
-            on_disconnect(p_lbs, p_ble_evt);
-            break;
-
-        case BLE_GATTS_EVT_WRITE:
-            on_write(p_lbs, p_ble_evt);
-            break;
-
-        default:
-            // No implementation needed.
-            break;
-    }
-}
-
-
-/**@brief Function for adding the command characteristic.
- *
- */
-static uint32_t power_char_add(ble_lbs_t * p_lbs)
-{
-    ble_gatts_char_md_t char_md;
-    ble_gatts_attr_t    attr_char_value;
-    ble_uuid_t          ble_uuid;
-    ble_gatts_attr_md_t attr_md;
-
-    memset(&char_md, 0, sizeof(char_md));
-
-    char_md.char_props.write  = 1;
-    char_md.p_char_user_desc  = NULL;
-    char_md.p_char_pf         = NULL;
-    char_md.p_user_desc_md    = NULL;
-    char_md.p_cccd_md         = NULL;
-    char_md.p_sccd_md         = NULL;
-
-    ble_uuid.type = p_lbs->uuid_type;
-    ble_uuid.uuid = LBS_UUID_UPLUG_POWER_CHAR;
-
-    memset(&attr_md, 0, sizeof(attr_md));
-
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
-    attr_md.vloc       = BLE_GATTS_VLOC_STACK;
-    attr_md.rd_auth    = 0;
-    attr_md.wr_auth    = 0;
-    attr_md.vlen       = 0;
-
-    memset(&attr_char_value, 0, sizeof(attr_char_value));
-
-    attr_char_value.p_uuid       = &ble_uuid;
-    attr_char_value.p_attr_md    = &attr_md;
-    attr_char_value.init_len     = sizeof(uint8_t);
-    attr_char_value.init_offs    = 0;
-    attr_char_value.max_len      = sizeof(uint8_t);
-    attr_char_value.p_value      = NULL;
-
-    return sd_ble_gatts_characteristic_add(p_lbs->service_handle, &char_md,
-                                               &attr_char_value,
-                                               &p_lbs->led_char_handles);
 }
 
 uint32_t services_init(void)
 {
-    uint32_t   err_code;
-    ble_uuid_t ble_uuid;
+    uint32_t err_code;
 
-    // Initialize service structure
-    m_lbs.conn_handle       = BLE_CONN_HANDLE_INVALID;
+    device_init(LBS_UUID_UPLUG_SERVICE);
 
-    // Add service
-    ble_uuid128_t base_uuid = LBS_UUID_BASE;
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &m_lbs.uuid_type);
-    if (err_code != NRF_SUCCESS)
-    {
-        return err_code;
-    }
-
-    ble_uuid.type = m_lbs.uuid_type;
-    ble_uuid.uuid = LBS_UUID_UPLUG_SERVICE;
-
-    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY,
-                                        &ble_uuid,
-                                        &m_lbs.service_handle);
-    if (err_code != NRF_SUCCESS)
-    {
-        return err_code;
-    }
-
-    err_code = power_char_add(&m_lbs);
+    err_code = device_add_char(on_write, DEVICE_CHARS_WRITE);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;

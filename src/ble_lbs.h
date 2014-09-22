@@ -60,7 +60,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init);
  * @param[in]   p_lbs      LED Button Service structure.
  * @param[in]   p_ble_evt  Event received from the BLE stack.
  */
-void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt);
+void ble_lbs_on_ble_evt(ble_evt_t * p_ble_evt);
 
 /**@brief Function for sending a button state notification.
  */

@@ -20,13 +20,17 @@ SDK_SRCS =	app_gpiote.c \
 
 UDEVICE          = uplug
 
+ifeq ($(UDEVICE), uplug)
+    CFLAGS      += -DDEVICE_CHARS_NUMBER=1
+endif
+
 MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
 TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
 
 include src/Makefile.$(UDEVICE)
 
 PROJECT_NAME     = uBLE
-APPLICATION_SRCS = $(DEVICE_SRCS) main.c $(SDK_SRCS)
+APPLICATION_SRCS = $(DEVICE_SRCS) device.c main.c $(SDK_SRCS)
 SOURCE_PATHS    += src
 LIBRARY_PATHS   += include
 
