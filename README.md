@@ -3,6 +3,15 @@ bluetooth-firmware
 
 Firmware for Bluetooth
 
+### Target
+
+Different target will be possible. For the moment only uplug is available.
+
+```sh
+make rules UDEVICE=uplug
+make rules
+```
+
 ### Debug version - debug symboles and no optimisation
 
 ```sh
