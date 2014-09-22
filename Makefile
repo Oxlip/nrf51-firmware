@@ -18,11 +18,17 @@ SDK_SRCS =	app_gpiote.c \
 		ble_debug_assert_handler.c \
 		ble_error_log.c
 
+UDEVICE          = uplug
+
+MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
+TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
+
+include src/Makefile.$(UDEVICE)
+
 PROJECT_NAME     = uBLE
-APPLICATION_SRCS = ble_lbs.c main.c $(SDK_SRCS)
+APPLICATION_SRCS = $(DEVICE_SRCS) main.c $(SDK_SRCS)
 SOURCE_PATHS    += src
 LIBRARY_PATHS   += include
-
 
 # Device and build infos
 
@@ -31,10 +37,6 @@ BOARD          = BOARD_PCA10001
 USE_SOFTDEVICE = s110
 SOFTDEVICE     = external/s110_nrf51822_7.0.0_softdevice.hex
 SDK_PATH      ?= /opt/nrf51sdk/nrf51822/
-
-MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
-TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
-
 
 # Gdb infos
 

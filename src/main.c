@@ -81,6 +81,9 @@ static ble_lbs_t                        m_lbs;
 // Persistent storage system event handler
 void pstorage_sys_event_handler (uint32_t p_evt);
 
+// device impl
+uint32_t services_init(void);
+
 /**@brief Function for error handling, which is called when an error has occurred.
  *
  * @warning This handler is an example only and does not fit a final product. You need to analyze
@@ -205,31 +208,6 @@ static void advertising_init(void)
     scanrsp.uuids_complete.p_uuids  = adv_uuids;
 
     err_code = ble_advdata_set(&advdata, &scanrsp);
-    APP_ERROR_CHECK(err_code);
-}
-
-static void led_write_handler(ble_lbs_t * p_lbs, uint8_t led_state)
-{
-    if (led_state)
-    {
-        nrf_gpio_pin_set(LEDBUTTON_LED_PIN_NO);
-    }
-    else
-    {
-        nrf_gpio_pin_clear(LEDBUTTON_LED_PIN_NO);
-    }
-}
-
-/**@brief Function for initializing services that will be used by the application.
- */
-static void services_init(void)
-{
-    uint32_t err_code;
-    ble_lbs_init_t init;
-
-    init.led_write_handler = led_write_handler;
-
-    err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -481,49 +459,11 @@ static void scheduler_init(void)
 }
 
 
-static void button_event_handler(uint8_t pin_no, uint8_t button_action)
-{
-    uint32_t err_code;
-
-    switch (pin_no)
-    {
-        case LEDBUTTON_BUTTON_PIN_NO:
-            err_code = ble_lbs_on_button_change(&m_lbs, button_action);
-            if (err_code != NRF_SUCCESS &&
-                err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
-                err_code != NRF_ERROR_INVALID_STATE)
-            {
-                APP_ERROR_CHECK(err_code);
-            }
-            break;
-
-        default:
-            APP_ERROR_HANDLER(pin_no);
-            break;
-    }
-}
-
 /**@brief Function for initializing the GPIOTE handler module.
  */
 static void gpiote_init(void)
 {
     APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
-}
-
-
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    // Note: Array must be static because a pointer to it will be saved in the Button handler
-    //       module.
-    static app_button_cfg_t buttons[] =
-    {
-        {WAKEUP_BUTTON_PIN, false, BUTTON_PULL, NULL},
-        {LEDBUTTON_BUTTON_PIN_NO, false, BUTTON_PULL, button_event_handler}
-    };
-
-    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, true);
 }
 
 
@@ -543,7 +483,6 @@ int main(void)
     // Initialize
     timers_init();
     gpiote_init();
-    buttons_init();
     leds_init();
 
     ble_stack_init();
