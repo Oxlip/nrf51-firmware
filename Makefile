@@ -26,6 +26,7 @@ endif
 
 MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
 TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
+SDK_PATH       = $(MAKEFILE_DIR)/nrf51-sdk/
 
 include src/Makefile.$(UDEVICE)
 
@@ -40,7 +41,6 @@ DEVICE         = NRF51
 BOARD          = BOARD_PCA10001
 USE_SOFTDEVICE = s110
 SOFTDEVICE     = external/s110_nrf51822_7.0.0_softdevice.hex
-SDK_PATH      ?= /opt/nrf51sdk/nrf51822/
 
 # Gdb infos
 
