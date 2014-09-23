@@ -23,7 +23,7 @@ static void on_write(ble_evt_t * p_ble_evt)
             (p_evt_write->len == 1) &&
             device.chars[i].on_write != NULL)
         {
-            device.chars[i].on_write(p_evt_write);
+            device.chars[i].on_write(p_evt_write, device.chars[i].data);
         }
     }
 }
@@ -53,7 +53,7 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 
 
 
-uint32_t device_add_char(device_on_write on_write, uint8_t flags)
+uint32_t device_add_char(char_register_t char_reg)
 {
     ble_gatts_char_md_t       char_md;
     ble_gatts_attr_t          attr_char_value;
@@ -72,7 +72,7 @@ uint32_t device_add_char(device_on_write on_write, uint8_t flags)
     char_md.p_sccd_md         = NULL;
 
     ble_uuid.type = device.uuid_type;
-    ble_uuid.uuid = LBS_UUID_UPLUG_POWER_CHAR;
+    ble_uuid.uuid = char_reg.type;
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -97,7 +97,8 @@ uint32_t device_add_char(device_on_write on_write, uint8_t flags)
                                                &handle);
 
     device.chars[char_number].handle = handle.value_handle;
-    device.chars[char_number].on_write = on_write;
+    device.chars[char_number].on_write = char_reg.on_write;
+    device.chars[char_number].data = char_reg.data;
     char_number += 1;
 
     return error_no;

@@ -17,22 +17,28 @@ extern device_t device;
 ble_uuid_t adv_uuid;
 ble_uuid_t *service_get_uuids(void)
 {
-    adv_uuid.uuid = LBS_UUID_UPLUG_SERVICE;
+    adv_uuid.uuid = UDEVICE_UUID_SERVICE;
     adv_uuid.type = device.uuid_type;
     return &adv_uuid;
 }
 
-static void on_write(ble_gatts_evt_write_t *evt)
+static void on_write(ble_gatts_evt_write_t *evt, void *data)
 {
 }
 
 uint32_t services_init(void)
 {
     uint32_t err_code;
+    char_register_t char_reg = {
+        .type = UDEVICE_UUID_OUTLET_CHAR,
+        /* No need data for the uplug with ble only */
+        .data = NULL,
+        .on_write = on_write
+    };
 
-    device_init(LBS_UUID_UPLUG_SERVICE);
+    device_init(UDEVICE_UUID_SERVICE);
 
-    err_code = device_add_char(on_write, DEVICE_CHARS_WRITE);
+    err_code = device_add_char(char_reg);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
