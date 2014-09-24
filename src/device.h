@@ -21,6 +21,8 @@
 #define UDEVICE_UUID_SENSOR_CHAR 0x1003
 
 typedef void (*device_on_write)(ble_gatts_evt_write_t *, void *);
+typedef void (*device_on_auth_read)(ble_gatts_evt_read_t *, void *);
+typedef void (*device_on_auth_write)(ble_gatts_evt_write_t *, void *);
 
 typedef struct device_s
 {
@@ -29,18 +31,22 @@ typedef struct device_s
     void (*on_connect)(void);
     uint8_t uuid_type;
     struct {
-        uint16_t        handle;
-        void            *data;
-        device_on_write on_write;
+        uint16_t             handle;
+        void                *data;
+        device_on_write      on_write;
+        device_on_auth_write on_auth_write;
+        device_on_auth_read  on_auth_read;
     } chars[DEVICE_CHARS_NUMBER];
 } device_t;
 
 typedef struct char_register_s
 {
-    uint16_t        type;
-    device_on_write on_write;
-    void           *data;
-    uint32_t        index;
+    uint16_t             type;
+    device_on_write      on_write;
+    device_on_auth_read  on_auth_read;
+    device_on_auth_write on_auth_write;
+    void                *data;
+    uint32_t             index;
 } char_register_t;
 
 uint32_t device_init(uint16_t service_uuid);
