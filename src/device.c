@@ -6,6 +6,9 @@ static uint32_t char_number = 0;
 static void on_connect(ble_evt_t * p_ble_evt)
 {
     device.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+    if (device.on_connect) {
+        device.on_connect();
+    }
 }
 
 static void on_disconnect(ble_evt_t * p_ble_evt)
@@ -20,7 +23,6 @@ static void on_write(ble_evt_t * p_ble_evt)
 
     for (i = 0; i < DEVICE_CHARS_NUMBER; i++) {
         if ((p_evt_write->handle == device.chars[i].handle) &&
-            (p_evt_write->len == 1) &&
             device.chars[i].on_write != NULL)
         {
             device.chars[i].on_write(p_evt_write, device.chars[i].data);
@@ -65,6 +67,7 @@ uint32_t device_add_char(char_register_t char_reg)
     memset(&char_md, 0, sizeof(char_md));
 
     char_md.char_props.write  = 1;
+    char_md.char_props.notify = 1;
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
     char_md.p_user_desc_md    = NULL;
@@ -87,9 +90,9 @@ uint32_t device_add_char(char_register_t char_reg)
 
     attr_char_value.p_uuid       = &ble_uuid;
     attr_char_value.p_attr_md    = &attr_md;
-    attr_char_value.init_len     = sizeof(uint8_t);
+    attr_char_value.init_len     = 0;
     attr_char_value.init_offs    = 0;
-    attr_char_value.max_len      = sizeof(uint8_t);
+    attr_char_value.max_len      = BLE_L2CAP_MTU_DEF;
     attr_char_value.p_value      = NULL;
 
     error_no = sd_ble_gatts_characteristic_add(device.service_handle, &char_md,
@@ -99,6 +102,9 @@ uint32_t device_add_char(char_register_t char_reg)
     device.chars[char_number].handle = handle.value_handle;
     device.chars[char_number].on_write = char_reg.on_write;
     device.chars[char_number].data = char_reg.data;
+
+    char_reg.index = char_number;
+
     char_number += 1;
 
     return error_no;
@@ -133,4 +139,27 @@ uint32_t device_init(uint16_t service_uuid)
     return NRF_SUCCESS;
 }
 
+static uint8_t m_notif_buffer[256];
+uint32_t device_notify(uint8_t opcode, void *data, uint32_t len, uint32_t char_index)
+{
+    ble_gatts_hvx_params_t hvx_params;
+    uint16_t               index = 0;
+    uint32_t               err_code;
 
+    m_notif_buffer[index++] = 0x01;
+
+    memcpy(&m_notif_buffer[index], data, len);
+    index += len;
+
+    memset(&hvx_params, 0, sizeof(hvx_params));
+
+    hvx_params.handle = device.chars[char_index].handle;
+    hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+    hvx_params.offset = 0;
+    hvx_params.p_len  = &index;
+    hvx_params.p_data = m_notif_buffer;
+
+    err_code = sd_ble_gatts_hvx(device.conn_handle, &hvx_params);
+
+    return err_code;
+}

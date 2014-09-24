@@ -26,6 +26,7 @@ typedef struct device_s
 {
     uint16_t service_handle;
     uint16_t conn_handle;
+    void (*on_connect)(void);
     uint8_t uuid_type;
     struct {
         uint16_t        handle;
@@ -38,10 +39,12 @@ typedef struct char_register_s
 {
     uint16_t        type;
     device_on_write on_write;
-    void            *data;
+    void           *data;
+    uint32_t        index;
 } char_register_t;
 
 uint32_t device_init(uint16_t service_uuid);
 uint32_t device_add_char(char_register_t char_reg);
+uint32_t device_notify(uint8_t opcode, void *data, uint32_t len, uint32_t index);
 
 #endif // !DEVICE_H_

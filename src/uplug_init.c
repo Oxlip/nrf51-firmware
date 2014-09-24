@@ -26,6 +26,10 @@ static void on_write(ble_gatts_evt_write_t *evt, void *data)
 {
 }
 
+static void uplug_on_connect()
+{
+}
+
 uint32_t services_init(void)
 {
     uint32_t err_code;
@@ -35,6 +39,8 @@ uint32_t services_init(void)
         .data = NULL,
         .on_write = on_write
     };
+
+    device.on_connect = uplug_on_connect;
 
     device_init(UDEVICE_UUID_SERVICE);
 

@@ -83,6 +83,7 @@ void pstorage_sys_event_handler (uint32_t p_evt);
 // device impl
 uint32_t services_init(void);
 ble_uuid_t *service_get_uuids(void);
+void device_on_ble_evt(ble_evt_t * p_ble_evt);
 
 /**@brief Function for error handling, which is called when an error has occurred.
  *
