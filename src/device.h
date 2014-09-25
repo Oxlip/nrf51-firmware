@@ -20,6 +20,11 @@
 #define UDEVICE_UUID_OUTLET_CHAR 0x1002
 #define UDEVICE_UUID_SENSOR_CHAR 0x1003
 
+typedef enum opcode_outlet_e {
+    OP_CODE_OUTLET_SET_DIM   = 0x1,
+    OP_CODE_OUTLET_GET_POWER = 0x2
+} opcode_outlet_e;
+
 typedef void (*device_on_write)(ble_gatts_evt_write_t *, void *);
 typedef void (*device_on_auth_read)(ble_gatts_evt_read_t *, void *);
 typedef void (*device_on_auth_write)(ble_gatts_evt_write_t *, void *);
