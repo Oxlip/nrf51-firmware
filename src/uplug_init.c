@@ -32,10 +32,12 @@ static void outlet_notify_power_consume(uint8_t type)
         case 0x1: /* average */
             uint32_encode(1234, data);
             device_notify(OP_CODE_OUTLET_GET_POWER, data, 4, 0);
+            break;
 
         case 0x2: /* current */
             uint32_encode(9999, data);
             device_notify(OP_CODE_OUTLET_GET_POWER, data, 4, 0);
+            break;
 
         default:
             return;
