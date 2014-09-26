@@ -108,8 +108,8 @@ uint32_t services_init(void)
         .type = UDEVICE_UUID_OUTLET_CHAR,
         /* No need data for the uplug with ble only */
         .data = NULL,
-        .on_write = uplug_on_write,
-        .on_auth_write  = NULL,
+        .on_write = outlet_on_auth_write,
+        .on_auth_write  = outlet_on_auth_write,
         .on_auth_read  = NULL
     };
     char_register_t char_info_reg = {
@@ -120,8 +120,6 @@ uint32_t services_init(void)
         .on_auth_write  = NULL,
         .on_auth_read  = infos_on_auth_read
     };
-
-    device.on_connect = uplug_on_connect;
 
     device_init(UDEVICE_UUID_SERVICE);
 

@@ -323,6 +323,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     {
         case BLE_GAP_EVT_CONNECTED:
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+            nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:

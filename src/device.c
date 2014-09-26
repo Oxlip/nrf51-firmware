@@ -3,20 +3,17 @@
 device_t device;
 static uint32_t char_number = 0;
 
-static void on_connect(ble_evt_t * p_ble_evt)
+static void device_on_connect(ble_evt_t * p_ble_evt)
 {
     device.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-    if (device.on_connect) {
-        device.on_connect();
-    }
 }
 
-static void on_disconnect(ble_evt_t * p_ble_evt)
+static void device_on_disconnect(ble_evt_t * p_ble_evt)
 {
     device.conn_handle = BLE_CONN_HANDLE_INVALID;
 }
 
-static void on_rw(ble_evt_t * p_ble_evt)
+static void device_on_rw(ble_evt_t * p_ble_evt)
 {
     ble_gatts_evt_rw_authorize_request_t * p_authorize_request;
     uint16_t handle;
@@ -69,11 +66,11 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            on_connect(p_ble_evt);
+            device_on_connect(p_ble_evt);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            on_disconnect(p_ble_evt);
+            device_on_disconnect(p_ble_evt);
             break;
 
         case BLE_GATTS_EVT_WRITE:
@@ -81,7 +78,7 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
-            on_rw(p_ble_evt);
+            device_on_rw(p_ble_evt);
         default:
             // No implementation needed.
             break;
