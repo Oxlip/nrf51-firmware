@@ -75,10 +75,10 @@ void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
 }
 
 
-/**@brief Function for adding the LED characteristic.
+/**@brief Function for adding the command characteristic.
  *
  */
-static uint32_t led_char_add(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
+static uint32_t cmd_char_add(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 {
     ble_gatts_char_md_t char_md;
     ble_gatts_attr_t    attr_char_value;
@@ -87,7 +87,6 @@ static uint32_t led_char_add(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_ini
 
     memset(&char_md, 0, sizeof(char_md));
 
-    char_md.char_props.read   = 1;
     char_md.char_props.write  = 1;
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
@@ -96,11 +95,11 @@ static uint32_t led_char_add(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_ini
     char_md.p_sccd_md         = NULL;
 
     ble_uuid.type = p_lbs->uuid_type;
-    ble_uuid.uuid = LBS_UUID_LED_CHAR;
+    ble_uuid.uuid = LBS_UUID_CMD_CHAR;
 
     memset(&attr_md, 0, sizeof(attr_md));
 
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
     attr_md.vloc       = BLE_GATTS_VLOC_STACK;
     attr_md.rd_auth    = 0;
@@ -200,13 +199,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
         return err_code;
     }
 
-    err_code = button_char_add(p_lbs, p_lbs_init);
-    if (err_code != NRF_SUCCESS)
-    {
-        return err_code;
-    }
-
-    err_code = led_char_add(p_lbs, p_lbs_init);
+    err_code = cmd_char_add(p_lbs, p_lbs_init);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;

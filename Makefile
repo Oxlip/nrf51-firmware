@@ -18,12 +18,22 @@ SDK_SRCS =	app_gpiote.c \
 		ble_debug_assert_handler.c \
 		ble_error_log.c
 
+UDEVICE          = uplug
+
+ifeq ($(UDEVICE), uplug)
+    CFLAGS      += -DDEVICE_CHARS_NUMBER=1
+endif
+
+MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
+TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
+SDK_PATH       = $(MAKEFILE_DIR)/nrf51-sdk/
+
+include src/Makefile.$(UDEVICE)
+
 PROJECT_NAME     = uBLE
-APPLICATION_SRCS = ble_lbs.c main.c $(SDK_SRCS)
+APPLICATION_SRCS = $(DEVICE_SRCS) device.c main.c $(SDK_SRCS)
 SOURCE_PATHS    += src
 LIBRARY_PATHS   += include
-CFLAGS           = -DDEBUG -g3 -O0 -I .
-
 
 # Device and build infos
 
@@ -31,14 +41,17 @@ DEVICE         = NRF51
 BOARD          = BOARD_PCA10001
 USE_SOFTDEVICE = s110
 SOFTDEVICE     = external/s110_nrf51822_7.0.0_softdevice.hex
-SDK_PATH      ?= /opt/nrf51sdk/nrf51822/
-
-MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
-TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
-
 
 # Gdb infos
 
 GDB_PORT_NUMBER = 2331
+
+all:
+
+release: CFLAGS+=-O2
+release: all
+
+debug: CFLAGS+=-DDEBUG -g3 -O0 -I .
+debug: all
 
 include $(TEMPLATE_PATH)/Makefile
