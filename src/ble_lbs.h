@@ -12,10 +12,13 @@
 #include "ble.h"
 #include "ble_srv_common.h"
 
-#define LBS_UUID_BASE {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, 0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}
-#define LBS_UUID_SERVICE 0x1523
-#define LBS_UUID_LED_CHAR 0x1525
-#define LBS_UUID_BUTTON_CHAR 0x1524
+#define LBS_UUID_BASE { 0x0A, 0x95, 0xE8, 0xC0, 0x02, 0x09, 0xA0, 0xAB, 0x85, 0x40, 0x24, 0x93, 0x00, 0x00, 0xF4, 0xC0 }
+#define LBS_UUID_SERVICE 0x1769
+#define LBS_UUID_CMD_CHAR 0x1770
+#define LBS_UUID_BUTTON_CHAR 0x1771
+
+#define LBS_UUID_UPLUG_SERVICE 0x1001
+#define LBS_UUID_UPLUG_POWER_CHAR 0x1002
 
 // Forward declaration of the ble_lbs_t type. 
 typedef struct ble_lbs_s ble_lbs_t;
@@ -57,7 +60,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init);
  * @param[in]   p_lbs      LED Button Service structure.
  * @param[in]   p_ble_evt  Event received from the BLE stack.
  */
-void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt);
+void ble_lbs_on_ble_evt(ble_evt_t * p_ble_evt);
 
 /**@brief Function for sending a button state notification.
  */

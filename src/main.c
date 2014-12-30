@@ -73,13 +73,17 @@
 
 static ble_gap_sec_params_t             m_sec_params;                               /**< Security requirements for this application. */
 static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
-static ble_lbs_t                        m_lbs;
 
 #define SCHED_MAX_EVENT_DATA_SIZE       sizeof(app_timer_event_t)                   /**< Maximum size of scheduler events. Note that scheduler BLE stack events do not contain any data, as the events are being pulled from the stack in the event handler. */
 #define SCHED_QUEUE_SIZE                10                                          /**< Maximum number of events in the scheduler queue. */
 
 // Persistent storage system event handler
 void pstorage_sys_event_handler (uint32_t p_evt);
+
+// device impl
+uint32_t services_init(void);
+ble_uuid_t *service_get_uuids(void);
+void device_on_ble_evt(ble_evt_t * p_ble_evt);
 
 /**@brief Function for error handling, which is called when an error has occurred.
  *
@@ -190,8 +194,6 @@ static void advertising_init(void)
     ble_advdata_t scanrsp;
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
 
-    ble_uuid_t adv_uuids[] = {{LBS_UUID_SERVICE, m_lbs.uuid_type}};
-
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
 
@@ -201,35 +203,10 @@ static void advertising_init(void)
     advdata.flags.p_data            = &flags;
 
     memset(&scanrsp, 0, sizeof(scanrsp));
-    scanrsp.uuids_complete.uuid_cnt = sizeof(adv_uuids) / sizeof(adv_uuids[0]);
-    scanrsp.uuids_complete.p_uuids  = adv_uuids;
+    scanrsp.uuids_complete.uuid_cnt = 1;
+    scanrsp.uuids_complete.p_uuids  = service_get_uuids();
 
     err_code = ble_advdata_set(&advdata, &scanrsp);
-    APP_ERROR_CHECK(err_code);
-}
-
-static void led_write_handler(ble_lbs_t * p_lbs, uint8_t led_state)
-{
-    if (led_state)
-    {
-        nrf_gpio_pin_set(LEDBUTTON_LED_PIN_NO);
-    }
-    else
-    {
-        nrf_gpio_pin_clear(LEDBUTTON_LED_PIN_NO);
-    }
-}
-
-/**@brief Function for initializing services that will be used by the application.
- */
-static void services_init(void)
-{
-    uint32_t err_code;
-    ble_lbs_init_t init;
-
-    init.led_write_handler = led_write_handler;
-
-    err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -345,20 +322,12 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
-            nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-
-            err_code = app_button_enable();
-            APP_ERROR_CHECK(err_code);
+            nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
-
-            err_code = app_button_disable();
-            APP_ERROR_CHECK(err_code);
 
             advertising_start();
             break;
@@ -428,7 +397,7 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
     on_ble_evt(p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
-    ble_lbs_on_ble_evt(&m_lbs, p_ble_evt);
+    device_on_ble_evt(p_ble_evt);
 }
 
 
@@ -481,49 +450,11 @@ static void scheduler_init(void)
 }
 
 
-static void button_event_handler(uint8_t pin_no, uint8_t button_action)
-{
-    uint32_t err_code;
-
-    switch (pin_no)
-    {
-        case LEDBUTTON_BUTTON_PIN_NO:
-            err_code = ble_lbs_on_button_change(&m_lbs, button_action);
-            if (err_code != NRF_SUCCESS &&
-                err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
-                err_code != NRF_ERROR_INVALID_STATE)
-            {
-                APP_ERROR_CHECK(err_code);
-            }
-            break;
-
-        default:
-            APP_ERROR_HANDLER(pin_no);
-            break;
-    }
-}
-
 /**@brief Function for initializing the GPIOTE handler module.
  */
 static void gpiote_init(void)
 {
     APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
-}
-
-
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    // Note: Array must be static because a pointer to it will be saved in the Button handler
-    //       module.
-    static app_button_cfg_t buttons[] =
-    {
-        {WAKEUP_BUTTON_PIN, false, BUTTON_PULL, NULL},
-        {LEDBUTTON_BUTTON_PIN_NO, false, BUTTON_PULL, button_event_handler}
-    };
-
-    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, true);
 }
 
 
@@ -543,7 +474,6 @@ int main(void)
     // Initialize
     timers_init();
     gpiote_init();
-    buttons_init();
     leds_init();
 
     ble_stack_init();

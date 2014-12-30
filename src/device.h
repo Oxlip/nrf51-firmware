@@ -1,0 +1,61 @@
+#ifndef DEVICE_H_
+#define DEVICE_H_
+
+#include "ble.h"
+#include "ble_hci.h"
+#include "ble_srv_common.h"
+#include "ble_advdata.h"
+#include "ble_conn_params.h"
+#include "ble_lbs.h"
+
+#ifndef DEVICE_CHARS_NUMBER
+#error "DEVICE_CHARS_NUMBER not define"
+#endif
+
+
+#define UDEVICE_UUID_BASE { 0x0A, 0x95, 0xE8, 0xC0, 0x02, 0x09, 0xA0, 0xAB, 0x85, 0x40, 0x24, 0x93, 0x00, 0x00, 0xF4, 0xC0 }
+
+#define UDEVICE_UUID_SERVICE     0x1000
+#define UDEVICE_UUID_INFOS_CHAR  0x1001
+#define UDEVICE_UUID_OUTLET_CHAR 0x1002
+#define UDEVICE_UUID_SENSOR_CHAR 0x1003
+
+typedef enum opcode_outlet_e {
+    OP_CODE_OUTLET_SET_DIM   = 0x1,
+    OP_CODE_OUTLET_GET_POWER = 0x2
+} opcode_outlet_e;
+
+typedef void (*device_on_write)(ble_gatts_evt_write_t *, void *);
+typedef void (*device_on_auth_read)(ble_gatts_evt_read_t *, void *);
+typedef void (*device_on_auth_write)(ble_gatts_evt_write_t *, void *);
+
+typedef struct device_s
+{
+    uint16_t service_handle;
+    uint16_t conn_handle;
+    void (*on_connect)(void);
+    uint8_t uuid_type;
+    struct {
+        uint16_t             handle;
+        void                *data;
+        device_on_write      on_write;
+        device_on_auth_write on_auth_write;
+        device_on_auth_read  on_auth_read;
+    } chars[DEVICE_CHARS_NUMBER];
+} device_t;
+
+typedef struct char_register_s
+{
+    uint16_t             type;
+    device_on_write      on_write;
+    device_on_auth_read  on_auth_read;
+    device_on_auth_write on_auth_write;
+    void                *data;
+    uint32_t             index;
+} char_register_t;
+
+uint32_t device_init(uint16_t service_uuid);
+uint32_t device_add_char(char_register_t char_reg);
+uint32_t device_notify(uint8_t opcode, void *data, uint32_t len, uint32_t index);
+
+#endif // !DEVICE_H_
