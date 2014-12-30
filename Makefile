@@ -25,7 +25,7 @@ ifeq ($(UDEVICE), uplug)
 endif
 
 MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
-TEMPLATE_PATH  = $(MAKEFILE_DIR)/nrf51-pure-gcc-setup/template/
+TEMPLATE_PATH  = $(MAKEFILE_DIR)/toolchain/gcc/
 SDK_PATH       = $(MAKEFILE_DIR)/nrf51-sdk/
 
 include src/Makefile.$(UDEVICE)
