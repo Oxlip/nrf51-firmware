@@ -1,6 +1,6 @@
 MAKEFILE_DIR    := $(dir $(lastword $(MAKEFILE_LIST)))
 
-DEVICE_SRCS     = device.c
+DEVICE_SRCS     = ble.c
 
 PROJECT_NAME    = aura
 SOURCE_PATHS    += $(MAKEFILE_DIR)/app/aura
