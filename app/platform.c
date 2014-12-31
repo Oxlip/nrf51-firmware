@@ -26,8 +26,6 @@ static void leds_init(void)
 {
     nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
     nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-    nrf_gpio_cfg_output(LEDBUTTON_LED_PIN_NO);
-    nrf_gpio_pin_set(LEDBUTTON_LED_PIN_NO);
     nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
 }
 
