@@ -336,7 +336,7 @@ uint32_t device_init(uint16_t service_uuid)
     char_number = 0;
 
     // Add service
-    ble_uuid128_t base_uuid = LBS_UUID_BASE;
+    ble_uuid128_t base_uuid = {LBS_UUID_BASE};
     err_code = sd_ble_uuid_vs_add(&base_uuid, &device.uuid_type);
     if (err_code != NRF_SUCCESS)
     {

@@ -15,7 +15,7 @@
 
 #include <ble_uuids.h>
 
-// Forward declaration of the ble_lbs_t type. 
+// Forward declaration of the ble_lbs_t type.
 typedef struct ble_lbs_s ble_lbs_t;
 
 typedef void (*ble_lbs_led_write_handler_t) (ble_lbs_t * p_lbs, uint8_t new_state);
@@ -35,8 +35,6 @@ typedef struct ble_lbs_s
     uint16_t                    conn_handle;
     ble_lbs_led_write_handler_t led_write_handler;
 } ble_lbs_t;
-
-
 
 /**@brief Function for handling the Connect event.
  *
@@ -210,7 +208,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     p_lbs->led_write_handler = p_lbs_init->led_write_handler;
 
     // Add service
-    ble_uuid128_t base_uuid = LBS_UUID_BASE;
+    ble_uuid128_t base_uuid = {LBS_UUID_BASE};
     err_code = sd_ble_uuid_vs_add(&base_uuid, &p_lbs->uuid_type);
     if (err_code != NRF_SUCCESS)
     {
@@ -235,16 +233,3 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     return NRF_SUCCESS;
 }
 
-uint32_t xble_lbs_on_button_change(ble_lbs_t * p_lbs, uint8_t button_state)
-{
-    ble_gatts_hvx_params_t params;
-    uint16_t len = sizeof(button_state);
-
-    memset(&params, 0, sizeof(params));
-    params.type = BLE_GATT_HVX_NOTIFICATION;
-    params.handle = p_lbs->button_char_handles.value_handle;
-    params.p_data = &button_state;
-    params.p_len = &len;
-
-    return sd_ble_gatts_hvx(p_lbs->conn_handle, &params);
-}

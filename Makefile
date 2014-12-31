@@ -38,6 +38,10 @@ APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 # Gdb infos
 GDB_PORT_NUMBER = 2331
 
+# Enable all warnings and treat warnings as error.
+CFLAGS          += -Werror -Wall
+
+# Enable link time optimization.
 CFLAGS          += -flto
 
 all:
