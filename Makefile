@@ -38,6 +38,8 @@ APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 # Gdb infos
 GDB_PORT_NUMBER = 2331
 
+CFLAGS          += -flto
+
 all:
 
 release: CFLAGS+=-O2
