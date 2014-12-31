@@ -235,7 +235,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     return NRF_SUCCESS;
 }
 
-uint32_t ble_lbs_on_button_change(ble_lbs_t * p_lbs, uint8_t button_state)
+uint32_t xble_lbs_on_button_change(ble_lbs_t * p_lbs, uint8_t button_state)
 {
     ble_gatts_hvx_params_t params;
     uint16_t len = sizeof(button_state);
