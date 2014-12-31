@@ -28,11 +28,11 @@ MAKEFILE_DIR  := $(dir $(lastword $(MAKEFILE_LIST)))
 TEMPLATE_PATH  = $(MAKEFILE_DIR)/toolchain/gcc/
 SDK_PATH       = $(MAKEFILE_DIR)/sdk/nrf51822/
 
-include src/Makefile.$(UDEVICE)
+include app/Makefile.$(UDEVICE)
 
 PROJECT_NAME     = uBLE
 APPLICATION_SRCS = $(DEVICE_SRCS) device.c main.c $(SDK_SRCS)
-SOURCE_PATHS    += src
+SOURCE_PATHS    += app
 LIBRARY_PATHS   += include
 
 # Device and build infos
