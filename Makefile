@@ -42,7 +42,7 @@ CFLAGS          += -flto
 
 all:
 
-release: CFLAGS+=-O2
+release: CFLAGS+=-Os
 release: all
 
 debug: CFLAGS+=-DDEBUG -g3 -O0 -I .
