@@ -4,11 +4,38 @@
  * found in the license.txt file.
  */
 
-#include "ble_lbs.h"
 #include <string.h>
 #include "nordic_common.h"
 #include "ble_srv_common.h"
 #include "app_util.h"
+
+#include <stdint.h>
+#include <stdbool.h>
+#include "ble.h"
+
+#include <ble_uuids.h>
+
+// Forward declaration of the ble_lbs_t type. 
+typedef struct ble_lbs_s ble_lbs_t;
+
+typedef void (*ble_lbs_led_write_handler_t) (ble_lbs_t * p_lbs, uint8_t new_state);
+
+typedef struct
+{
+    ble_lbs_led_write_handler_t led_write_handler;                    /**< Event handler to be called when LED characteristic is written. */
+} ble_lbs_init_t;
+
+/**@brief LED Button Service structure. This contains various status information for the service. */
+typedef struct ble_lbs_s
+{
+    uint16_t                    service_handle;
+    ble_gatts_char_handles_t    led_char_handles;
+    ble_gatts_char_handles_t    button_char_handles;
+    uint8_t                     uuid_type;
+    uint16_t                    conn_handle;
+    ble_lbs_led_write_handler_t led_write_handler;
+} ble_lbs_t;
+
 
 
 /**@brief Function for handling the Connect event.

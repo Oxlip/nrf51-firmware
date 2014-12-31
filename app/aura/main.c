@@ -30,7 +30,6 @@
 #include "app_button.h"
 #include "ble_debug_assert_handler.h"
 #include "pstorage.h"
-#include "ble_lbs.h"
 
 #define WAKEUP_BUTTON_PIN               BUTTON_0                                    /**< Button used to wake up the application. */
 
