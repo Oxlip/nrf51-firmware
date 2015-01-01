@@ -8,6 +8,7 @@ SDK_SRCS =  app_gpiote.c \
             pstorage.c \
             device_manager_peripheral.c \
             ble_bas.c \
+            ble_dis.c \
             ble_ias.c \
             ble_ias_c.c \
             ble_lls.c \

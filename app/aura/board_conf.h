@@ -5,7 +5,6 @@
 #ifndef __BOARD_CONF__
 #define __BOARD_CONF__
 
-
 /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                     "Aura"
 

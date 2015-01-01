@@ -17,6 +17,7 @@ void advertising_init(void);
 void sec_params_init(void);
 void conn_params_init(void);
 void ble_stack_init(void);
+void device_information_service_init(void);
 
 /**@brief Function for the LEDs initialization.
  *
@@ -89,6 +90,7 @@ int main(void)
     services_init();
     conn_params_init();
     sec_params_init();
+    device_information_service_init();
     advertising_init();
 
     // Start execution

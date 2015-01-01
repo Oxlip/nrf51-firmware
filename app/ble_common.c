@@ -6,6 +6,7 @@
 #include <softdevice_handler.h>
 #include <app_timer.h>
 #include <ble_advdata.h>
+#include <ble_dis.h>
 #include <ble_conn_params.h>
 #include <pstorage.h>
 
@@ -247,6 +248,22 @@ static void sys_evt_dispatch(uint32_t sys_evt)
     pstorage_sys_event_handler(sys_evt);
 }
 
+void device_information_service_init(void)
+{
+    uint32_t       err_code;
+    ble_dis_init_t dis_init;
+    // Initialize Device Information Service.
+    memset(&dis_init, 0, sizeof(dis_init));
+
+    ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, (char *)MANUFACTURER_NAME);
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init.dis_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dis_init.dis_attr_md.write_perm);
+
+    err_code = ble_dis_init(&dis_init);
+    APP_ERROR_CHECK(err_code);
+
+}
 
 /**@brief Function for initializing the BLE stack.
  *
