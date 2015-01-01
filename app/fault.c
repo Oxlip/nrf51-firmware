@@ -2,6 +2,7 @@
 #include <common.h>
 #include <nrf_gpio.h>
 #include <board_conf.h>
+#include <ble_debug_assert_handler.h>
 
 /**
  * Common fault/error handling module.

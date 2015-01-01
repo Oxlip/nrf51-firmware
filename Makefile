@@ -18,13 +18,7 @@ SDK_SRCS =  app_gpiote.c \
             ble_debug_assert_handler.c \
             ble_error_log.c
 
-COMMON_SRCS     = platform.c ble_common.c fault.c
-
-UDEVICE         = uplug
-
-ifeq ($(UDEVICE), uplug)
-    CFLAGS      += -DDEVICE_CHARS_NUMBER=1
-endif
+COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c
 
 MAKEFILE_DIR    := $(dir $(lastword $(MAKEFILE_LIST)))
 

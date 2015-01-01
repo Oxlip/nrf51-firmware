@@ -27,4 +27,7 @@
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               20
 
+/**< Number of service to advertise.*/
+#define ADV_BLE_SERVICE_COUNT              2
+
 #endif
