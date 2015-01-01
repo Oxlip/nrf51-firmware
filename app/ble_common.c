@@ -24,7 +24,7 @@ static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
  *          device including the device name, appearance, and the preferred connection parameters.
  */
-void gap_params_init(void)
+static void gap_params_init(void)
 {
     uint32_t                err_code;
     ble_gap_conn_params_t   gap_conn_params;
@@ -75,7 +75,7 @@ static void advertising_start(void)
  * @details Encodes the required advertising data and passes it to the stack.
  *          Also builds a structure to be passed to the stack when starting advertising.
  */
-void advertising_init(void)
+static void advertising_init(void)
 {
     uint32_t      err_code;
     ble_advdata_t advdata;
@@ -101,7 +101,7 @@ void advertising_init(void)
 
 /**@brief Function for initializing security parameters.
  */
-void sec_params_init(void)
+static void sec_params_init(void)
 {
     m_sec_params.timeout      = SEC_PARAM_TIMEOUT;
     m_sec_params.bond         = SEC_PARAM_BOND;
@@ -124,7 +124,7 @@ static void conn_params_error_handler(uint32_t nrf_error)
 
 /**@brief Function for initializing the Connection Parameters module.
  */
-void conn_params_init(void)
+static void conn_params_init(void)
 {
     uint32_t               err_code;
     ble_conn_params_init_t cp_init;
@@ -248,7 +248,13 @@ static void sys_evt_dispatch(uint32_t sys_evt)
     pstorage_sys_event_handler(sys_evt);
 }
 
-void device_information_service_init(void)
+
+/**@brief Initialize Device Information Service.
+ *
+ * @details Uses macros from board_info.h platform.h to build ble_dis.
+ *
+ */
+static void device_information_service_init(void)
 {
     uint32_t       err_code;
     ble_dis_init_t dis_init;
@@ -265,11 +271,12 @@ void device_information_service_init(void)
 
 }
 
+
 /**@brief Function for initializing the BLE stack.
  *
  * @details Initializes the SoftDevice and the BLE event interrupt.
  */
-void ble_stack_init(void)
+static void ble_stack_init(void)
 {
     uint32_t err_code;
 
@@ -290,4 +297,27 @@ void ble_stack_init(void)
     // Register with the SoftDevice handler module for BLE events.
     err_code = softdevice_sys_evt_handler_set(sys_evt_dispatch);
     APP_ERROR_CHECK(err_code);
+}
+
+
+/**@brief Function for initializing the BLE.
+ *
+ */
+void ble_init()
+{
+    ble_stack_init();
+}
+
+
+/**@brief Function for initializing the BLE.
+ *
+ */
+void ble_late_init()
+{
+    gap_params_init();
+    services_init();
+    conn_params_init();
+    sec_params_init();
+    device_information_service_init();
+    advertising_init();
 }

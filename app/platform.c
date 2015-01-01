@@ -11,13 +11,9 @@
 
 #include "platform.h"
 
-/* common init routines defined in ble_common.c */
-void gap_params_init(void);
-void advertising_init(void);
-void sec_params_init(void);
-void conn_params_init(void);
-void ble_stack_init(void);
-void device_information_service_init(void);
+/* BLE init routines from ble_common.c */
+void ble_init(void);
+void ble_late_init(void);
 
 /**@brief Function for the LEDs initialization.
  *
@@ -83,15 +79,11 @@ int main(void)
     gpiote_init();
     leds_init();
 
-    ble_stack_init();
+    ble_init();
+    
     scheduler_init();
 
-    gap_params_init();
-    services_init();
-    conn_params_init();
-    sec_params_init();
-    device_information_service_init();
-    advertising_init();
+    ble_late_init();
 
     // Start execution
     timers_start();
