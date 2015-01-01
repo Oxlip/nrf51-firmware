@@ -38,12 +38,14 @@ CFLAGS          += -Werror -Wall
 # Enable link time optimization.
 CFLAGS          += -flto
 
-all:
+include $(TEMPLATE_PATH)/Makefile
 
 release: CFLAGS+=-Os
 release: all
 
-debug: CFLAGS+=-DDEBUG -g3 -O0 -I .
+debug: CFLAGS+=-DDEBUG -g3 -O0
 debug: all
 
-include $(TEMPLATE_PATH)/Makefile
+all:
+
+
