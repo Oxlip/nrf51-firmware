@@ -7,6 +7,8 @@
 
 /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                     "Aura"
+#define DEVICE_HW_REVISION_ID           "0.1"
+#define DEVICE_FW_REVISION_ID           "0.1"
 
 /**< Button used for deleting all stored bond information. */
 #define BOND_DELETE_ALL_BUTTON_ID       15
