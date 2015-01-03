@@ -6,19 +6,28 @@
 
 #include <ble_uuids.h>
 #include <ble_ss.h>
+#include <ble_common.h>
 #include "board_conf.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t current_ss;
 
-/** UUIDs to advertise.
- *
- *  Note - Remember to adjust ADV_BLE_SERVICE_COUNT in board_conf.h
- */
-ble_uuid_t adv_uuids [] = {
-    {BLE_DIMMER_SERVICE, BLE_UUID_TYPE_BLE},
-    {BLE_CURRENT_SENSOR_SERVICE, BLE_UUID_TYPE_BLE}
+/** UUIDs to advertise. */
+ble_uuid_t adv_uuids[] = {
+    {BLE_UUID_DIMMER_SERVICE, BLE_UUID_TYPE_BLE},
+    {BLE_UUID_CS_SERVICE, BLE_UUID_TYPE_BLE}
 };
+
+uint8_t ble_get_adv_uuid_array_count()
+{
+    return sizeof(adv_uuids) / sizeof(ble_uuid_t);
+}
+
+ble_uuid_t * ble_get_adv_uuid_array()
+{
+    return adv_uuids;
+}
+
 
 void device_on_ble_evt(ble_evt_t * p_ble_evt)
 {
@@ -39,7 +48,8 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
 uint32_t services_init(void)
 {
     uint32_t err_code;
-    ble_uuid_t ble_uuid;
+    ble_uuid_t ble_service_uuid;
+    ble_uuid_t ble_char_uuid;
     ble_ss_init_t dimmer_param, cs_param;
     
     // Initialize Dimmer Service.
@@ -54,9 +64,10 @@ uint32_t services_init(void)
     dimmer_param.support_notification = true;
     dimmer_param.p_report_ref         = NULL;
     dimmer_param.initial_value        = 0;
-
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_DIMMER_SERVICE);
-    err_code = ble_ss_init(&dimmer_ss, &ble_uuid, &dimmer_param);
+  
+    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
+    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
+    err_code = ble_ss_init(&dimmer_ss, &ble_service_uuid, &ble_char_uuid, &dimmer_param);
     APP_ERROR_CHECK(err_code);
 
     // Initialize Current Sensor Service.
@@ -72,8 +83,9 @@ uint32_t services_init(void)
     cs_param.p_report_ref         = NULL;
     cs_param.initial_value        = 0;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_CURRENT_SENSOR_SERVICE);
-    err_code = ble_ss_init(&dimmer_ss, &ble_uuid, &cs_param);
+    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
+    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);
+    err_code = ble_ss_init(&dimmer_ss, &ble_service_uuid, &ble_char_uuid, &cs_param);
     APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;

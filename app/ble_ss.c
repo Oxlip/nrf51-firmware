@@ -222,7 +222,7 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
 }
 
 
-uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, const ble_ss_init_t * p_ss_init)
+uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_service_ble_uuid, ble_uuid_t * p_char_ble_uuid, const ble_ss_init_t * p_ss_init)
 {
     uint32_t   err_code;
 
@@ -232,14 +232,14 @@ uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, const ble_ss_init
     p_ss->is_notification_supported = p_ss_init->support_notification;
     p_ss->sensor_value_last         = INVALID_SENSOR_VALUE;
 
-    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, p_ble_uuid, &p_ss->service_handle);
+    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, p_service_ble_uuid, &p_ss->service_handle);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
     }
 
     // Add sensor value characteristic
-    return sensor_value_char_add(p_ss, p_ble_uuid, p_ss_init);
+    return sensor_value_char_add(p_ss, p_char_ble_uuid, p_ss_init);
 }
 
 

@@ -5,6 +5,7 @@
 #include <boards.h>
 #include <softdevice_handler.h>
 #include <app_timer.h>
+#include <ble_types.h>
 #include <ble_advdata.h>
 #include <ble_dis.h>
 #include <ble_conn_params.h>
@@ -12,11 +13,18 @@
 
 #include <board_conf.h>
 #include <board_export.h>
+#include <ble_uuids.h>
 
 #include "platform.h"
+#include "ble_common.h"
 
-static ble_gap_sec_params_t             m_sec_params;                               /**< Security requirements for this application. */
-static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
+/**< UUID type registered with the SDK */
+uint8_t astral_uuid_type = BLE_UUID_TYPE_UNKNOWN;
+
+/**< Security requirements for this application. */
+static ble_gap_sec_params_t m_sec_params;
+/**< Handle of the current connection. */
+static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
 
 
 /**@brief Function for the GAP initialization.
@@ -69,7 +77,7 @@ static void advertising_start(void)
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
 }
 
-
+extern ble_uuid_t adv_uuids[];
 /**@brief Function for initializing the Advertising functionality.
  *
  * @details Encodes the required advertising data and passes it to the stack.
@@ -80,7 +88,6 @@ static void advertising_init(void)
     uint32_t      err_code;
     ble_advdata_t advdata;
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
-    extern ble_uuid_t adv_uuids[];
 
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
@@ -89,8 +96,8 @@ static void advertising_init(void)
     advdata.include_appearance      = true;
     advdata.flags.size              = sizeof(flags);
     advdata.flags.p_data            = &flags;
-    advdata.uuids_complete.uuid_cnt = ADV_BLE_SERVICE_COUNT;
-    advdata.uuids_complete.p_uuids  = adv_uuids;
+    advdata.uuids_complete.p_uuids  = ble_get_adv_uuid_array();
+    advdata.uuids_complete.uuid_cnt = ble_get_adv_uuid_array_count();
 
     err_code = ble_advdata_set(&advdata, NULL);
     APP_ERROR_CHECK(err_code);
@@ -230,9 +237,10 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
  */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
+    device_on_ble_evt(p_ble_evt);
+
     on_ble_evt(p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
-    device_on_ble_evt(p_ble_evt);
 }
 
 
@@ -274,6 +282,17 @@ static void device_information_service_init(void)
 
 }
 
+/**@brief Registers vendor specific UUID.
+ *
+ */
+static void uuid_init(void)
+{
+    uint32_t err_code;
+    ble_uuid128_t base_uuid = {BLE_ASTRAL_UUID_BASE};
+
+    err_code = sd_ble_uuid_vs_add(&base_uuid, &astral_uuid_type);
+    APP_ERROR_CHECK(err_code);
+}
 
 /**@brief Function for initializing the BLE stack.
  *
@@ -318,6 +337,7 @@ void ble_init()
 void ble_late_init()
 {
     gap_params_init();
+    uuid_init();
     services_init();
     conn_params_init();
     sec_params_init();

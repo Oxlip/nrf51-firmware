@@ -83,15 +83,16 @@ typedef struct ble_ss_s
 
 /**@brief Function for initializing the Sensor Service.
  *
- * @param[out]  p_ss        Sensor Service structure. This structure will have to be supplied by
- *                          the application. It will be initialized by this function, and will later
- *                          be used to identify this particular service instance.
- * @param[in]   p_ble_uuid  UUID of the service.
- * @param[in]   p_ss_init   Information needed to initialize the service.
+ * @param[out]  p_ss                Sensor Service structure. This structure will have to be supplied by
+ *                                  the application. It will be initialized by this function, and will later
+ *                                  be used to identify this particular service instance.
+ * @param[in]   p_service_ble_uuid  UUID of the service.
+ * @param[in]   p_char_ble_uuid     UUID of the characteristics.
+ * @param[in]   p_ss_init           Information needed to initialize the service.
  *
  * @return      NRF_SUCCESS on successful initialization of service, otherwise an error code.
  */
-uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, const ble_ss_init_t * p_ss_init);
+uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_service_ble_uuid, ble_uuid_t * p_char_ble_uuid, const ble_ss_init_t * p_ss_init);
 
 /**@brief Function for handling the Application's BLE Stack events.
  *
