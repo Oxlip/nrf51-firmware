@@ -39,6 +39,7 @@ release: CFLAGS+=-Os
 release: all
 
 debug: CFLAGS+=-DDEBUG -g3 -O0
+debug: LDFLAGS+=-g3
 debug: all
 
 all:
