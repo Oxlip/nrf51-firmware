@@ -68,7 +68,7 @@ static void on_write(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
            )
         {
             // CCCD written, call application event handler
-            if (p_ss->evt_handler != NULL)
+            if (p_ss->evt_write_handler != NULL)
             {
                 ble_ss_evt_t evt;
 
@@ -81,8 +81,67 @@ static void on_write(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
                     evt.evt_type = BLE_SS_EVT_NOTIFICATION_DISABLED;
                 }
 
-                p_ss->evt_handler(p_ss, p_evt_write, &evt);
+                p_ss->evt_write_handler(p_ss, p_evt_write, &evt);
             }
+        }
+    }
+}
+
+static void on_rw_authorize_request(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
+{
+    ble_gatts_evt_rw_authorize_request_t * p_authorize_request;
+    uint16_t handle;
+    uint8_t  is_write;
+
+    ble_gatts_rw_authorize_reply_params_t write_authorize_reply;
+    write_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
+    write_authorize_reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
+    sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &write_authorize_reply);
+
+    p_authorize_request = &(p_ble_evt->evt.gatts_evt.params.authorize_request);
+
+    if (p_authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
+    {
+        handle = p_authorize_request->request.write.handle;
+        is_write = 1;
+        ble_gatts_rw_authorize_reply_params_t write_authorize_reply;
+    
+        write_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
+        write_authorize_reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
+        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &write_authorize_reply);
+
+    } else if (p_authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_READ)
+    {
+        handle = p_authorize_request->request.read.handle;
+        is_write = 0;
+        ble_gatts_rw_authorize_reply_params_t read_authorize_reply;
+    
+        read_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
+        read_authorize_reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
+        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &read_authorize_reply);
+
+    } else
+    {
+        return;
+    }
+
+    if (handle != p_ss->sensor_value_handles.cccd_handle)
+    {
+        return;
+    }
+
+    if (is_write)
+    {
+        if (p_ss->evt_auth_write_handler) 
+        {
+            p_ss->evt_auth_write_handler(p_ss, &p_authorize_request->request.write);
+        }
+    }
+    else
+    {
+        if (p_ss->evt_auth_read_handler)
+        {
+            p_ss->evt_auth_read_handler(p_ss, &p_authorize_request->request.read);
         }
     }
 }
@@ -102,6 +161,10 @@ void ble_ss_on_ble_evt(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
 
         case BLE_GATTS_EVT_WRITE:
             on_write(p_ss, p_ble_evt);
+            break;
+
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+            on_rw_authorize_request(p_ss, p_ble_evt);
             break;
 
         default:
@@ -227,7 +290,9 @@ uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_service_ble_uuid, ble_uuid_
     uint32_t   err_code;
 
     // Initialize service structure
-    p_ss->evt_handler               = p_ss_init->evt_handler;
+    p_ss->evt_write_handler         = p_ss_init->evt_write_handler;
+    p_ss->evt_auth_write_handler    = p_ss_init->evt_auth_write_handler;
+    p_ss->evt_auth_read_handler     = p_ss_init->evt_auth_read_handler;
     p_ss->conn_handle               = BLE_CONN_HANDLE_INVALID;
     p_ss->is_notification_supported = p_ss_init->support_notification;
     p_ss->sensor_value_last         = INVALID_SENSOR_VALUE;

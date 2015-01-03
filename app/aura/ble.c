@@ -36,12 +36,21 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 }
 
 
-static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write, ble_ss_evt_t * p_evt) 
+static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write) 
 {
-    if (p_evt_write->data[1] == 0) {
-        nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-    } else {
-        nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
+    
+    if (p_evt_write->len == 0)
+    {
+        return;
+    }
+
+    if (p_evt_write->data[1] == 0)
+    {
+        nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+    }
+    else
+    {
+        nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
     }
 }
 
@@ -60,10 +69,12 @@ uint32_t services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dimmer_param.sensor_value_char_attr_md.write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dimmer_param.sensor_value_report_read_perm);
 
-    dimmer_param.evt_handler          = ble_dimmer_write_event;
-    dimmer_param.support_notification = true;
-    dimmer_param.p_report_ref         = NULL;
-    dimmer_param.initial_value        = 0;
+    dimmer_param.evt_write_handler      = NULL;
+    dimmer_param.evt_auth_write_handler = ble_dimmer_write_event;
+    dimmer_param.evt_auth_read_handler  = NULL;
+    dimmer_param.support_notification   = true;
+    dimmer_param.p_report_ref           = NULL;
+    dimmer_param.initial_value          = 0;
   
     BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
     BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
@@ -78,10 +89,12 @@ uint32_t services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&cs_param.sensor_value_char_attr_md.write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cs_param.sensor_value_report_read_perm);
 
-    cs_param.evt_handler          = NULL;
-    cs_param.support_notification = true;
-    cs_param.p_report_ref         = NULL;
-    cs_param.initial_value        = 0;
+    cs_param.evt_write_handler      = NULL;
+    cs_param.evt_auth_write_handler = NULL;
+    cs_param.evt_auth_read_handler  = NULL;
+    cs_param.support_notification   = true;
+    cs_param.p_report_ref           = NULL;
+    cs_param.initial_value          = 0;
 
     BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
     BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);

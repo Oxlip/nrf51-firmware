@@ -54,31 +54,42 @@ typedef struct
 // Forward declaration of the ble_ss_t type. 
 typedef struct ble_ss_s ble_ss_t;
 
-/**@brief Sensor Service event handler type. */
-typedef void (*ble_ss_evt_handler_t) (ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write, ble_ss_evt_t * p_evt);
+/**@brief Sensor Service write event handler type. */
+typedef void (*ble_ss_evt_write_handler_t) (ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write, ble_ss_evt_t * p_evt);
+
+/**@brief Sensor Service auth write event handler type. */
+typedef void (*ble_ss_evt_auth_write_handler_t) (ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write);
+
+/**@brief Sensor Service auth read event handler type. */
+typedef void (*ble_ss_evt_auth_read_handler_t) (ble_ss_t * p_ss, ble_gatts_evt_read_t * p_evt_read);
+
 
 /**@brief Sensor Service init structure. This contains all options and data needed for
  *        initialization of the service.*/
 typedef struct
 {
-    ble_ss_evt_handler_t          evt_handler;                    /**< Event handler to be called for handling events in the Sensor Service. */
-    bool                          support_notification;           /**< TRUE if notification of Sensor Level measurement is supported. */
-    ble_srv_report_ref_t *        p_report_ref;                   /**< If not NULL, a Report Reference descriptor with the specified value will be added to the Sensor Level characteristic */
-    uint32_t                      initial_value;                  /**< Initial sensor value */
-    ble_srv_cccd_security_mode_t  sensor_value_char_attr_md;      /**< Initial security level for sensor characteristics attribute */
-    ble_gap_conn_sec_mode_t       sensor_value_report_read_perm;  /**< Initial security level for sensor report read attribute */
+    ble_ss_evt_write_handler_t      evt_write_handler;              /**< Event handler to be called for handling write events. */
+    ble_ss_evt_auth_write_handler_t evt_auth_write_handler;         /**< Event handler to be called for handling auth write events. */
+    ble_ss_evt_auth_read_handler_t  evt_auth_read_handler;          /**< Event handler to be called for handling auth read events. */
+    bool                            support_notification;           /**< TRUE if notification of Sensor Level measurement is supported. */
+    ble_srv_report_ref_t *          p_report_ref;                   /**< If not NULL, a Report Reference descriptor with the specified value will be added to the Sensor Level characteristic */
+    uint32_t                        initial_value;                  /**< Initial sensor value */
+    ble_srv_cccd_security_mode_t    sensor_value_char_attr_md;      /**< Initial security level for sensor characteristics attribute */
+    ble_gap_conn_sec_mode_t         sensor_value_report_read_perm;  /**< Initial security level for sensor report read attribute */
 } ble_ss_init_t;
 
 /**@brief Sensor Service structure. This contains various status information for the service. */
 typedef struct ble_ss_s
 {
-    ble_ss_evt_handler_t          evt_handler;                    /**< Event handler to be called for handling events in the Sensor Service. */
-    uint16_t                      service_handle;                 /**< Handle of Sensor Service (as provided by the BLE stack). */
-    ble_gatts_char_handles_t      sensor_value_handles;           /**< Handles related to the Sensor Level characteristic. */
-    uint16_t                      report_ref_handle;              /**< Handle of the Report Reference descriptor. */
-    uint32_t                      sensor_value_last;              /**< Last Sensor Level measurement passed to the Sensor Service. */
-    uint16_t                      conn_handle;                    /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
-    bool                          is_notification_supported;      /**< TRUE if notification of Sensor Level is supported. */
+    ble_ss_evt_write_handler_t      evt_write_handler;              /**< Event handler to be called for handling write events. */
+    ble_ss_evt_auth_write_handler_t evt_auth_write_handler;         /**< Event handler to be called for handling auth write events. */
+    ble_ss_evt_auth_read_handler_t  evt_auth_read_handler;          /**< Event handler to be called for handling auth read events. */
+    uint16_t                        service_handle;                 /**< Handle of Sensor Service (as provided by the BLE stack). */
+    ble_gatts_char_handles_t        sensor_value_handles;           /**< Handles related to the Sensor Level characteristic. */
+    uint16_t                        report_ref_handle;              /**< Handle of the Report Reference descriptor. */
+    uint32_t                        sensor_value_last;              /**< Last Sensor Level measurement passed to the Sensor Service. */
+    uint16_t                        conn_handle;                    /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
+    bool                            is_notification_supported;      /**< TRUE if notification of Sensor Level is supported. */
 } ble_ss_t;
 
 /**@brief Function for initializing the Sensor Service.
