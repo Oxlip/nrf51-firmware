@@ -8,6 +8,8 @@
 
 #include <board_conf.h>
 #include <board_export.h>
+#include "simple_uart.h"
+#include "boards.h"
 
 #include "platform.h"
 
@@ -70,19 +72,64 @@ static void power_manage(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Implement _write() std library function.
+ *        This is needed for printf().
+ */
+int _write(int fd, const char * str, int len) __attribute__ ((used));
+int _write(int fd, const char * str, int len)
+{
+#ifdef DEBUG
+    for (int i = 0; i < len; i++)
+    {
+        simple_uart_put(str[i]);
+    }
+#endif
+    return len;
+}
+
+
+/**@brief Implement puts() std library function.
+ *        This is needed for printf()(which calls puts() if no argument is passed).
+ */
+int puts(const char *str)
+{
+#ifdef DEBUG
+    return _write(0, str, __builtin_strlen(str));
+#else
+    return 0;
+#endif
+}
+
+int fputc(int ch, FILE * p_file) 
+{
+    simple_uart_put((uint8_t)ch);
+    return 0;
+}
+
+/**@brief Initialize debug functionality.
+ */
+static void debug_init(void)
+{
+#ifdef DEBUG
+    simple_uart_config(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, false);
+    printf("Firmware Date: %s %s\n", __DATE__, __TIME__);
+#endif
+}
+
+
 /**@brief Function for application main entry.
  */
 int main(void)
 {
-    // Initialize
+    debug_init();
+
+    // Initialize different SOC parts.
     timers_init();
     gpiote_init();
     leds_init();
 
     ble_init();
-    
     scheduler_init();
-
     ble_late_init();
 
     // Start execution

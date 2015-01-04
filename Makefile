@@ -17,7 +17,8 @@ SDK_SRCS =  app_gpiote.c \
             ble_srv_common.c \
             softdevice_handler.c \
             ble_debug_assert_handler.c \
-            ble_error_log.c
+            ble_error_log.c \
+            simple_uart.c
 
 # Common platform files
 COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c
@@ -26,6 +27,8 @@ APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 
 # Gdb infos
 GDB_PORT_NUMBER = 2331
+
+LDFLAGS 			+= --specs=nano.specs -u _printf_float
 
 # Enable all warnings and treat warnings as error.
 CFLAGS          += -Werror -Wall
