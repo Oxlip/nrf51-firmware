@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include <nrf_gpio.h>
 #include <ble.h>
 #include <app_util.h>
@@ -10,7 +11,7 @@
 #include "board_conf.h"
 
 ble_ss_t dimmer_ss;
-ble_ss_t current_ss;
+ble_ss_t cs_ss;
 
 /** UUIDs to advertise. */
 ble_uuid_t adv_uuids[] = {
@@ -32,13 +33,14 @@ ble_uuid_t * ble_get_adv_uuid_array()
 void device_on_ble_evt(ble_evt_t * p_ble_evt)
 {
     ble_ss_on_ble_evt(&dimmer_ss, p_ble_evt);
-    ble_ss_on_ble_evt(&current_ss, p_ble_evt);
+    ble_ss_on_ble_evt(&cs_ss, p_ble_evt);
 }
 
 
 static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write) 
 {
-    
+    nrf_gpio_pin_set(19);
+    printf("BLE Wrote dim %d %d\n\r", p_evt_write->data[0], p_evt_write->data[1]);
     if (p_evt_write->len == 0)
     {
         return;
@@ -46,11 +48,11 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
 
     if (p_evt_write->data[1] == 0)
     {
-        nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+        nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
     }
     else
     {
-        nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+        nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
     }
 }
 
@@ -98,7 +100,7 @@ uint32_t services_init(void)
 
     BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
     BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);
-    err_code = ble_ss_init(&dimmer_ss, &ble_service_uuid, &ble_char_uuid, &cs_param);
+    err_code = ble_ss_init(&cs_ss, &ble_service_uuid, &ble_char_uuid, &cs_param);
     APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;

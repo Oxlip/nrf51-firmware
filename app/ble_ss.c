@@ -16,13 +16,14 @@
  *   Sensor Service module based on Nordic's Sensor Service module.
  */
 
-#include <ble_ss.h>
+#include <stdio.h>
 #include <string.h>
 #include <nordic_common.h>
 #include <ble_srv_common.h>
 #include <app_util.h>
 #include <ble_uuids.h>
 
+#include "ble_ss.h"
 
 #define INVALID_SENSOR_VALUE -1
 
@@ -93,49 +94,36 @@ static void on_rw_authorize_request(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
     uint16_t handle;
     uint8_t  is_write;
 
-    ble_gatts_rw_authorize_reply_params_t write_authorize_reply;
-    write_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
-    write_authorize_reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
-    sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &write_authorize_reply);
-
     p_authorize_request = &(p_ble_evt->evt.gatts_evt.params.authorize_request);
 
     if (p_authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
     {
-        handle = p_authorize_request->request.write.handle;
+        handle = p_authorize_request->request.write.context.srvc_handle;
         is_write = 1;
-        ble_gatts_rw_authorize_reply_params_t write_authorize_reply;
-    
-        write_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
-        write_authorize_reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
-        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &write_authorize_reply);
-
     } else if (p_authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_READ)
     {
         handle = p_authorize_request->request.read.handle;
-        is_write = 0;
-        ble_gatts_rw_authorize_reply_params_t read_authorize_reply;
-    
-        read_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
-        read_authorize_reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
-        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &read_authorize_reply);
-
+        is_write = 0;     
     } else
     {
         return;
     }
 
-    if (handle != p_ss->sensor_value_handles.cccd_handle)
+    if (handle != p_ss->service_handle)
     {
         return;
     }
-
+    
     if (is_write)
     {
         if (p_ss->evt_auth_write_handler) 
         {
             p_ss->evt_auth_write_handler(p_ss, &p_authorize_request->request.write);
         }
+        ble_gatts_rw_authorize_reply_params_t write_authorize_reply;
+        write_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
+        write_authorize_reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
+        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &write_authorize_reply);
     }
     else
     {
@@ -143,6 +131,11 @@ static void on_rw_authorize_request(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
         {
             p_ss->evt_auth_read_handler(p_ss, &p_authorize_request->request.read);
         }
+        ble_gatts_rw_authorize_reply_params_t read_authorize_reply;
+        read_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_READ;
+        read_authorize_reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
+        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &read_authorize_reply);
+
     }
 }
 
@@ -206,6 +199,7 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
     memset(&char_md, 0, sizeof(char_md));
 
     char_md.char_props.read   = 1;
+    char_md.char_props.write  = 1;
     char_md.char_props.notify = (p_ss->is_notification_supported) ? 1 : 0;
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
@@ -218,8 +212,12 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
     attr_md.read_perm  = p_ss_init->sensor_value_char_attr_md.read_perm;
     attr_md.write_perm = p_ss_init->sensor_value_char_attr_md.write_perm;
     attr_md.vloc       = BLE_GATTS_VLOC_STACK;
-    attr_md.rd_auth    = 0;
-    attr_md.wr_auth    = 0;
+    if (p_ss->evt_auth_read_handler) {
+        attr_md.rd_auth = 1;
+    }
+    if (p_ss->evt_auth_write_handler) {
+        attr_md.wr_auth = 1;
+    }
     attr_md.vlen       = 0;
 
     initial_sensor_value = p_ss_init->initial_value;
