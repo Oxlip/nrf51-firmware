@@ -140,18 +140,34 @@ Reset_Handler:
  *      __etext: End of code section, i.e., begin of data sections to copy from.
  *      __data_start__/__data_end__: RAM address range that data should be
  *      copied to. Both must be aligned to 4 bytes boundary.  */
+
+    ldr    r1, =__bss_start__
+    ldr    r2, =__bss_end__
+
+    subs   r2, r1
+    ble    .bss_copy_zero_loop_end
+
+    movs   r4, 0
+    movs   r0, 0
+.bss_copy_zero_loop:
+    str    r0, [r1, r4]
+    adds   r4, 4
+    cmp    r4, r2
+    blt    .bss_copy_zero_loop
+.bss_copy_zero_loop_end:
+
     ldr    r1, =__etext
     ldr    r2, =__data_start__
     ldr    r3, =__data_end__
 
-    subs    r3, r2
+    subs   r3, r2
     ble    .flash_to_ram_loop_end
 
-    movs    r4, 0
+    movs   r4, 0
 .flash_to_ram_loop:
     ldr    r0, [r1,r4]
     str    r0, [r2,r4]
-    adds    r4, 4
+    adds   r4, 4
     cmp    r4, r3
     blt    .flash_to_ram_loop
 .flash_to_ram_loop_end:

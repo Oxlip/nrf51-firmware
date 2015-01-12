@@ -16,13 +16,14 @@
  *   Sensor Service module based on Nordic's Sensor Service module.
  */
 
-#include <ble_ss.h>
+#include <stdio.h>
 #include <string.h>
 #include <nordic_common.h>
 #include <ble_srv_common.h>
 #include <app_util.h>
 #include <ble_uuids.h>
 
+#include "ble_ss.h"
 
 #define INVALID_SENSOR_VALUE -1
 
@@ -68,7 +69,7 @@ static void on_write(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
            )
         {
             // CCCD written, call application event handler
-            if (p_ss->evt_handler != NULL)
+            if (p_ss->evt_write_handler != NULL)
             {
                 ble_ss_evt_t evt;
 
@@ -81,9 +82,60 @@ static void on_write(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
                     evt.evt_type = BLE_SS_EVT_NOTIFICATION_DISABLED;
                 }
 
-                p_ss->evt_handler(p_ss, p_evt_write, &evt);
+                p_ss->evt_write_handler(p_ss, p_evt_write, &evt);
             }
         }
+    }
+}
+
+static void on_rw_authorize_request(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
+{
+    ble_gatts_evt_rw_authorize_request_t * p_authorize_request;
+    uint16_t handle;
+    uint8_t  is_write;
+
+    p_authorize_request = &(p_ble_evt->evt.gatts_evt.params.authorize_request);
+
+    if (p_authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
+    {
+        handle = p_authorize_request->request.write.context.srvc_handle;
+        is_write = 1;
+    } else if (p_authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_READ)
+    {
+        handle = p_authorize_request->request.read.handle;
+        is_write = 0;     
+    } else
+    {
+        return;
+    }
+
+    if (handle != p_ss->service_handle)
+    {
+        return;
+    }
+    
+    if (is_write)
+    {
+        if (p_ss->evt_auth_write_handler) 
+        {
+            p_ss->evt_auth_write_handler(p_ss, &p_authorize_request->request.write);
+        }
+        ble_gatts_rw_authorize_reply_params_t write_authorize_reply;
+        write_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_WRITE;
+        write_authorize_reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
+        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &write_authorize_reply);
+    }
+    else
+    {
+        if (p_ss->evt_auth_read_handler)
+        {
+            p_ss->evt_auth_read_handler(p_ss, &p_authorize_request->request.read);
+        }
+        ble_gatts_rw_authorize_reply_params_t read_authorize_reply;
+        read_authorize_reply.type = BLE_GATTS_AUTHORIZE_TYPE_READ;
+        read_authorize_reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
+        sd_ble_gatts_rw_authorize_reply(p_ss->conn_handle, &read_authorize_reply);
+
     }
 }
 
@@ -102,6 +154,10 @@ void ble_ss_on_ble_evt(ble_ss_t * p_ss, ble_evt_t * p_ble_evt)
 
         case BLE_GATTS_EVT_WRITE:
             on_write(p_ss, p_ble_evt);
+            break;
+
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+            on_rw_authorize_request(p_ss, p_ble_evt);
             break;
 
         default:
@@ -143,6 +199,7 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
     memset(&char_md, 0, sizeof(char_md));
 
     char_md.char_props.read   = 1;
+    char_md.char_props.write  = 1;
     char_md.char_props.notify = (p_ss->is_notification_supported) ? 1 : 0;
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
@@ -155,8 +212,12 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
     attr_md.read_perm  = p_ss_init->sensor_value_char_attr_md.read_perm;
     attr_md.write_perm = p_ss_init->sensor_value_char_attr_md.write_perm;
     attr_md.vloc       = BLE_GATTS_VLOC_STACK;
-    attr_md.rd_auth    = 0;
-    attr_md.wr_auth    = 0;
+    if (p_ss->evt_auth_read_handler) {
+        attr_md.rd_auth = 1;
+    }
+    if (p_ss->evt_auth_write_handler) {
+        attr_md.wr_auth = 1;
+    }
     attr_md.vlen       = 0;
 
     initial_sensor_value = p_ss_init->initial_value;
@@ -222,24 +283,26 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
 }
 
 
-uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, const ble_ss_init_t * p_ss_init)
+uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_service_ble_uuid, ble_uuid_t * p_char_ble_uuid, const ble_ss_init_t * p_ss_init)
 {
     uint32_t   err_code;
 
     // Initialize service structure
-    p_ss->evt_handler               = p_ss_init->evt_handler;
+    p_ss->evt_write_handler         = p_ss_init->evt_write_handler;
+    p_ss->evt_auth_write_handler    = p_ss_init->evt_auth_write_handler;
+    p_ss->evt_auth_read_handler     = p_ss_init->evt_auth_read_handler;
     p_ss->conn_handle               = BLE_CONN_HANDLE_INVALID;
     p_ss->is_notification_supported = p_ss_init->support_notification;
     p_ss->sensor_value_last         = INVALID_SENSOR_VALUE;
 
-    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, p_ble_uuid, &p_ss->service_handle);
+    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, p_service_ble_uuid, &p_ss->service_handle);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
     }
 
     // Add sensor value characteristic
-    return sensor_value_char_add(p_ss, p_ble_uuid, p_ss_init);
+    return sensor_value_char_add(p_ss, p_char_ble_uuid, p_ss_init);
 }
 
 

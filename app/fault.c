@@ -23,6 +23,7 @@
 void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name)
 {
     static volatile int recursive_error = 0;
+    while(1);
 
     nrf_gpio_pin_set(ASSERT_LED_PIN_NO);
 
