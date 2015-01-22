@@ -21,4 +21,6 @@ $(firstword $(MAKECMDGOALS)):
 
 endif
 
+default:
+	make -f Makefile
 
