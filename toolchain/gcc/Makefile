@@ -18,6 +18,9 @@ CMSIS_INCLUDE_PATH += $(SDK_PATH)Include/gcc
 LIBRARY_PATHS += ../ $(SDK_INCLUDE_PATH) $(SDK_INCLUDE_PATH)sdk/
 SOURCE_PATHS += ../ $(SDK_SOURCE_PATH) $(TEMPLATE_PATH) $(wildcard $(SDK_SOURCE_PATH)*/)
 
+ifneq ($(strip $(BOARD_TYPE)),)
+    CFLAGS += -D$(BOARD_TYPE)
+endif
 ifeq ($(USE_SOFTDEVICE), s110)
     USE_BLE = 1
 endif
