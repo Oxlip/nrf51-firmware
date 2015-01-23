@@ -22,14 +22,15 @@ __attribute__ ((section(".bootloaderSettings"))) uint8_t m_boot_settings[1024] ;
 __attribute__ ((section(".uicrBootStartAddress"))) uint32_t m_uicr_bootloader_start_address = BOOTLOADER_REGION_START;
 const bootloader_settings_t const * const mp_bootloader_settings = (bootloader_settings_t *) &m_boot_settings[0];   /**< Read only pointer to bootloader settings in flash. */
 
-
 static inline void StartApplication(uint32_t start_addr)
 {
-    __asm volatile("LDR   R2, [R0]\t\n"
+    __asm volatile(
+          "MOV   R0, %0\t\n"
+          "LDR   R2, [R0]\t\n"
           "MSR   MSP, R2\t\n"
           "LDR   R3, [R0, #0x00000004]\t\n"
           "BX    R3\t\n"
-          ".ALIGN\t\n");
+          ".ALIGN\t\n" :: "r" (start_addr));
 }
 #endif
 

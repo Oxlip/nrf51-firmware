@@ -25,7 +25,7 @@
 #define PKT_START_DFU_PARAM_LEN 2                                               /**< Length (in bytes) of the parameters for Packet Start DFU Request. */
 #define PKT_RCPT_NOTIF_REQ_LEN  3                                               /**< Length (in bytes) of the Packet Receipt Notification Request. */
 #define MAX_PKTS_RCPT_NOTIF_LEN 6                                               /**< Maximum length (in bytes) of the Packets Receipt Notification. */
-#define MAX_RESPONSE_LEN        7                                               /**< Maximum length (in bytes) of the response to a Control Point command. */
+#define MAX_RESPONSE_LEN        20                                               /**< Maximum length (in bytes) of the response to a Control Point command. */
 #define MAX_NOTIF_BUFFER_LEN    MAX(MAX_PKTS_RCPT_NOTIF_LEN, MAX_RESPONSE_LEN)  /**< Maximum length (in bytes) of the buffer needed by DFU Service while sending notifications to peer. */
 
 enum
@@ -314,6 +314,10 @@ static uint32_t on_ctrl_pt_write(ble_dfu_t * p_dfu, ble_gatts_evt_write_t * p_bl
             p_dfu->evt_handler(p_dfu, &ble_dfu_evt);
             break;
 
+        case OP_CODE_INFOS_SW_REQ:
+            ble_dfu_evt.ble_dfu_evt_type = BLE_DFU_INFOS_SW_SEND;
+
+            p_dfu->evt_handler(p_dfu, &ble_dfu_evt);
         default:
             // Unsupported op code.
             return ble_dfu_response_send(p_dfu,
