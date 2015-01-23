@@ -314,10 +314,6 @@ static uint32_t on_ctrl_pt_write(ble_dfu_t * p_dfu, ble_gatts_evt_write_t * p_bl
             p_dfu->evt_handler(p_dfu, &ble_dfu_evt);
             break;
 
-        case OP_CODE_INFOS_SW_REQ:
-            ble_dfu_evt.ble_dfu_evt_type = BLE_DFU_INFOS_SW_SEND;
-
-            p_dfu->evt_handler(p_dfu, &ble_dfu_evt);
         default:
             // Unsupported op code.
             return ble_dfu_response_send(p_dfu,
