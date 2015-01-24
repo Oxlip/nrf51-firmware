@@ -21,14 +21,14 @@
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 #define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)
 
-#ifdef PLATFORM_AURA_V2
+#ifdef PLATFORM_AURA_DEV1
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          20
 /**< Is on when device has connected. */
 #define CONNECTED_LED_PIN_NO            21
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               22
-#else /* PLATFORM_AURA_V2 */
+#else /* PLATFORM_AURA_DEV1 */
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          18
 /**< Is on when device has connected. */
