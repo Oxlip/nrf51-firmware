@@ -76,7 +76,7 @@
 /**< Button used to turn on/off the attached device. */
 #define POWER_BUTTON_PIN                3
 /**< Button used to turn on/off Aura LEDs. */
-#define AURA_TOUCH_BUTTON               20
+#define AURA_TOUCH_BUTTON               2
 
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          18
@@ -85,8 +85,13 @@
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               20
 /**< Glow LED when Touch button is pressed. */
-#define AURA_TOUCH_LED                  24
+#define AURA_TOUCHLIGHT_LED             4
 #endif
+
+/* LED Mappings from Schematic */
+#define AURA_LED_GREEN                  0
+#define AURA_LED_BLUE                   1
+#define AURA_LED_RED                    2
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 #define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)
