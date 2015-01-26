@@ -8,6 +8,7 @@ LIBRARY_PATHS   += $(MAKEFILE_DIR)/app/include
 
 # SDK files needed for all the devices
 SDK_SRCS =  app_gpiote.c \
+            app_button.c \
             app_timer.c \
             app_scheduler.c \
             ble_advdata.c \

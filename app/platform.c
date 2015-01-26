@@ -12,6 +12,7 @@
 #include "boards.h"
 
 #include "platform.h"
+#include "app_button.h"
 
 /* BLE init routines from ble_common.c */
 void ble_init(void);
@@ -26,10 +27,12 @@ static void leds_init(void)
     nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
     nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
     nrf_gpio_cfg_output(ASSERT_LED_PIN_NO);
+    nrf_gpio_cfg_output(AURA_TOUCH_LED);
 
     nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
     nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
     nrf_gpio_pin_clear(ASSERT_LED_PIN_NO);
+    nrf_gpio_pin_clear(AURA_TOUCH_LED);
 }
 
 /**@brief Function for the Timer initialization.
@@ -55,6 +58,53 @@ static void scheduler_init(void)
 static void gpiote_init(void)
 {
     APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
+}
+
+/**@brief Function for handling button events.
+ *
+ * @param[in]   pin_no   The pin number of the button pressed.
+ */
+static void button_event_handler(uint8_t pin_no, uint8_t button_action)
+{
+    static int led = 0;
+    if (button_action == APP_BUTTON_PUSH)
+    {
+        switch (pin_no)
+        {
+            case AURA_TOUCH_BUTTON:
+                /* Do the actual button press handling here. */
+                /* For now just turn on an LED */
+                if (led) {
+                    nrf_gpio_pin_clear(AURA_TOUCH_LED);
+                    led = 0;
+                } else {
+                    nrf_gpio_pin_set(AURA_TOUCH_LED);
+                    led = 1;
+                }
+                break;
+
+            default:
+                APP_ERROR_HANDLER(pin_no);
+        }
+    }
+}
+
+
+/**@brief Function for initializing the button handler module.
+ */
+static void buttons_init(void)
+{
+    uint32_t err_code;
+    static app_button_cfg_t buttons[] =
+    {
+        {AURA_TOUCH_BUTTON, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, button_event_handler},
+    };
+
+    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, false);
+
+    // Start handling button presses immediately.
+    err_code = app_button_enable();
+    APP_ERROR_CHECK(err_code);
 }
 
 /**@brief Function to start timers.
@@ -127,6 +177,7 @@ int main(void)
     timers_init();
     gpiote_init();
     leds_init();
+    buttons_init();
 
     ble_init();
     scheduler_init();
@@ -138,6 +189,7 @@ int main(void)
     // Enter main loop
     for (;;)
     {
+        app_sched_execute();
         power_manage();
     }
 }
