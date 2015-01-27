@@ -9,6 +9,7 @@
 #include <ble_ss.h>
 #include <ble_common.h>
 #include "board_conf.h"
+#include "smbus.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
@@ -62,7 +63,10 @@ uint32_t services_init(void)
     ble_uuid_t ble_service_uuid;
     ble_uuid_t ble_char_uuid;
     ble_ss_init_t dimmer_param, cs_param;
-    
+
+    // Test I2C bus
+    scan_bus();
+
     // Initialize Dimmer Service.
     memset(&dimmer_param, 0, sizeof(dimmer_param));
 
