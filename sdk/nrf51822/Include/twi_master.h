@@ -95,5 +95,12 @@ bool twi_master_transfer(uint8_t address, uint8_t *data, uint8_t data_length, bo
  *@}
  **/
 
+uint8_t
+i2c_smb_read(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data);
+
+uint8_t
+i2c_smb_write(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data);
+
+
 /*lint --flb "Leave library region" */
 #endif //TWI_MASTER_H

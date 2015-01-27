@@ -489,4 +489,77 @@ static bool twi_master_wait_while_scl_low(void)
     return true;
 }
 
+/*
+  1. Send a start sequence
+  2. Send slave address(write)
+  3. Send register offset
+  4. Send a start sequence again (repeated start)
+  5. Send slave address | 1(read)
+  6. Read data byte
+  7. Send the stop sequence.
+ */
+uint8_t
+i2c_smb_read(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)
+{
+  bool succeed = false;
+
+  *data = 0;
+  slave_address = slave_address & ~TWI_READ_BIT;
+
+  /* Start condition */
+  succeed &= twi_master_issue_startcondition();
+
+  /* Set slave address */
+  succeed &= twi_master_clock_byte(slave_address);
+
+  /* Set the command */
+  succeed &= twi_master_clock_byte(offset);
+
+  /* Start condition */
+  succeed &= twi_master_issue_startcondition();
+
+  /* Set slave address for reading */
+  succeed &= twi_master_clock_byte(slave_address | TWI_READ_BIT);
+
+  if (word) {
+    succeed &= twi_master_clock_byte_in(data, true);
+    data++;
+  }
+  /* Read data from slave and send nack */
+  succeed &= twi_master_clock_byte_in(data, false);
+
+  /* End of transfert */
+  succeed &= twi_master_issue_stopcondition();
+
+  return 0;
+}
+uint8_t
+i2c_smb_write(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)
+{
+  bool succeed = false;
+
+  slave_address = slave_address & ~TWI_READ_BIT;
+
+  /* Start condition */
+  succeed &= twi_master_issue_startcondition();
+
+  /* Set slave address */
+  succeed &= twi_master_clock_byte(slave_address);
+
+  /* Set the command */
+  succeed &= twi_master_clock_byte(offset);
+
+  if (word) {
+    succeed &= twi_master_clock_byte(*data);
+    data++;
+  }
+  /* Read data from slave and send nack */
+  succeed &= twi_master_clock_byte(*data);
+
+  /* End of transfert */
+  succeed &= twi_master_issue_stopcondition();
+
+  return succeed;
+}
+
 /*lint --flb "Leave library region" */

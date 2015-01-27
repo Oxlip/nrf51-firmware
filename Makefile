@@ -22,7 +22,7 @@ SDK_SRCS =  app_gpiote.c \
             twi_sw_master.c
 
 # Common platform files
-COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c
+COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c smbus.c
 
 APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 
