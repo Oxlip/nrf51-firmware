@@ -18,6 +18,13 @@
 #include "platform.h"
 #include "ble_common.h"
 
+#include <ble_hci.h>
+#include <ble_dfu.h>
+#include <dfu_app_handler.h>
+
+/**< DFU Support */
+static ble_dfu_t m_dfus;
+
 /**< UUID type registered with the SDK */
 uint8_t astral_uuid_type = BLE_UUID_TYPE_UNKNOWN;
 
@@ -240,6 +247,7 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
     device_on_ble_evt(p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
+    ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);
     on_ble_evt(p_ble_evt);
 }
 
@@ -294,6 +302,60 @@ static void uuid_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+static void advertising_stop(void)
+{
+    uint32_t err_code;
+
+    err_code = sd_ble_gap_adv_stop();
+    APP_ERROR_CHECK(err_code);
+
+    nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+}
+
+static void reset_prepare(void)
+{
+    uint32_t err_code;
+
+    if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
+    {
+        // Disconnect from peer.
+        err_code = sd_ble_gap_disconnect(m_conn_handle,
+                                         BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+        APP_ERROR_CHECK(err_code);
+    } else {
+       // If not connected, then the device will be advertising.
+       advertising_stop();
+    }
+
+    nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+    nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
+
+    err_code = ble_conn_params_stop();
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Generic dfu support for the app.
+ *
+ */
+static void dfu_init(void)
+{
+    uint32_t err_code;
+    ble_dfu_init_t dfus_init;
+
+    /*
+     * service_error_handler - Not used as only the switch from app
+     * to DFU mode is required and not full dfu service.
+     */
+    memset(&dfus_init, 0, sizeof(dfus_init));
+    dfus_init.evt_handler = dfu_app_on_dfu_evt;
+    dfus_init.error_handler = NULL;
+
+    err_code = ble_dfu_init(&m_dfus, &dfus_init);
+    APP_ERROR_CHECK(err_code);
+
+    dfu_app_reset_prepare_set(reset_prepare);
+}
+
 /**@brief Function for initializing the BLE stack.
  *
  * @details Initializes the SoftDevice and the BLE event interrupt.
@@ -336,6 +398,7 @@ void ble_init()
  */
 void ble_late_init()
 {
+    dfu_init();
     gap_params_init();
     uuid_init();
     services_init();
