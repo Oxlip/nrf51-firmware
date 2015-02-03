@@ -881,8 +881,6 @@ uint32_t app_timer_init(uint32_t                      prescaler,
 {
     int i;
 
-    printf("APP timer init: %u, max_timers %d, queue_size %d", (unsigned int) prescaler,
-            max_timers, op_queues_size);
     // Check that buffer is correctly aligned.
     if (!is_word_aligned(p_buffer))
     {

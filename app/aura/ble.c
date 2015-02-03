@@ -49,13 +49,11 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
 
     if (p_evt_write->data[1] == 0)
     {
-        nrf_gpio_pin_clear(AURA_TOUCH_LED);
-        nrf_gpio_pin_clear(AURA_TRIAC_ENABLE);
+        nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
     }
     else
     {
-        nrf_gpio_pin_set(AURA_TOUCH_LED);
-        nrf_gpio_pin_clear(AURA_TRIAC_ENABLE);
+        nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
     }
 }
 

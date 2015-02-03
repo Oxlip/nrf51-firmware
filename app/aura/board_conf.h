@@ -35,8 +35,6 @@
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  21
 
-#define AURA_TRIAC_ENABLE               11
-
 #elif BOARD_AURA_DEV2
 /* BOARD_AURA_DEV2 */
 
@@ -62,7 +60,6 @@
 #define ASSERT_LED_PIN_NO               23
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  24
-#define AURA_TRIAC_ENABLE               11
 
 #else
 /* Aura Board - Proto 1 for now */
@@ -77,9 +74,9 @@
 /**< Button used to wake up the application. */
 #define WAKEUP_BUTTON_PIN               16
 /**< Button used to turn on/off the attached device. */
-#define POWER_BUTTON_PIN                5
+#define POWER_BUTTON_PIN                3
 /**< Button used to turn on/off Aura LEDs. */
-#define AURA_TOUCH_BUTTON               3
+#define AURA_TOUCH_BUTTON               2
 
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          18
@@ -88,8 +85,7 @@
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               20
 /**< Glow LED when Touch button is pressed. */
-#define AURA_TOUCH_LED                  4
-#define AURA_TRIAC_ENABLE               11
+#define AURA_TOUCHLIGHT_LED             4
 #endif
 
 /* LED Mappings from Schematic */
