@@ -5,6 +5,8 @@
 #ifndef __BOARD_CONF__
 #define __BOARD_CONF__
 
+#define DEVICE_FW_REVISION_ID           "0.1 "__DATE__" "__TIME__
+
 #ifdef BOARD_AURA_DEV1
 
 /* BOARD_AURA_DEV1 */
@@ -12,7 +14,6 @@
 /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                     "Aura NRF51422"
 #define DEVICE_HW_REVISION_ID           "0.1"
-#define DEVICE_FW_REVISION_ID           "0.1"
 
 /**< Button used for deleting all stored bond information. */
 #define BOND_DELETE_ALL_BUTTON_ID       15
@@ -43,7 +44,6 @@
 /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                     "Aura NRF51822"
 #define DEVICE_HW_REVISION_ID           "0.1"
-#define DEVICE_FW_REVISION_ID           "0.1"
 
 /**< Button used for deleting all stored bond information. */
 #define BOND_DELETE_ALL_BUTTON_ID       17
@@ -70,7 +70,6 @@
 /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                     "Aura"
 #define DEVICE_HW_REVISION_ID           "0.1"
-#define DEVICE_FW_REVISION_ID           "0.1"
 
 /**< Button used for deleting all stored bond information. */
 #define BOND_DELETE_ALL_BUTTON_ID       15
