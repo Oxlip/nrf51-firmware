@@ -935,6 +935,8 @@ uint32_t app_timer_init(uint32_t                      prescaler,
 {
     int i;
 
+    printf("%s: APP timer init: %u, max_timers %d, queue_size %d\n",
+            __FUNCTION__, (unsigned int) prescaler, max_timers, op_queues_size);
     // Check that buffer is correctly aligned
     if (!is_word_aligned(p_buffer))
     {
@@ -1007,6 +1009,7 @@ uint32_t app_timer_create(app_timer_id_t *            p_timer_id,
 {
     int i;
 
+    printf("%s: \n", __FUNCTION__);
     // Check state and parameters
     if (mp_nodes == NULL)
     {
@@ -1072,6 +1075,7 @@ uint32_t app_timer_start(app_timer_id_t timer_id, uint32_t timeout_ticks, void *
 {
     uint32_t timeout_periodic;
     
+    printf("%s: \n", __FUNCTION__);
     // Check state and parameters
     if (mp_nodes == NULL)
     {
