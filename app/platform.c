@@ -180,8 +180,6 @@ int main(void)
     leds_init();
     buttons_init();
 
-    blink_led(CONNECTED_LED_PIN_NO, 100, 100, 2);
-
     ble_init();
     scheduler_init();
     ble_late_init();

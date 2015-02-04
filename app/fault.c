@@ -26,13 +26,13 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
 {
     static volatile int recursive_error = 0;
 
-    blink_led(ASSERT_LED_PIN_NO, 100, 500, -1);
-
     // on recursive panic/assert, just reset the device.
     if(recursive_error) {
         NVIC_SystemReset();
     }
     recursive_error++;
+
+    blink_led(ASSERT_LED_PIN_NO, 200, 200, -1);
 
 #ifdef DEBUG
     // This call can be used for debug purposes during application development.
