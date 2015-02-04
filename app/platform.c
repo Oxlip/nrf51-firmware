@@ -13,6 +13,7 @@
 
 #include "platform.h"
 #include "app_button.h"
+#include "common.h"
 
 /* BLE init routines from ble_common.c */
 void ble_init(void);
@@ -178,6 +179,8 @@ int main(void)
     gpiote_init();
     leds_init();
     buttons_init();
+
+    blink_led(CONNECTED_LED_PIN_NO, 100, 100, 2);
 
     ble_init();
     scheduler_init();

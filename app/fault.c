@@ -2,7 +2,9 @@
 #include <common.h>
 #include <nrf_gpio.h>
 #include <board_conf.h>
+#include <common.h>
 #include <ble_debug_assert_handler.h>
+
 
 /**
  * Common fault/error handling module.
@@ -23,9 +25,8 @@
 void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name)
 {
     static volatile int recursive_error = 0;
-    while(1);
 
-    nrf_gpio_pin_set(ASSERT_LED_PIN_NO);
+    blink_led(ASSERT_LED_PIN_NO, 100, 500, -1);
 
     // on recursive panic/assert, just reset the device.
     if(recursive_error) {

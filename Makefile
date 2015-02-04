@@ -10,6 +10,7 @@ LIBRARY_PATHS   += $(SDK_PATH)/Include/bootloader_dfu/
 SDK_SRCS =  app_gpiote.c \
             app_button.c \
             app_timer.c \
+            nrf_delay.c \
             app_scheduler.c \
             ble_advdata.c \
             ble_conn_params.c \
