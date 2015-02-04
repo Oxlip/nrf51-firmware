@@ -12,7 +12,7 @@
 /* BOARD_AURA_DEV1 */
 
 /**< Name of device. Will be included in the advertising data. */
-#define DEVICE_NAME                     "Aura NRF51422"
+#define DEVICE_NAME                     "Aura NRF51822"
 #define DEVICE_HW_REVISION_ID           "0.1"
 
 /**< Button used for deleting all stored bond information. */
@@ -42,7 +42,7 @@
 /* BOARD_AURA_DEV2 */
 
 /**< Name of device. Will be included in the advertising data. */
-#define DEVICE_NAME                     "Aura NRF51822"
+#define DEVICE_NAME                     "Aura NRF51422"
 #define DEVICE_HW_REVISION_ID           "0.1"
 
 /**< Button used for deleting all stored bond information. */
