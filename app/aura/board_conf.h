@@ -32,9 +32,9 @@
 /**< Is on when device has connected. */
 #define CONNECTED_LED_PIN_NO            19
 /**< Is on when application has asserted. */
-#define ASSERT_LED_PIN_NO               20
+#define ASSERT_LED_PIN_NO               18
 /**< Glow LED when Touch button is pressed. */
-#define AURA_TOUCH_LED                  21
+#define AURA_TOUCH_LED                  19
 
 #define AURA_TRIAC_ENABLE               11
 
@@ -81,11 +81,11 @@
 #define AURA_TOUCH_BUTTON               3
 
 /**< Is on when device is advertising. */
-#define ADVERTISING_LED_PIN_NO          18
+#define ADVERTISING_LED_PIN_NO          0
 /**< Is on when device has connected. */
-#define CONNECTED_LED_PIN_NO            19
+#define CONNECTED_LED_PIN_NO            1
 /**< Is on when application has asserted. */
-#define ASSERT_LED_PIN_NO               20
+#define ASSERT_LED_PIN_NO               2
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  4
 #define AURA_TRIAC_ENABLE               11
