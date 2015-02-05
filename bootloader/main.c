@@ -40,9 +40,8 @@
 #include <softdevice_handler.h>
 #include <pstorage_platform.h>
 #include <nrf_mbr.h>
-#include <simple_uart.h>
-
 #include "board_conf.h"
+#include <simple_uart.h>
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                                       /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
@@ -57,6 +56,50 @@
 #define SCHED_MAX_EVENT_DATA_SIZE       MAX(APP_TIMER_SCHED_EVT_SIZE, 0)                        /**< Maximum size of scheduler events. */
 
 #define SCHED_QUEUE_SIZE                20                                                      /**< Maximum number of events in the scheduler queue. */
+
+/**@brief Implement _write() std library function.
+ *        This is needed for printf().
+ */
+int _write(int fd, const char * str, int len) __attribute__ ((used));
+int _write(int fd, const char * str, int len)
+{
+#ifdef DEBUG
+    for (int i = 0; i < len; i++)
+    {
+        simple_uart_put(str[i]);
+    }
+#endif
+    return len;
+}
+
+
+/**@brief Implement puts() std library function.
+ *        This is needed for printf()(which calls puts() if no argument is passed).
+ */
+int puts(const char *str)
+{
+#ifdef DEBUG
+    return _write(0, str, __builtin_strlen(str));
+#else
+    return 0;
+#endif
+}
+
+int fputc(int ch, FILE * p_file)
+{
+    simple_uart_put((uint8_t)ch);
+    return 0;
+}
+
+/**@brief Initialize debug functionality.
+ */
+static void debug_init(void)
+{
+#ifdef DEBUG
+    simple_uart_config(UART_RTS_PIN_NUMBER, UART_TX_PIN_NUMBER, UART_CTS_PIN_NUMBER, UART_RX_PIN_NUMBER, false);
+    printf("Bootloader Date: %s %s\n", __DATE__, __TIME__);
+#endif
+}
 
 
 /**@brief Function for error handling, which is called when an error has occurred.
@@ -208,8 +251,10 @@ static void scheduler_init(void)
 int main(void)
 {
     uint32_t err_code;
-    bool     dfu_start = false;
+    bool     dfu_start = false, force_enter;
     bool     app_reset = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
+
+    debug_init();
 
     leds_init();
     leds_off();
@@ -243,9 +288,14 @@ int main(void)
         scheduler_init();
     }
 
-    dfu_start  = app_reset;
-    dfu_start |= ((nrf_gpio_pin_read(BOOTLOADER_BUTTON_PIN) == 0) ? true: false);
+    force_enter = ((nrf_gpio_pin_read(BOOTLOADER_BUTTON_PIN) == 0) ? true: false);
 
+    printf("dfu_start %d force_enter %d app valid %d app %lx\n", dfu_start, force_enter, bootloader_app_is_valid(DFU_BANK_0_REGION_START), DFU_BANK_0_REGION_START);
+
+    dfu_start  = app_reset;
+    dfu_start |= force_enter;
+
+    printf("dfu_start %d app valid %d\n", dfu_start, bootloader_app_is_valid(DFU_BANK_0_REGION_START));
 
     if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
     {
@@ -265,10 +315,12 @@ int main(void)
 
     if (bootloader_app_is_valid(DFU_BANK_0_REGION_START))
     {
+        printf("Launching app at %lx\n", DFU_BANK_0_REGION_START);
         // Select a bank region to use as application region.
         // @note: Only applications running from DFU_BANK_0_REGION_START is supported.
         bootloader_app_start(DFU_BANK_0_REGION_START);
     }
+    printf("Reset\n");
 
     NVIC_SystemReset();
 }

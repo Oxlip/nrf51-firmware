@@ -34,6 +34,7 @@ SDK_SRCS =  $(SDK_PATH)Source/ble/ble_services/ble_dfu.c \
             $(SDK_PATH)Source/ble/ble_advdata.c \
             $(SDK_PATH)Source/ble/ble_services/ble_srv_common.c \
             $(SDK_PATH)Source/ble/softdevice_handler.c \
+            $(SDK_PATH)Source/simple_uart/simple_uart.c \
             $(SDK_PATH)Source/bootloader_dfu/bootloader.c \
             $(SDK_PATH)Source/bootloader_dfu/dfu_dual_bank.c \
             $(SDK_PATH)Source/bootloader_dfu/dfu_transport_ble.c \
