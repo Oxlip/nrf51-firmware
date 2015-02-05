@@ -489,6 +489,28 @@ static bool twi_master_wait_while_scl_low(void)
     return true;
 }
 
+uint8_t
+i2c_smb_quick(uint8_t slave_address, bool read)
+{
+  bool succeed = false;
+
+  slave_address = slave_address << 1;
+  if (read) {
+    slave_address |= TWI_READ_BIT;
+  }
+
+  /* Start condition */
+  succeed &= twi_master_issue_startcondition();
+
+  /* Set slave address */
+  succeed &= twi_master_clock_byte(slave_address);
+
+  /* End of transfert */
+  succeed &= twi_master_issue_stopcondition();
+
+  return succeed;
+}
+
 /*
   1. Send a start sequence
   2. Send slave address(write)
@@ -504,7 +526,7 @@ i2c_smb_read(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)
   bool succeed = false;
 
   *data = 0;
-  slave_address = slave_address & ~TWI_READ_BIT;
+  slave_address = (slave_address << 1) & ~TWI_READ_BIT;
 
   /* Start condition */
   succeed &= twi_master_issue_startcondition();
@@ -538,7 +560,7 @@ i2c_smb_write(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)
 {
   bool succeed = false;
 
-  slave_address = slave_address & ~TWI_READ_BIT;
+  slave_address = (slave_address << 1) & ~TWI_READ_BIT;
 
   /* Start condition */
   succeed &= twi_master_issue_startcondition();
@@ -560,6 +582,14 @@ i2c_smb_write(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)
   succeed &= twi_master_issue_stopcondition();
 
   return succeed;
+}
+
+uint8_t
+i2c_smb_host_notify(uint8_t host_address, uint8_t device_address, uint16_t data)
+{
+  uint8_t *d = (uint8_t*)&data;
+
+  return i2c_smb_write(host_address, device_address, true, d);
 }
 
 /*lint --flb "Leave library region" */
