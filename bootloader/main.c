@@ -43,7 +43,7 @@
 #include "board_conf.h"
 #include <simple_uart.h>
 
-#define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                                       /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
+#define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                                       /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
 #define APP_GPIOTE_MAX_USERS            1                                                       /**< Number of GPIOTE users in total. Used by button module and dfu_transport_serial module (flow control). */
 
@@ -251,8 +251,10 @@ static void scheduler_init(void)
 int main(void)
 {
     uint32_t err_code;
-    bool     dfu_start = false, force_enter;
-    bool     app_reset = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
+    bool dfu_start = false;
+    bool force_dfu_start;
+    bool is_app_valid;
+    bool app_reset = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
 
     debug_init();
 
@@ -268,7 +270,8 @@ int main(void)
     timers_init();
     gpiote_init();
     buttons_init();
-    (void)bootloader_init();
+    err_code = bootloader_init();
+    APP_ERROR_CHECK(err_code);
 
     if (bootloader_dfu_sd_in_progress())
     {
@@ -288,39 +291,34 @@ int main(void)
         scheduler_init();
     }
 
-    force_enter = ((nrf_gpio_pin_read(BOOTLOADER_BUTTON_PIN) == 0) ? true: false);
-
-    printf("dfu_start %d force_enter %d app valid %d app %lx\n", dfu_start, force_enter, bootloader_app_is_valid(DFU_BANK_0_REGION_START), DFU_BANK_0_REGION_START);
-
     dfu_start  = app_reset;
-    dfu_start |= force_enter;
+    force_dfu_start = nrf_gpio_pin_read(BOOTLOADER_BUTTON_PIN) == 0;
+    is_app_valid = bootloader_app_is_valid(DFU_BANK_0_REGION_START);
 
-    printf("dfu_start %d app valid %d\n", dfu_start, bootloader_app_is_valid(DFU_BANK_0_REGION_START));
+    printf("Looking for App @ %lx (%s)", DFU_BANK_0_REGION_START, is_app_valid ? "valid":"not valid");
+    printf("Start DFU: %s Forced: %s\n", dfu_start ? "Yes" : "No", force_dfu_start ? "Yes" : "No");
+    leds_off();
 
-    if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
+    if (dfu_start || force_dfu_start || !is_app_valid)
     {
         err_code = sd_power_gpregret_clr(POWER_GPREGRET_GPREGRET_Msk);
         APP_ERROR_CHECK(err_code);
 
-        nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
-
+        printf("Launching DFU\n");
         // Initiate an update of the firmware.
         err_code = bootloader_dfu_start();
         APP_ERROR_CHECK(err_code);
 
-        nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
     }
+    is_app_valid = bootloader_app_is_valid(DFU_BANK_0_REGION_START);
 
-    leds_off();
-
-    if (bootloader_app_is_valid(DFU_BANK_0_REGION_START))
+    if (is_app_valid)
     {
-        printf("Launching app at %lx\n", DFU_BANK_0_REGION_START);
+        printf("Launching application at %lx\n", DFU_BANK_0_REGION_START);
         // Select a bank region to use as application region.
         // @note: Only applications running from DFU_BANK_0_REGION_START is supported.
         bootloader_app_start(DFU_BANK_0_REGION_START);
     }
-    printf("Reset\n");
 
     NVIC_SystemReset();
 }
