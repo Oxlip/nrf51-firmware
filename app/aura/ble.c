@@ -10,6 +10,7 @@
 #include <ble_common.h>
 #include "board_conf.h"
 #include "smbus.h"
+#include "sensor.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
@@ -68,6 +69,8 @@ uint32_t services_init(void)
 
     // Test I2C bus
     scan_bus();
+    //i2c_test();
+    get_inst_current(sensorA);
 
     // Initialize Dimmer Service.
     memset(&dimmer_param, 0, sizeof(dimmer_param));
