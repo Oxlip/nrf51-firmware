@@ -553,7 +553,7 @@ i2c_smb_read(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)
   /* End of transfert */
   succeed &= twi_master_issue_stopcondition();
 
-  return 0;
+  return succeed;
 }
 uint8_t
 i2c_smb_write(uint8_t slave_address, uint8_t offset, bool word, uint8_t *data)

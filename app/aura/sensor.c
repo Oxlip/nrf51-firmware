@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "twi_master.h"
+#include "sensor.h"
 
 
 #define TSL2561_ADDRESS 0x39
@@ -30,7 +31,7 @@ void i2c_test()
 }
 
 
-#define CURRENT_SENSOR_ADDRESS 0x10	// FIXME: put good address
+#define CURRENT_SENSOR_ADDRESS 0x2
 #define UPPER_BIT 24
 #define UPPER_BIT_IDX (UPPER_BIT - 1)
 
@@ -60,6 +61,30 @@ double sensor_signed_to_float(uint32_t val, uint32_t pointIndex)
 }
 
 
+
+double get_inst_current(enum outlet_t outlet)
+{
+  int reg;
+  uint32_t buf = 0;
+  double res;
+
+  if (outlet == sensorA) {
+    reg = REG_IA;
+  }
+  else {
+    reg = REG_IB;
+  }
+
+  if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, reg, (uint8_t*)&buf)) {
+    printf("Could not get the current\n");
+    return -1;
+  }
+  res = sensor_signed_to_float(buf, 23);
+  printf("Sensor got %f\n", res);
+  return res;
+}
+
+
 #ifdef DEBUG
 
 void test_conversion(void)
@@ -82,3 +107,33 @@ void test_conversion(void)
 
 
 #endif /* !DEBUG */
+
+
+uint8_t
+sensor_78M6610_read(uint8_t slave_address, uint8_t reg, uint8_t *data)
+{
+  bool succeed = false;
+
+  slave_address = (slave_address << 1);
+
+  /* set the register address */
+  succeed = twi_master_transfer(slave_address, &reg, 1, true);
+
+  succeed &= twi_master_transfer(slave_address | TWI_READ_BIT,
+				 data, 3, true);
+
+  return succeed;
+}
+
+uint8_t
+sensor_78M6610_write(uint8_t slave_address, uint8_t reg, uint8_t *data)
+{
+  uint8_t buf[4];
+  int i;
+
+  buf[0] = reg;
+  for (i = 0; i < 3; i++) {
+    buf[i + 1] = data[i];
+  }
+  return twi_master_transfer(slave_address << 1, buf, 4, true);
+}
