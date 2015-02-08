@@ -7,7 +7,7 @@
 
 #define DEVICE_FW_REVISION_ID           "0.1 "__DATE__" "__TIME__
 
-#ifdef BOARD_AURA_DEV1
+#ifdef BOARD_DEV1
 
 /* BOARD_AURA_DEV1 */
 
@@ -38,7 +38,10 @@
 
 #define AURA_TRIAC_ENABLE               11
 
-#elif BOARD_AURA_DEV2
+#define UART_RX_PIN_NUMBER              25
+#define UART_TX_PIN_NUMBER              24
+
+#elif BOARD_DEV2
 /* BOARD_AURA_DEV2 */
 
 /**< Name of device. Will be included in the advertising data. */
@@ -63,6 +66,9 @@
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  24
 #define AURA_TRIAC_ENABLE               11
+
+#define UART_RX_PIN_NUMBER              11
+#define UART_TX_PIN_NUMBER              9
 
 #else
 /* Aura Board - Proto 1 for now */
@@ -89,7 +95,13 @@
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  4
 #define AURA_TRIAC_ENABLE               11
+
+#define UART_RX_PIN_NUMBER              23
+#define UART_TX_PIN_NUMBER              22
+
 #endif
+
+
 
 /* LED Mappings from Schematic */
 #define AURA_LED_GREEN                  0
