@@ -3,8 +3,8 @@ MAKEFILE_DIR    := ../$(dir $(lastword $(MAKEFILE_LIST)))
 TEMPLATE_PATH   := $(MAKEFILE_DIR)/toolchain/gcc/
 SDK_PATH        = $(MAKEFILE_DIR)/sdk/nrf51822/
 
-LIBRARY_PATHS   += $(MAKEFILE_DIR)/app/include
-LIBRARY_PATHS   += $(SDK_PATH)/Include/bootloader_dfu/
+LIBRARY_PATHS   += $(SDK_PATH)/Include/bootloader_dfu/ \
+                   $(MAKEFILE_DIR)/bootloader/
 
 BOARD           := BOARD_NRF6310
 USE_SOFTDEVICE  := s110
@@ -17,9 +17,7 @@ INCLUDEPATHS    +=  -I"$(SDK_PATH)Include/ble" \
                     -I"$(SDK_PATH)Include/app_common" \
                     -I"$(SDK_PATH)Include/s110" \
                     -I"$(SDK_PATH)Include/sd_common" \
-                    -I"$(SDK_PATH)Include/ble/ble_services" \
-                    -I"./include/ble_transport" \
-                    -I"./include"
+                    -I"$(SDK_PATH)Include/ble/ble_services"
 
 # SDK files needed for all the devices
 SDK_SRCS =  $(SDK_PATH)Source/ble/ble_services/ble_dfu.c \

@@ -115,6 +115,8 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
 {
     nrf_gpio_pin_set(ASSERT_LED_PIN_NO);
 
+    printf("Bootloader failed(%lx) %s : %ld\n", error_code, p_file_name, line_num);
+
 #ifdef DEBUG
     while(1);
 #endif
