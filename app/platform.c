@@ -191,6 +191,8 @@ int main(void)
     for (;;)
     {
         app_sched_execute();
+#ifdef POWER_MANAGE_ENABLED
         power_manage();
+#endif
     }
 }
