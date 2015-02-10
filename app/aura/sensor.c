@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <string.h>
+#include <ble_ss.h>
 #include "twi_master.h"
 #include "sensor.h"
-
 
 #define TSL2561_ADDRESS 0x39
 #define TSL2561_COMMAND(reg) (0x80 | reg)
@@ -137,3 +138,4 @@ sensor_78M6610_write(uint8_t slave_address, uint8_t reg, uint8_t *data)
   }
   return twi_master_transfer(slave_address << 1, buf, 4, true);
 }
+

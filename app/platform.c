@@ -44,6 +44,8 @@ static void timers_init(void)
 {
     // Initialize timer module, making it use the scheduler
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
+
+    device_timers_init();
 }
 
 /**@brief Function for the Event Scheduler initialization.
@@ -112,7 +114,7 @@ static void buttons_init(void)
  */
 static void timers_start(void)
 {
-
+    device_timers_start();
 }
 
 /**@brief Function for the Power manager.
