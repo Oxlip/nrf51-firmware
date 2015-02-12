@@ -96,7 +96,7 @@ int fputc(int ch, FILE * p_file)
 static void debug_init(void)
 {
 #ifdef DEBUG
-    simple_uart_config(UART_RTS_PIN_NUMBER, UART_TX_PIN_NUMBER, UART_CTS_PIN_NUMBER, UART_RX_PIN_NUMBER, false);
+    simple_uart_config(-1, UART_TX_PIN_NUMBER, -1, UART_RX_PIN_NUMBER, false);
     printf("Bootloader Date: %s %s\n", __DATE__, __TIME__);
 #endif
 }
