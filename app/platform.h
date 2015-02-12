@@ -8,7 +8,7 @@
 
 #define MANUFACTURER_NAME               "Astral"                                    /**< This will be passed to Device Information Service. */
 
-#define APP_TIMER_MAX_TIMERS            2                                           /**< Maximum number of simultaneously created timers. */
+#define APP_TIMER_MAX_TIMERS            3                                           /**< Maximum number of simultaneously created timers. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 

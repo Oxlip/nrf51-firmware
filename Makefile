@@ -8,7 +8,9 @@ LIBRARY_PATHS   += $(SDK_PATH)/Include/bootloader_dfu/
 
 # SDK files needed for all the devices
 SDK_SRCS =  app_gpiote.c \
+            app_button.c \
             app_timer.c \
+            nrf_delay.c \
             app_scheduler.c \
             ble_advdata.c \
             ble_conn_params.c \
@@ -25,7 +27,7 @@ SDK_SRCS =  app_gpiote.c \
             twi_sw_master.c
 
 # Common platform files
-COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c
+COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c smbus.c
 
 APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 

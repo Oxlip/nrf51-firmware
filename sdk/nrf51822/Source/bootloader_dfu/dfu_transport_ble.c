@@ -41,8 +41,8 @@
 #define ASSERT_LED_PIN_NO                    LED_7                                                   /**< Is on when application has asserted. */
 
 
-#define DEVICE_NAME                          "DfuTarg"                                               /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME                    "NordicSemiconductor"                                   /**< Manufacturer. Will be passed to Device Information Service. */
+#define DEVICE_NAME                          "Loader"                                                /**< Name of device. Will be included in the advertising data. */
+#define MANUFACTURER_NAME                    "Nuton"                                                 /**< Manufacturer. Will be passed to Device Information Service. */
 
 #define MIN_CONN_INTERVAL                    (uint16_t)(MSEC_TO_UNITS(15, UNIT_1_25_MS))             /**< Minimum acceptable connection interval (11.25 milliseconds). */
 #define MAX_CONN_INTERVAL                    (uint16_t)(MSEC_TO_UNITS(30, UNIT_1_25_MS))             /**< Maximum acceptable connection interval (15 milliseconds). */

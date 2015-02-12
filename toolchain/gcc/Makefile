@@ -18,6 +18,9 @@ CMSIS_INCLUDE_PATH += $(SDK_PATH)Include/gcc
 LIBRARY_PATHS += ../ $(SDK_INCLUDE_PATH) $(SDK_INCLUDE_PATH)sdk/
 SOURCE_PATHS += ../ $(SDK_SOURCE_PATH) $(TEMPLATE_PATH) $(wildcard $(SDK_SOURCE_PATH)*/)
 
+ifneq ($(strip $(BOARD_TYPE)),)
+    CFLAGS += -D$(BOARD_TYPE)
+endif
 ifeq ($(USE_SOFTDEVICE), s110)
     USE_BLE = 1
 endif
@@ -56,7 +59,11 @@ else
     USE_SOFTDEVICE = blank
 endif
 
+ifdef BOOTLOADER
+LINKER_SCRIPT ?= gcc_nrf51_$(USE_SOFTDEVICE)_bootloader.ld
+else
 LINKER_SCRIPT ?= gcc_nrf51_$(USE_SOFTDEVICE).ld
+endif
 OUTPUT_NAME ?= $(addsuffix _$(USE_SOFTDEVICE), $(PROJECT_NAME))
 
 ifdef USE_EXT_SENSORS
@@ -75,9 +82,13 @@ CPUFLAGS = -mthumb -mcpu=cortex-m0 -march=armv6-m
 CFLAGS += -std=gnu99 -c $(CPUFLAGS) -Wall -D$(DEVICE) -D$(BOARD) $(CMSIS_INCLUDE) $(LIBRARY_INCLUDES) -MD
 LDFLAGS += $(CPUFLAGS) -L $(TEMPLATE_PATH) -T $(LINKER_SCRIPT) -Wl,-Map=$(OUTPUT_PATH)$(OUTPUT_NAME).Map
 
+OBJ_OPT_UIRC = --only-section .uicrBootStartAddress
+OBJ_OPT_BIN  = --remove-section .uicrBootStartAddress
+
 HEX = $(OUTPUT_PATH)$(OUTPUT_NAME).hex
 ELF = $(OUTPUT_PATH)$(OUTPUT_NAME).elf
 BIN = $(OUTPUT_PATH)$(OUTPUT_NAME).bin
+UICR_BIN = $(OUTPUT_PATH)$(OUTPUT_NAME)-uirc.bin
 
 SRCS = $(SYSTEM_FILE) $(notdir $(APPLICATION_SRCS))
 OBJS = $(addprefix $(OUTPUT_PATH), $(SRCS:.c=.o)) $(addprefix $(OUTPUT_PATH),$(APPLICATION_LIBS))
@@ -102,6 +113,12 @@ $(HEX): $(OBJS) $(OBJS_AS)
 	$(OBJCOPY) -Oihex $(ELF) $(HEX)
 	$(OBJCOPY) -Obinary $(ELF) $(BIN)
 	$(SIZE) $(ELF)
+ifdef BOOTLOADER
+	$(OBJCOPY) -Obinary $(OBJ_OPT_BIN) $(ELF) $(BIN)
+	$(OBJCOPY) -Obinary $(OBJ_OPT_UIRC) $(ELF) $(UICR_BIN)
+else
+	$(OBJCOPY) -Obinary $(ELF) $(BIN)
+endif
 
 size: $(ELF)
 	$(SIZE) $(ELF)
