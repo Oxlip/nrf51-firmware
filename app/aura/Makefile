@@ -13,8 +13,4 @@ BOARD           = BOARD_PCA10001
 USE_SOFTDEVICE  = s110
 SOFTDEVICE      = $(MAKEFILE_DIR)/lib/s110_nrf51822_7.1.0_softdevice.hex
 
-ifndef $(BOARD_TYPE)
-BOARD_TYPE      = BOARD_AURA
-endif
-
 include ../../Makefile
