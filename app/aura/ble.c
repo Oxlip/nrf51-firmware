@@ -71,7 +71,7 @@ static void cs_meas_timeout_handler(void * p_context)
 {
   uint32_t err_code;
   uint16_t len = sizeof(float);
-  float cs_value = (float) get_inst_current(sensorA);
+  float cs_value = (float) sensor_get_instant_current(0);
 
   printf("Current sensor value %f\n", cs_value);
 
