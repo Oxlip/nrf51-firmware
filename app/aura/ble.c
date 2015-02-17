@@ -9,6 +9,7 @@
 #include <ble_ss.h>
 #include <ble_common.h>
 #include <app_timer.h>
+
 #include "board_conf.h"
 #include "smbus.h"
 #include "sensor.h"
@@ -42,8 +43,7 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 
 static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write) 
 {
-    nrf_gpio_pin_set(19);
-    printf("BLE Wrote dim %d %d\n\r", p_evt_write->data[0], p_evt_write->data[1]);
+    printf("Dimmer percentage %d\n\r", p_evt_write->data[1]);
     if (p_evt_write->len == 0)
     {
         return;
@@ -57,7 +57,7 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
     else
     {
         nrf_gpio_pin_set(AURA_TOUCH_LED);
-        nrf_gpio_pin_clear(AURA_TRIAC_ENABLE);
+        nrf_gpio_pin_set(AURA_TRIAC_ENABLE);
     }
 }
 
