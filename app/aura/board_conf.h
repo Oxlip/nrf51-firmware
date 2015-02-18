@@ -5,7 +5,7 @@
 #ifndef __BOARD_CONF__
 #define __BOARD_CONF__
 
-#define DEVICE_FW_REVISION_ID           "0.1 "__DATE__" "__TIME__
+#define DEVICE_FW_REVISION_ID           BUILD_TIME
 
 
 #ifdef BOARD_AURA
