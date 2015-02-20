@@ -38,7 +38,7 @@
 #elif BOARD_DEV2
 
 /**< Button used to enter SW update mode. */
-#define BOOTLOADER_BUTTON_PIN           17
+#define BOOTLOADER_BUTTON_PIN           20
 
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          21

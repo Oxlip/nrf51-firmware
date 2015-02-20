@@ -45,7 +45,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                                       /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define APP_GPIOTE_MAX_USERS            1                                                       /**< Number of GPIOTE users in total. Used by button module and dfu_transport_serial module (flow control). */
+#define APP_GPIOTE_MAX_USERS            2                                                       /**< Number of GPIOTE users in total. Used by button module and dfu_transport_serial module (flow control). */
 
 #define APP_TIMER_PRESCALER             0                                                       /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_MAX_TIMERS            3                                                       /**< Maximum number of simultaneously created timers. */
@@ -163,34 +163,6 @@ static void leds_off(void)
 }
 
 
-/**@brief Function for initializing the GPIOTE handler module.
- */
-static void gpiote_init(void)
-{
-    APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
-}
-
-
-/**@brief Function for initializing the timer handler module (app_timer).
- */
-static void timers_init(void)
-{
-    // Initialize timer module, making it use the scheduler.
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
-}
-
-
-/**@brief Function for initializing the button module.
- */
-static void buttons_init(void)
-{
-    nrf_gpio_cfg_sense_input(BOOTLOADER_BUTTON_PIN,
-                             BUTTON_PULL,
-                             NRF_GPIO_PIN_SENSE_LOW);
-
-}
-
-
 /**@brief Function for dispatching a BLE stack event to all modules with a BLE stack event handler.
  *
  * @details This function is called from the scheduler in the main loop after a BLE stack
@@ -240,14 +212,6 @@ static void ble_stack_init(bool init_softdevice)
 }
 
 
-/**@brief Function for event scheduler initialization.
- */
-static void scheduler_init(void)
-{
-    APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
-}
-
-
 /**@brief Function for bootloader main entry.
  */
 int main(void)
@@ -256,6 +220,7 @@ int main(void)
     bool dfu_start = false;
     bool force_dfu_start;
     bool is_app_valid;
+    bool in_progress;
     bool app_reset = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
 
     debug_init();
@@ -269,36 +234,40 @@ int main(void)
     APP_ERROR_CHECK_BOOL(NRF_FICR->CODEPAGESIZE == CODE_PAGE_SIZE);
 
     // Initialize.
-    timers_init();
-    gpiote_init();
-    buttons_init();
+    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
+    APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
+    nrf_gpio_cfg_sense_input(BOOTLOADER_BUTTON_PIN, BUTTON_PULL, NRF_GPIO_PIN_SENSE_LOW);
+
     err_code = bootloader_init();
     APP_ERROR_CHECK(err_code);
 
-    if (bootloader_dfu_sd_in_progress())
+    in_progress = bootloader_dfu_sd_in_progress();
+    if (in_progress)
     {
         err_code = bootloader_dfu_sd_update_continue();
         APP_ERROR_CHECK(err_code);
+    }
 
-        ble_stack_init(!app_reset);
-        scheduler_init();
+    ble_stack_init(!app_reset);
+    APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 
+    if (in_progress)
+    {
         err_code = bootloader_dfu_sd_update_finalize();
         APP_ERROR_CHECK(err_code);
     }
-    else
-    {
-        // If stack is present then continue initialization of bootloader.
-        ble_stack_init(!app_reset);
-        scheduler_init();
-    }
 
-    dfu_start  = app_reset;
+    dfu_start = app_reset;
     force_dfu_start = nrf_gpio_pin_read(BOOTLOADER_BUTTON_PIN) == 0;
     is_app_valid = bootloader_app_is_valid(DFU_BANK_0_REGION_START);
 
     printf("Looking for App @ %lx (%s)", DFU_BANK_0_REGION_START, is_app_valid ? "valid":"not valid");
     printf("Start DFU: %s Forced: %s\n", dfu_start ? "Yes" : "No", force_dfu_start ? "Yes" : "No");
+
+#ifdef BOARD_AURA
+    //current board has button issue - so disable
+    force_dfu_start = 0;
+#endif
     leds_off();
 
     if (dfu_start || force_dfu_start || !is_app_valid)
