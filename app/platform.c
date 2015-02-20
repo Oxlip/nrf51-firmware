@@ -5,6 +5,7 @@
 #include <softdevice_handler.h>
 #include <app_timer.h>
 #include <app_gpiote.h>
+#include <twi_master.h>
 
 #include <board_conf.h>
 #include <board_export.h>
@@ -103,6 +104,11 @@ int main(void)
     ble_init();
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
     ble_late_init();
+
+    if (!twi_master_init()) {
+        printf("Could not init i2c bus\n");
+        return false;
+    }
 
     device_init();
 
