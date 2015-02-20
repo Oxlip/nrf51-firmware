@@ -71,6 +71,8 @@
 #define UART_RX_PIN_NUMBER              9
 #define UART_TX_PIN_NUMBER              11
 
+#define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
+
 #elif BOARD_DEV2
 /* BOARD_AURA_DEV2 */
 
@@ -99,6 +101,8 @@
 
 #define UART_RX_PIN_NUMBER              28
 #define UART_TX_PIN_NUMBER              29
+
+#define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
 
 #else
 
