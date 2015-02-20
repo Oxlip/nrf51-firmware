@@ -17,8 +17,8 @@
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               2
 
-#define UART_RX_PIN_NUMBER              8
-#define UART_TX_PIN_NUMBER              11
+#define UART_RX_PIN_NUMBER              10
+#define UART_TX_PIN_NUMBER              8
 
 #elif BOARD_DEV1
 
