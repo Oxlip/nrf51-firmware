@@ -74,7 +74,6 @@ void device_timers_start()
  */
 static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
-    static int led = 0;
     if (button_action != APP_BUTTON_PUSH)
     {
         return;
@@ -85,13 +84,8 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
         case AURA_TOUCH_BUTTON:
             /* Do the actual button press handling here. */
             /* For now just turn on an LED */
-            if (led) {
-                nrf_gpio_pin_clear(AURA_TOUCH_LED);
-                led = 0;
-            } else {
-                nrf_gpio_pin_set(AURA_TOUCH_LED);
-                led = 1;
-            }
+            printf("Toggling Triac\n");
+            nrf_gpio_pin_toggle(AURA_TOUCH_LED);
             break;
 
         default:
