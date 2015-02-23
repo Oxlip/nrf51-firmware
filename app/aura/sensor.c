@@ -15,8 +15,14 @@
 #define UPPER_BIT_IDX           (UPPER_BIT - 1)
 
 enum outlet_reg_t {
-    REG_IA = 44,
-    REG_IB = 45,
+    REG_VA_RMS = 0x2B,
+    REG_VB_RMS = 0x2C,
+    REG_IA_RMS = 0x3E,
+    REG_IB_RMS = 0x3F,
+    REG_IA = 0x44,
+    REG_IB = 0x45,
+    REG_WATT_A = 0x4B,
+    REG_WATT_B = 0x4C
 };
 
 
@@ -85,16 +91,9 @@ sensor_78M6610_write(uint8_t slave_address, uint8_t reg, uint8_t *data)
  */
 double sensor_get_instant_current(int outlet_nuber)
 {
-    int reg;
+    int reg = REG_IA + outlet_nuber;
     uint32_t buf = 0;
     double res;
-
-    if (outlet_nuber == 0) {
-        reg = REG_IA;
-    }
-    else {
-        reg = REG_IB;
-    }
 
     if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, reg, (uint8_t*)&buf)) {
         printf("Could not get the current\n");
@@ -104,4 +103,41 @@ double sensor_get_instant_current(int outlet_nuber)
     res = cs_signed_to_float(buf, 23);
     printf("Sensor got %f\n", res);
     return res;
+}
+
+static inline double cs_get( int reg, int outlet_nuber)
+{
+    uint32_t buf = 0;
+    double res;
+
+    if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, reg, (uint8_t*)&buf)) {
+        printf("Could not read current sensor\n");
+        return -1;
+    }
+
+    res = cs_signed_to_float(buf, 23);
+    printf("Sensor read %lx from %x\n", buf, reg);
+    return res;
+}
+
+/** Get RMS current.
+ */
+double cs_get_rms_current(int outlet_nuber)
+{
+    return cs_get(REG_IA_RMS + outlet_nuber, outlet_nuber);
+}
+
+/** Get RMS voltage.
+ */
+double cs_get_rms_voltage(int outlet_nuber)
+{
+    return cs_get(REG_VA_RMS + outlet_nuber, outlet_nuber);
+}
+
+
+/** Get active watts.
+ */
+double cs_get_active_watts(int outlet_nuber)
+{
+    return cs_get(REG_WATT_A + outlet_nuber, outlet_nuber);
 }

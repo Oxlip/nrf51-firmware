@@ -23,13 +23,15 @@ static void cs_meas_timeout_handler(void * p_context)
 {
   uint32_t err_code;
   uint16_t len = sizeof(float);
-  float cs_value = (float) sensor_get_instant_current(0);
+  float cs_rms_a = (float) cs_get_rms_current(0);
+  float cs_rms_v = (float) cs_get_rms_voltage(0);
+  float cs_active_w = (float) cs_get_active_watts(0);
 
-  printf("Current sensor value %f\n", cs_value);
+  printf("RMS Current %f RMS Volt %f Active Watts %f\n", cs_rms_a, cs_rms_v, cs_active_w);
 
   // Update database
   err_code = sd_ble_gatts_value_set(cs_ss.sensor_value_handles.value_handle,
-                                    0, &len, (uint8_t *)&cs_value);
+                                    0, &len, (uint8_t *)&cs_rms_a);
   if (err_code != NRF_SUCCESS)
   {
     printf("Unable to set current sensor value %lx\n", err_code);
@@ -47,7 +49,7 @@ static void cs_meas_timeout_handler(void * p_context)
     hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
     hvx_params.offset = 0;
     hvx_params.p_len  = &len;
-    hvx_params.p_data = (uint8_t *)&cs_value;
+    hvx_params.p_data = (uint8_t *)&cs_rms_a;
 
     err_code = sd_ble_gatts_hvx(cs_ss.conn_handle, &hvx_params);
   }
@@ -85,7 +87,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             /* Do the actual button press handling here. */
             /* For now just turn on an LED */
             printf("Toggling Triac\n");
-            nrf_gpio_pin_toggle(AURA_TOUCH_LED);
+            nrf_gpio_pin_toggle(AURA_TRIAC_ENABLE);
             break;
 
         default:
