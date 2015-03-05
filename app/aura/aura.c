@@ -23,11 +23,20 @@ static void cs_meas_timeout_handler(void * p_context)
 {
   uint32_t err_code;
   uint16_t len = sizeof(float);
-  float cs_rms_a = (float) cs_get_rms_current(0);
-  float cs_rms_v = (float) cs_get_rms_voltage(0);
+  float cs_rms_a = (float) cs_get_rms_current(0) * 26;
+  float cs_rms_v = (float) cs_get_rms_voltage(0) * 700;
   float cs_active_w = (float) cs_get_active_watts(0);
+  float cs_peak_a = (float) cs_get_peak_current(0);
+  float cs_peak_v = (float) cs_get_peak_voltage(0);
 
-  printf("RMS Current %f RMS Volt %f Active Watts %f\n", cs_rms_a, cs_rms_v, cs_active_w);
+  printf("RMS Current0 %f RMS Volt0 %f Active Watts0 %f Peak A %f Peak V %f freq %f\n", cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, (float)cs_get_line_frequency());
+  cs_get_status();
+
+
+  #if 0
+  printf("RMS Current1 %f RMS Volt1 %f Active Watts1 %f\n", 
+            (float) cs_get_rms_current(1), (float) cs_get_rms_voltage(1), (float) cs_get_active_watts(1));
+  #endif
 
   // Update database
   err_code = sd_ble_gatts_value_set(cs_ss.sensor_value_handles.value_handle,
@@ -127,6 +136,11 @@ device_init()
     nrf_gpio_cfg_output(AURA_TOUCH_LED);
     nrf_gpio_pin_set(AURA_TOUCH_LED);
 
+#ifdef AURA_CS_RESET
+    nrf_gpio_cfg_output(AURA_CS_RESET);
+    nrf_gpio_pin_set(AURA_CS_RESET);
+#endif
+
     // Configure zero crossing as sense interrupt.
     nrf_gpio_cfg_sense_input(AURA_ZERO_CROSSING_PIN, NRF_GPIO_PIN_NOPULL, NRF_GPIO_PIN_SENSE_HIGH);
     app_gpiote_user_register(&zc_gpiote_id, 0, 1 << AURA_ZERO_CROSSING_PIN, zc_event_handler);
@@ -136,4 +150,6 @@ device_init()
 
     // Configure triac pin as output.
     nrf_gpio_cfg_output(AURA_TRIAC_ENABLE);
+
+    cs_calibrate();
 }

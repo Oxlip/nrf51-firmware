@@ -15,14 +15,22 @@
 #define UPPER_BIT_IDX           (UPPER_BIT - 1)
 
 enum outlet_reg_t {
+    REG_COMMAND = 0,
+    REG_STATUS= 0x1A,
+    REG_CONFIG = 0x25,
     REG_VA_RMS = 0x2B,
     REG_VB_RMS = 0x2C,
+    REG_VA_PEAK = 0x3A,
+    REG_VB_PEAK = 0x3B,
     REG_IA_RMS = 0x3E,
     REG_IB_RMS = 0x3F,
     REG_IA = 0x44,
     REG_IB = 0x45,
+    REG_IA_PEAK = 0x46,
+    REG_IB_PEAK = 0x47,
     REG_WATT_A = 0x4B,
-    REG_WATT_B = 0x4C
+    REG_WATT_B = 0x4C,
+    REG_LINE_FREQ = 0x6D,
 };
 
 
@@ -87,57 +95,100 @@ sensor_78M6610_write(uint8_t slave_address, uint8_t reg, uint8_t *data)
 }
 #endif
 
-/** Get instant current.
- */
-double sensor_get_instant_current(int outlet_nuber)
+bool
+cs_calibrate()
 {
-    int reg = REG_IA + outlet_nuber;
-    uint32_t buf = 0;
-    double res;
+#define CALIBRATE_SETTING 0b01111111
+    uint8_t result;
+    uint8_t buf[] = {REG_COMMAND, 0xCA, CALIBRATE_SETTING, 0};
+    uint8_t read_buf[3] = {0};
 
-    if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, reg, (uint8_t*)&buf)) {
-        printf("Could not get the current\n");
+    printf("Calibrating current sensor");
+
+    result = twi_master_transfer(CURRENT_SENSOR_ADDRESS << 1, buf, sizeof(buf), true);
+    if (!result) {
+        printf("failed to calibrate.\n");
         return -1;
     }
+    do {
+        sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, REG_COMMAND, read_buf);
+        if (read_buf[0]!= 0) {
+            printf("still calibrating %x %x %x\n", read_buf[0], read_buf[1], read_buf[2]);
+        }
+    }while(read_buf[0]!= 0);
+    result = sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, REG_CONFIG, read_buf);
+    if (!result) {
+        printf("failed to read config.\n");
+    }
+    printf("Config %x %x %x\n", read_buf[0], read_buf[1], read_buf[2]);
+    return 0;
+}
 
-    res = cs_signed_to_float(buf, 23);
-    printf("Sensor got %f\n", res);
+
+static inline double cs_get(int reg, int fbits)
+{
+    uint8_t buf[3];
+    uint32_t temp;
+    double res;
+
+    if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, reg, buf)) {
+        printf("Could not read current sensor.\n");
+        return -1;
+    }
+    //temp = (buf[2] << 16) | (buf[1] << 8) | buf[0];
+    temp = (buf[0] << 16) | (buf[1] << 8) | buf[0];
+    res = cs_signed_to_float(temp, fbits);
     return res;
 }
 
-static inline double cs_get( int reg, int outlet_nuber)
+uint32_t cs_get_status()
 {
-    uint32_t buf = 0;
-    double res;
-
-    if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, reg, (uint8_t*)&buf)) {
-        printf("Could not read current sensor\n");
+    uint32_t status = 0;
+    if (!sensor_78M6610_read(CURRENT_SENSOR_ADDRESS, REG_STATUS, (uint8_t*)&status)) {
+        printf("Could not get current sensor status.\n");
         return -1;
     }
-
-    res = cs_signed_to_float(buf, 23);
-    printf("Sensor read %lx from %x\n", buf, reg);
-    return res;
+    return status;
 }
 
 /** Get RMS current.
  */
 double cs_get_rms_current(int outlet_nuber)
 {
-    return cs_get(REG_IA_RMS + outlet_nuber, outlet_nuber);
+    return cs_get(REG_IA_RMS + outlet_nuber, 23);
 }
 
 /** Get RMS voltage.
  */
 double cs_get_rms_voltage(int outlet_nuber)
 {
-    return cs_get(REG_VA_RMS + outlet_nuber, outlet_nuber);
+    return cs_get(REG_VA_RMS + outlet_nuber, 23);
 }
 
+/** Get peak current.
+ */
+double cs_get_peak_current(int outlet_nuber)
+{
+    return cs_get(REG_IA_PEAK + outlet_nuber, 23);
+}
+
+/** Get peak voltage.
+ */
+double cs_get_peak_voltage(int outlet_nuber)
+{
+    return cs_get(REG_VA_PEAK + outlet_nuber, 23);
+}
 
 /** Get active watts.
  */
 double cs_get_active_watts(int outlet_nuber)
 {
-    return cs_get(REG_WATT_A + outlet_nuber, outlet_nuber);
+    return cs_get(REG_WATT_A + outlet_nuber, 23);
+}
+
+/** Get line frequency.
+ */
+double cs_get_line_frequency()
+{
+    return cs_get(REG_LINE_FREQ, 16);
 }

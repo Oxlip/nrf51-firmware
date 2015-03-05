@@ -32,10 +32,12 @@
 #define AURA_TOUCH_LED                  4
 #define AURA_TRIAC_ENABLE               12
 
-#define UART_RX_PIN_NUMBER              10
-#define UART_TX_PIN_NUMBER              8
+#define UART_RX_PIN_NUMBER              23
+#define UART_TX_PIN_NUMBER              22
 
 #define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
+
+#define AURA_CS_RESET                   11
 
 #elif BOARD_DEV1
 
