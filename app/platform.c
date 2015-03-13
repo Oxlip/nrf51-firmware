@@ -105,10 +105,12 @@ int main(void)
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
     ble_late_init();
 
+#if USE_SOFTDEVICE != s130
     if (!twi_master_init()) {
         printf("Could not init i2c bus\n");
         return false;
     }
+#endif
 
     device_init();
 

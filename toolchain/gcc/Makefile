@@ -29,6 +29,10 @@ ifeq ($(USE_SOFTDEVICE), s120)
     USE_BLE = 1
 endif
 
+ifeq ($(USE_SOFTDEVICE), s130)
+    USE_BLE = 1
+endif
+
 ifeq ($(USE_SOFTDEVICE), s210)
     USE_ANT = 1
 endif

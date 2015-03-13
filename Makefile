@@ -16,18 +16,20 @@ SDK_SRCS =  app_gpiote.c \
             ble_conn_params.c \
             pstorage.c \
             ble_dis.c \
-            ble_dfu.c \
-            dfu_app_handler.c \
             bootloader_util_gcc.c \
             ble_srv_common.c \
             softdevice_handler.c \
             ble_debug_assert_handler.c \
             ble_error_log.c \
-            simple_uart.c \
-            twi_sw_master.c
+            simple_uart.c
 
 # Common platform files
-COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c smbus.c
+COMMON_SRCS     = platform.c fault.c ble_common.c smbus.c
+
+ifneq ($(USE_SOFTDEVICE),s130)
+SDK_SRCS +=  ble_dfu.c dfu_app_handler.c twi_sw_master.c
+COMMON_SRCS += ble_ss.c
+endif
 
 APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 

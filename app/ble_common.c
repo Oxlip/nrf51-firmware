@@ -117,7 +117,9 @@ static void advertising_init(void)
  */
 static void sec_params_init(void)
 {
+#if USE_SOFTDEVICE != s130
     m_sec_params.timeout      = SEC_PARAM_TIMEOUT;
+#endif
     m_sec_params.bond         = SEC_PARAM_BOND;
     m_sec_params.mitm         = SEC_PARAM_MITM;
     m_sec_params.io_caps      = SEC_PARAM_IO_CAPABILITIES;
@@ -165,8 +167,8 @@ static void conn_params_init(void)
 static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
     uint32_t                         err_code;
-    static ble_gap_evt_auth_status_t m_auth_status;
-    ble_gap_enc_info_t *             p_enc_info;
+    static ble_gap_evt_auth_status_t m_auth_status __attribute__ ((unused));;
+    ble_gap_enc_info_t *             p_enc_info __attribute__ ((unused));;
 
     switch (p_ble_evt->header.evt_id)
     {
@@ -183,9 +185,17 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+#if USE_SOFTDEVICE == s130
+            err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
+                                                   BLE_GAP_SEC_STATUS_SUCCESS,
+                                                   &m_sec_params,
+                                                   //bonding is not supported for now.
+                                                   NULL);
+#else
             err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
                                                    BLE_GAP_SEC_STATUS_SUCCESS,
                                                    &m_sec_params);
+#endif
             APP_ERROR_CHECK(err_code);
             break;
 
@@ -198,6 +208,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             m_auth_status = p_ble_evt->evt.gap_evt.params.auth_status;
             break;
 
+#if USE_SOFTDEVICE != s130
         case BLE_GAP_EVT_SEC_INFO_REQUEST:
             p_enc_info = &m_auth_status.periph_keys.enc_info;
             if (p_enc_info->div == p_ble_evt->evt.gap_evt.params.sec_info_request.div)
@@ -212,8 +223,9 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                 APP_ERROR_CHECK(err_code);
             }
             break;
-
+#endif
         case BLE_GAP_EVT_TIMEOUT:
+#if USE_SOFTDEVICE != s130
             if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
             {
                 nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
@@ -227,6 +239,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                 err_code = sd_power_system_off();
                 APP_ERROR_CHECK(err_code);
             }
+#endif
             break;
 
         default:
@@ -245,9 +258,13 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
  */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
+#if USE_SOFTDEVICE != s130
     device_on_ble_evt(p_ble_evt);
+#endif
     ble_conn_params_on_ble_evt(p_ble_evt);
+#if USE_SOFTDEVICE != s130
     ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);
+#endif
     on_ble_evt(p_ble_evt);
 }
 
@@ -397,10 +414,14 @@ void ble_init()
  */
 void ble_late_init()
 {
+#if USE_SOFTDEVICE != s130
     dfu_init();
+#endif
     gap_params_init();
     uuid_init();
+#if USE_SOFTDEVICE != s130
     services_init();
+#endif
     conn_params_init();
     sec_params_init();
     device_information_service_init();
