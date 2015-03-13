@@ -13,7 +13,7 @@ gcc version(~ >= 4.8.3) with lto support is required.
      --lib/         Library binary/hex file(s).
      --tools/       Tools releated to BLE.
      --tests/       Unit tests using pytest framework.
-     --dfu/         Device Firmware Update.
+     --bootloader/  Device Firmware Update.
      --app/         App source code.
         platform.c  Common nrf51 related code.
         ble.c       Common source code related to BLE.
@@ -27,11 +27,19 @@ gcc version(~ >= 4.8.3) with lto support is required.
 ### Build
 
 To build image go to the appropriate device directory(aura, lyra etc) and issue *make* command.
+Since we have multiple boards(development kit, proto, production) board type has to be defined as a macro.
+ BOARD_AURA - Aura production/proto board. 
+ BOARD_DEV1 - Development kit(nrf51-ek).
+ BOARD_DEV2 - New development kit(nrf51-dk).
+
+ If board type is not defined then it would default to production board.
 ```sh
 echo "Debug version - debug symbols and no optimization"
 make debug
-echo "Production version - Optimized for size (<20K)"
-make release         
+echo "Production version - Optimized for size."
+make release
+echo "Debug version for development kit"
+CFLAGS=-DBOARD_AURA make debug
 ```
 
 ## Flash

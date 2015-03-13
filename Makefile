@@ -31,16 +31,21 @@ COMMON_SRCS     = platform.c fault.c ble_common.c ble_ss.c smbus.c
 
 APPLICATION_SRCS = $(DEVICE_SRCS) $(COMMON_SRCS) $(SDK_SRCS)
 
+BUILD_TIME		= $(shell date +"%d%b%y_%H%M")
+
 # Gdb infos
 GDB_PORT_NUMBER = 2331
 
 LDFLAGS += --specs=nano.specs -u _printf_float
+
+CFLAGS 	+= -DBUILD_TIME='"$(BUILD_TIME)"'
 
 # Enable all warnings and treat warnings as error.
 CFLAGS          += -Werror -Wall
 
 # Enable link time optimization.
 CFLAGS          += -flto
+
 
 include $(TEMPLATE_PATH)/Makefile
 
@@ -52,3 +57,4 @@ debug: LDFLAGS+=-g3 -lnosys
 debug: all
 
 all:
+	echo $(BUILD_TIME) > $(OUTPUT_PATH)/build_time.txt

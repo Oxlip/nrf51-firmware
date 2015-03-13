@@ -9,6 +9,7 @@
 #include <ble_ss.h>
 #include <ble_common.h>
 #include <app_timer.h>
+
 #include "board_conf.h"
 #include "smbus.h"
 #include "sensor.h"
@@ -42,8 +43,7 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 
 static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write) 
 {
-    nrf_gpio_pin_set(19);
-    printf("BLE Wrote dim %d %d\n\r", p_evt_write->data[0], p_evt_write->data[1]);
+    printf("Dimmer percentage %d\n\r", p_evt_write->data[1]);
     if (p_evt_write->len == 0)
     {
         return;
@@ -57,63 +57,8 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
     else
     {
         nrf_gpio_pin_set(AURA_TOUCH_LED);
-        nrf_gpio_pin_clear(AURA_TRIAC_ENABLE);
+        nrf_gpio_pin_set(AURA_TRIAC_ENABLE);
     }
-}
-
-#define CS_MEAS_INTERVAL          APP_TIMER_TICKS(2000, 0) /**< Current sensor measurement interval (ticks). */
-
-app_timer_id_t cs_timer_id;
-
-/** Current sensor measurement handler
- */
-static void cs_meas_timeout_handler(void * p_context)
-{
-  uint32_t err_code;
-  uint16_t len = sizeof(float);
-  float cs_value = (float) get_inst_current(sensorA);
-
-  printf("Current sensor value %f\n", cs_value);
-
-  // Update database
-  err_code = sd_ble_gatts_value_set(cs_ss.sensor_value_handles.value_handle,
-                                    0, &len, (uint8_t *)&cs_value);
-  if (err_code != NRF_SUCCESS)
-  {
-    printf("Unable to set current sensor value %lx\n", err_code);
-    return;
-  }
-
-  // Send value if connected and notifying
-  if ((cs_ss.conn_handle != BLE_CONN_HANDLE_INVALID) && cs_ss.is_notification_supported)
-  {
-    ble_gatts_hvx_params_t hvx_params;
-
-    memset(&hvx_params, 0, sizeof(hvx_params));
-
-    hvx_params.handle = cs_ss.sensor_value_handles.value_handle;
-    hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
-    hvx_params.offset = 0;
-    hvx_params.p_len  = &len;
-    hvx_params.p_data = (uint8_t *)&cs_value;
-
-    err_code = sd_ble_gatts_hvx(cs_ss.conn_handle, &hvx_params);
-  }
-
-}
-
-void device_timers_init()
-{
-  uint32_t err_code;
-  err_code = app_timer_create(&cs_timer_id, APP_TIMER_MODE_REPEATED, cs_meas_timeout_handler);
-  APP_ERROR_CHECK(err_code);
-}
-
-void device_timers_start()
-{
-  uint32_t err_code;
-  err_code = app_timer_start(cs_timer_id, CS_MEAS_INTERVAL, NULL);
-  APP_ERROR_CHECK(err_code);
 }
 
 uint32_t services_init(void)

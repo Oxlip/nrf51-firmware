@@ -6,21 +6,19 @@
 #define __PLATFORM__
 
 
-#define MANUFACTURER_NAME               "Astral"                                    /**< This will be passed to Device Information Service. */
+#define MANUFACTURER_NAME               "Nuton"                                     /**< This will be passed to Device Information Service. */
 
-#define APP_TIMER_MAX_TIMERS            3                                           /**< Maximum number of simultaneously created timers. */
+#define APP_TIMER_MAX_TIMERS            4                                           /**< Maximum number of simultaneously created timers. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 
-#define APP_GPIOTE_MAX_USERS            1                                           /**< Maximum number of users of the GPIOTE handler. */
+#define APP_GPIOTE_MAX_USERS            2                                           /**< Maximum number of users of the GPIOTE handler. */
 
 #define SCHED_MAX_EVENT_DATA_SIZE       sizeof(app_timer_event_t)                   /**< Maximum size of scheduler events. Note that scheduler BLE stack events do not contain any data, as the events are being pulled from the stack in the event handler. */
 #define SCHED_QUEUE_SIZE                10                                          /**< Maximum number of events in the scheduler queue. */
 
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      180                                         /**< The advertising timeout (in units of seconds). */
-
-#define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 
 #define SEC_PARAM_TIMEOUT               30                                          /**< Timeout for Pairing Request or Security Request (in seconds). */
 #define SEC_PARAM_BOND                  1                                           /**< Perform bonding. */
