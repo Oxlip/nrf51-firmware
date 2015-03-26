@@ -200,7 +200,11 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+#if USE_SOFTDEVICE == s130
+            err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0, 0);
+#else
             err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0);
+#endif
             APP_ERROR_CHECK(err_code);
             break;
 

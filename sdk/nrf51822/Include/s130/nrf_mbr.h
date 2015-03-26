@@ -54,6 +54,9 @@
 
 /**@brief MBR SVC Base number. */
 #define MBR_SVC_BASE 0x18   
+
+/**@brief Page size in words. */
+#define PAGE_SIZE_IN_WORDS 256
 /** @} */
 
 /** @addtogroup NRF_MBR_ENUMS Enumerations
@@ -94,7 +97,7 @@ typedef struct
 {
   uint32_t *src;  /**< Pointer to the source of data to be copied.*/
   uint32_t *dst;  /**< Pointer to the destination where the content is to be copied.*/
-  uint32_t len;   /**< Number of 32 bit words to copy. Must be a multiple of 256 words*/
+  uint32_t len;   /**< Number of 32 bit words to copy. Must be a multiple of 256 words.*/
 }sd_mbr_command_copy_sd_t;
 
 
@@ -105,9 +108,9 @@ typedef struct
  */
 typedef struct
 {
-  uint32_t *ptr1; /**< Pointer to block of memory */
-  uint32_t *ptr2; /**< Pointer to block of memory */
-  uint32_t len;   /**< Number of 32 bit words to compare*/
+  uint32_t *ptr1; /**< Pointer to block of memory. */
+  uint32_t *ptr2; /**< Pointer to block of memory. */
+  uint32_t len;   /**< Number of 32 bit words to compare.*/
 }sd_mbr_command_compare_t;
 
 
@@ -123,13 +126,13 @@ typedef struct
  *
  * @retval ::NRF_ERROR_INVALID_STATE indicates that something was wrong.
  * @retval ::NRF_ERROR_INTERNAL indicates an internal error that should not happen.
- * @retval ::NRF_ERROR_FORBIDDEN if NRF_UICR->BOOTADDR is not set
+ * @retval ::NRF_ERROR_FORBIDDEN if NRF_UICR->BOOTADDR is not set.
  * @retval ::NRF_ERROR_INVALID_LENGTH is invalid.
  */
 typedef struct
 {
   uint32_t *bl_src;  /**< Pointer to the source of the Bootloader to be be copied.*/
-  uint32_t bl_len;   /**< Number of 32 bit words to copy for BootLoader */
+  uint32_t bl_len;   /**< Number of 32 bit words to copy for BootLoader. */
 }sd_mbr_command_copy_bl_t;
 
 /**@brief Sets the base address of the interrupt vector table for interrupts forwarded from the MBR
@@ -151,9 +154,9 @@ typedef struct
   uint32_t command;  /**< type of command to be issued see @ref NRF_MBR_COMMANDS. */
   union 
   {
-    sd_mbr_command_copy_sd_t copy_sd;  /**< Parameters for copy*/
-    sd_mbr_command_copy_bl_t copy_bl;  /**< Parameters for copy SoftDevice and BootLoader*/
-    sd_mbr_command_compare_t compare;  /**< Parameters for verify*/
+    sd_mbr_command_copy_sd_t copy_sd;  /**< Parameters for copy.*/
+    sd_mbr_command_copy_bl_t copy_bl;  /**< Parameters for copy SoftDevice and BootLoader.*/
+    sd_mbr_command_compare_t compare;  /**< Parameters for verify.*/
     sd_mbr_command_vector_table_base_set_t base_set; /**< Parameters for vector table base set.*/
   } params;
 }sd_mbr_command_t;
@@ -165,9 +168,9 @@ typedef struct
 
 /**@brief Issue Master Boot Record commands
  *
- * Commands used when updating a SoftDevice and bootloader
+ * Commands used when updating a SoftDevice and bootloader.
  *
- * @param[in]  param Pointer to a struct describing the command
+ * @param[in]  param Pointer to a struct describing the command.
  *
  *@note for retvals see ::sd_mbr_command_copy_sd_t ::sd_mbr_command_copy_bl_t ::sd_mbr_command_compare_t
 
