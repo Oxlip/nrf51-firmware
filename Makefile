@@ -21,13 +21,14 @@ SDK_SRCS =  app_gpiote.c \
             softdevice_handler.c \
             ble_debug_assert_handler.c \
             ble_error_log.c \
+            twi_sw_master.c \
             simple_uart.c
 
 # Common platform files
 COMMON_SRCS     = platform.c fault.c ble_common.c smbus.c
 
 ifneq ($(USE_SOFTDEVICE),s130)
-SDK_SRCS +=  ble_dfu.c dfu_app_handler.c twi_sw_master.c
+SDK_SRCS +=  ble_dfu.c dfu_app_handler.c
 COMMON_SRCS += ble_ss.c
 endif
 
