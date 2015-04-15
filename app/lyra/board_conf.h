@@ -7,7 +7,6 @@
 
 #define DEVICE_FW_REVISION_ID           BUILD_TIME
 
-
 #ifdef BOARD_LYRA
 /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                     "Lyra"
@@ -30,11 +29,15 @@
 #define UART_RX_PIN_NUMBER              23
 #define UART_TX_PIN_NUMBER              22
 
-#define TOUCH_BUTTON_1                  17
-#define TOUCH_BUTTON_2                  18
-#define TOUCH_BUTTON_3                  19
+#define TOUCH_BUTTON_1                  28
+#define TOUCH_BUTTON_2                  24
+#define TOUCH_BUTTON_3                  8
+#define TOUCH_BUTTON_4                  11
 
-#define STATUS_LED_1                    21
+#define RED_LED                         9
+#define GREEN_LED                       12
+
+#define STATUS_LED_1                    9
 
 #elif BOARD_DEV1
 
@@ -50,7 +53,7 @@
 #define POWER_BUTTON_PIN                17
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)
+#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)
 
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          18
@@ -65,6 +68,7 @@
 #define TOUCH_BUTTON_1                  17
 #define TOUCH_BUTTON_2                  18
 #define TOUCH_BUTTON_3                  19
+#define TOUCH_BUTTON_4                  20
 
 #define STATUS_LED_1                    21
 
@@ -88,12 +92,16 @@
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               23
 
-#define UART_RX_PIN_NUMBER              28
-#define UART_TX_PIN_NUMBER              29
+#define UART_RX_PIN_NUMBER              11
+#define UART_TX_PIN_NUMBER              9
 
 #define TOUCH_BUTTON_1                  17
 #define TOUCH_BUTTON_2                  18
 #define TOUCH_BUTTON_3                  19
+#define TOUCH_BUTTON_4                  20
+
+#define RED_LED                         21
+#define GREEN_LED                       22
 
 #define STATUS_LED_1                    21
 
@@ -106,6 +114,6 @@
 #define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)
+#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)
 
 #endif /* __BOARD_CONF__ */
