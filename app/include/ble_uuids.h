@@ -13,6 +13,7 @@
 #define BLE_UUID_HS_SERVICE      0x1004
 #define BLE_UUID_LS_SERVICE      0x1005
 #define BLE_UUID_MS_SERVICE      0x1006
+#define BLE_UUID_BUTTON_SERVICE  0x1007
 
 #define BLE_UUID_DIMMER_CHAR     0x2001
 #define BLE_UUID_CS_CHAR         0x2002
@@ -20,5 +21,6 @@
 #define BLE_UUID_HS_CHAR         0x2004
 #define BLE_UUID_LS_CHAR         0x2005
 #define BLE_UUID_MS_CHAR         0x2006
+#define BLE_UUID_BUTTON_CHAR     0x2007
 
 #endif

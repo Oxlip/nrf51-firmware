@@ -15,6 +15,7 @@
 #include "platform.h"
 #include "app_button.h"
 #include "common.h"
+#include "smbus.h"
 
 /* BLE init routines from ble_common.c */
 void ble_init(void);
@@ -114,6 +115,8 @@ int main(void)
 
     // Start execution
     device_timers_start();
+
+    scan_bus();
 
     // Enter main loop
     for (;;)
