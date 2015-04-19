@@ -21,6 +21,7 @@ DimmerCharacteristic.prototype.onWriteRequest = function(data, offset, withoutRe
 DimmerCharacteristic.prototype.onReadRequest = function(offset, callback) {
   var result = this.RESULT_SUCCESS;
   var data = new Buffer('dynamic value');
+  console.log('DimmerCharacteristic read request: ' + offset);
 
   if (offset > data.length) {
     result = this.RESULT_INVALID_OFFSET;
@@ -40,6 +41,36 @@ function DimmerService() {
 }
 
 util.inherits(DimmerService, bleno.PrimaryService);
+
+//Device Information Service
+
+var DisCharacteristic = function() {
+  DisCharacteristic.super_.call(this, {
+    uuid: nuton_uuids.BLE_DIS_CHAR,
+    properties: ['read'],
+    value: new Buffer('1.1.0'),
+    descriptors: [
+      new bleno.Descriptor({
+        uuid: '2901',
+        value: 'Dummy descriptor'
+      })
+    ]
+  });
+};
+
+util.inherits(DisCharacteristic, bleno.Characteristic);
+
+function DisService() {
+  DisService.super_.call(this, {
+    uuid: nuton_uuids.BLE_DIS_SERVICE,
+    characteristics: [
+      new DisCharacteristic(),
+    ]
+  });
+}
+
+util.inherits(DisService, bleno.PrimaryService);
+
 
 bleno.on('stateChange', function(state) {
   console.log('on -> stateChange: ' + state);
@@ -66,7 +97,8 @@ bleno.on('advertisingStart', function(error) {
 
   if (!error) {
     bleno.setServices([
-      new DimmerService()
+      new DisService(),
+      new DimmerService(),
     ]);
   }
 });

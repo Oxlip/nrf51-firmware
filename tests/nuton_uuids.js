@@ -5,9 +5,19 @@ function define(name, value) {
     });
 }
 
-define("BLE_NUTON_UUID_AURA", 0x3000);
-define("BLE_NUTON_UUID_LYRA", 0x3001);
-define("BLE_NUTON_UUID_MIRA", 0x3002);
+function define_raw_value(name, value) {
+    Object.defineProperty(exports, name, {
+        value:      value,
+        enumerable: true
+    });
+}
+
+define_raw_value("BLE_DIS_SERVICE", "0000180a-0000-1000-8000-00805f9b34fb");
+define_raw_value("BLE_DIS_CHAR", "00002a26-0000-1000-8000-00805f9b34fb")
+
+define("BLE_NUTON_UUID_AURA", 0xA000);
+define("BLE_NUTON_UUID_LYRA", 0xA001);
+define("BLE_NUTON_UUID_MIRA", 0xA002);
 
 define("BLE_UUID_DIMMER_SERVICE",  0x1001);
 define("BLE_UUID_CS_SERVICE",      0x1002);
