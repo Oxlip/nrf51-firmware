@@ -1,8 +1,17 @@
+/*
+ * Simulates Aura BLE functionality.
+ *   1) Exposes the following BLE Services
+ *      1. Dimmer Service
+ *      2. Device Information Service(for firmware version)
+ *   2) When dimmer char write happens print a message.
+ *
+ */
+
 var nuton_uuids = require('./nuton_uuids');
 var util = require('util');
 var bleno = require('bleno');
 
-
+//Dimmer Service
 var DimmerCharacteristic = function() {
   DimmerCharacteristic.super_.call(this, {
     uuid: nuton_uuids.BLE_UUID_DIMMER_CHAR,
@@ -72,6 +81,8 @@ function DisService() {
 util.inherits(DisService, bleno.PrimaryService);
 
 
+// Callbacks for BLE events.
+
 bleno.on('stateChange', function(state) {
   console.log('on -> stateChange: ' + state);
 
@@ -106,9 +117,3 @@ bleno.on('advertisingStart', function(error) {
 bleno.on('advertisingStop', function() {
   console.log('on -> advertisingStop');
 });
-
-bleno.on('servicesSet', function() {
-  console.log('on -> servicesSet');
-});
-
-

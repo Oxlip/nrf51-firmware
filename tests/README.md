@@ -35,12 +35,20 @@ find -path '*noble*Release/hci-ble' -exec sudo setcap cap_net_raw+eip '{}' \;
 ```
 
 # Running
+To start tests
 ```
 cd <repo>
 sudo mocha tests
 ```
 
-if there is an error message try resetting the bt dongle.
+To start simulator
+```
+cd <repo>/tests
+sudo nodejs ./aura_sim.js
+```
+
+
+Note: if there is an error message try resetting the bt dongle.
 ```
 sudo rfkill unblock bluetooth
 sudo hciconfig hci0 down
