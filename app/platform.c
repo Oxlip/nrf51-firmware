@@ -100,10 +100,12 @@ int main(void)
     device_timers_init();
 
     APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
+
     leds_init();
 
-    ble_init();
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
+
+    ble_init();
     ble_late_init();
 
     if (!twi_master_init()) {
@@ -115,8 +117,6 @@ int main(void)
 
     // Start execution
     device_timers_start();
-
-    scan_bus();
 
     // Enter main loop
     for (;;)

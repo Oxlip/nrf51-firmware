@@ -25,38 +25,22 @@ void device_timers_start()
  */
 static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
-#ifdef BOARD_LYRA
-    float lux, temperature;
-    int32_t humdity;
-#endif
-
-#ifdef BOARD_LYRA
-    /* FIXME: Can be removed later */
-    lux = get_ambient_lux();
-    read_si7013(&temperature, &humdity);
-    printf("temperature = %dC humdity=%d%% lux=%d(%d%%)",
-            (int)temperature/1000,
-            (int)humdity/1000,
-            (int)lux,
-            (int)lux_to_pct(lux));
-#endif
-
     printf("Button %d action: %d\n", pin_no, button_action);
     nrf_gpio_pin_toggle(GREEN_LED);
 
     /* Send an event notification to HUB */
-     switch (pin_no)
-     {
-         case TOUCH_BUTTON_1:
-         case TOUCH_BUTTON_2:
-         case TOUCH_BUTTON_3:
-             printf("Button %d touched\n", pin_no);
-             break;
+    switch (pin_no)
+    {
+        case TOUCH_BUTTON_1:
+        case TOUCH_BUTTON_2:
+        case TOUCH_BUTTON_3:
+            printf("Button %d touched\n", pin_no);
+            break;
 
-         default:
-             APP_ERROR_HANDLER(pin_no);
-             break;
-     }
+        default:
+            APP_ERROR_HANDLER(pin_no);
+            break;
+    }
 }
 
 /**@brief Function for initializing the button handler module.

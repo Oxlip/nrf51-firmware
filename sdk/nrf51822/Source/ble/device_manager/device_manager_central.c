@@ -1001,7 +1001,8 @@ static __INLINE api_result_t gatts_context_store(pstorage_handle_t const * p_blo
     uint32_t err_code = sd_ble_gatts_sys_attr_get(
         m_connection_table[p_handle->connection_id].conn_handle,
         sys_data,
-        &attr_len);
+        &attr_len,
+        BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS);
 
     if (err_code == NRF_SUCCESS)
     {
@@ -1258,7 +1259,8 @@ static __INLINE api_result_t gatts_context_apply(dm_handle_t * p_handle)
 
     err_code = sd_ble_gatts_sys_attr_set(m_connection_table[p_handle->connection_id].conn_handle,
                                          p_gatts_context,
-                                         context_len);
+                                         context_len,
+                                         BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS);
 
     if (err_code != NRF_SUCCESS)
     {

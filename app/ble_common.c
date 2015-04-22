@@ -9,7 +9,9 @@
 #include <ble_advdata.h>
 #include <ble_dis.h>
 #include <ble_conn_params.h>
+#include <ble_gap.h>
 #include <pstorage.h>
+#include <device_manager.h>
 
 #include <board_conf.h>
 #include <board_export.h>
@@ -17,6 +19,7 @@
 
 #include "platform.h"
 #include "ble_common.h"
+#include "blec_common.h"
 
 #include <ble_hci.h>
 #include <ble_dfu.h>
@@ -32,6 +35,7 @@ uint8_t astral_uuid_type = BLE_UUID_TYPE_UNKNOWN;
 static ble_gap_sec_params_t m_sec_params;
 /**< Handle of the current connection. */
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
+
 
 
 /**@brief Function for the GAP initialization.
@@ -65,7 +69,7 @@ static void gap_params_init(void)
 
 /**@brief Function for starting advertising.
  */
-static void advertising_start(void)
+static void peripheral_advertising_start(void)
 {
     uint32_t             err_code;
     ble_gap_adv_params_t adv_params;
@@ -108,8 +112,6 @@ static void advertising_init(void)
 
     err_code = ble_advdata_set(&advdata, NULL);
     APP_ERROR_CHECK(err_code);
-
-    advertising_start();
 }
 
 
@@ -117,7 +119,7 @@ static void advertising_init(void)
  */
 static void sec_params_init(void)
 {
-#if USE_SOFTDEVICE != s130
+#ifndef USE_CENTRAL_MODE
     m_sec_params.timeout      = SEC_PARAM_TIMEOUT;
 #endif
     m_sec_params.bond         = SEC_PARAM_BOND;
@@ -127,6 +129,7 @@ static void sec_params_init(void)
     m_sec_params.min_key_size = SEC_PARAM_MIN_KEY_SIZE;
     m_sec_params.max_key_size = SEC_PARAM_MAX_KEY_SIZE;
 }
+
 
 /**@brief Function for handling a Connection Parameters error.
  *
@@ -160,6 +163,35 @@ static void conn_params_init(void)
 }
 
 
+static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
+{
+    const ble_gap_evt_t *p_gap_evt = &p_ble_evt->evt.gap_evt;
+    uint8_t timeout_src = p_gap_evt->params.timeout.src;
+
+#ifdef USE_CENTRAL_MODE
+    if(p_gap_evt->conn_handle != m_conn_handle)
+    {
+        blec_gap_event_timeout(p_gap_evt, timeout_src);
+    }
+#else
+    if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
+    {
+        uint32_t err_code;
+        nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+
+        // Configure buttons with sense level low as wakeup source.
+        nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
+                                 BUTTON_PULL,
+                                 NRF_GPIO_PIN_SENSE_LOW);
+
+        // Go to system-off mode (this function will not return; wakeup will cause a reset)
+        err_code = sd_power_system_off();
+        APP_ERROR_CHECK(err_code);
+    }
+#endif
+}
+
+
 /**@brief Function for handling the Application's BLE Stack events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
@@ -181,11 +213,16 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-            advertising_start();
+            peripheral_advertising_start();
             break;
+#ifdef USE_CENTRAL_MODE
+        case BLE_GAP_EVT_ADV_REPORT:
+            blec_gap_event_advertisement_report(p_ble_evt);
+            break;
+#endif
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-#if USE_SOFTDEVICE == s130
+#ifdef USE_CENTRAL_MODE
             err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
                                                    BLE_GAP_SEC_STATUS_SUCCESS,
                                                    &m_sec_params,
@@ -200,7 +237,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-#if USE_SOFTDEVICE == s130
+#ifdef USE_CENTRAL_MODE
             err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0, 0);
 #else
             err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0);
@@ -212,7 +249,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             m_auth_status = p_ble_evt->evt.gap_evt.params.auth_status;
             break;
 
-#if USE_SOFTDEVICE != s130
+#ifndef USE_CENTRAL_MODE
         case BLE_GAP_EVT_SEC_INFO_REQUEST:
             p_enc_info = &m_auth_status.periph_keys.enc_info;
             if (p_enc_info->div == p_ble_evt->evt.gap_evt.params.sec_info_request.div)
@@ -229,24 +266,11 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 #endif
         case BLE_GAP_EVT_TIMEOUT:
-#if USE_SOFTDEVICE != s130
-            if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
-            {
-                nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-
-                // Configure buttons with sense level low as wakeup source.
-                nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
-                                         BUTTON_PULL,
-                                         NRF_GPIO_PIN_SENSE_LOW);
-
-                // Go to system-off mode (this function will not return; wakeup will cause a reset)
-                err_code = sd_power_system_off();
-                APP_ERROR_CHECK(err_code);
-            }
-#endif
+            handle_gap_event_timeout(p_ble_evt);
             break;
 
         default:
+            printf("Unknown BLE event %#x\n", p_ble_evt->header.evt_id);
             // No implementation needed.
             break;
     }
@@ -262,11 +286,9 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
  */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
-#if USE_SOFTDEVICE != s130
     device_on_ble_evt(p_ble_evt);
-#endif
     ble_conn_params_on_ble_evt(p_ble_evt);
-#if USE_SOFTDEVICE != s130
+#ifndef USE_CENTRAL_MODE
     ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);
 #endif
     on_ble_evt(p_ble_evt);
@@ -283,6 +305,9 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 static void sys_evt_dispatch(uint32_t sys_evt)
 {
     pstorage_sys_event_handler(sys_evt);
+#ifdef USE_CENTRAL_MODE
+    blec_sys_event_handler(sys_evt);
+#endif
 }
 
 
@@ -410,6 +435,9 @@ static void ble_stack_init(void)
 void ble_init()
 {
     ble_stack_init();
+#ifdef USE_CENTRAL_MODE
+    blec_init();
+#endif
 }
 
 
@@ -418,16 +446,21 @@ void ble_init()
  */
 void ble_late_init()
 {
-#if USE_SOFTDEVICE != s130
+#ifndef USE_CENTRAL_MODE
     dfu_init();
 #endif
     gap_params_init();
     uuid_init();
-#if USE_SOFTDEVICE != s130
+#ifndef USE_CENTRAL_MODE
     services_init();
 #endif
     conn_params_init();
     sec_params_init();
+
     device_information_service_init();
     advertising_init();
+    peripheral_advertising_start();
+#ifdef USE_CENTRAL_MODE
+    blec_scan_start();
+#endif
 }
