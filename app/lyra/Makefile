@@ -1,6 +1,6 @@
 MAKEFILE_DIR    := $(dir $(lastword $(MAKEFILE_LIST)))
 
-DEVICE_SRCS     = lyra.c ble.c lyra_devices.c
+DEVICE_SRCS     = lyra.c ble.c lyra_devices.c ../lis2dh.c
 
 PROJECT_NAME    = lyra
 SOURCE_PATHS    += $(MAKEFILE_DIR)/app/lyra

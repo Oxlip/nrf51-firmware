@@ -5,6 +5,7 @@
 #include <app_gpiote.h>
 #include <app_button.h>
 #include <ble.h>
+#include <lis2dh.h>
 
 #include "platform.h"
 #include "board_conf.h"
@@ -27,6 +28,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
     printf("Button %d action: %d\n", pin_no, button_action);
     nrf_gpio_pin_toggle(GREEN_LED);
+    lis2dh_print_values();
 
     /* Send an event notification to HUB */
     switch (pin_no)
@@ -61,6 +63,7 @@ static void buttons_init(void)
     err_code = app_button_enable();
     APP_ERROR_CHECK(err_code);
 }
+extern void scan_bus();
 
 void device_init()
 {
@@ -76,5 +79,7 @@ void device_init()
 
     nrf_gpio_pin_set(GREEN_LED);
     buttons_init();
+
+    lis2dh_init();
 }
 
