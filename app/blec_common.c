@@ -10,8 +10,9 @@
 #include <ble_conn_params.h>
 #include <ble_gap.h>
 #include <pstorage.h>
-#include <device_manager.h>
-#include <ble_db_discovery.h>
+#include <device_manager_s130.h>
+#include <ble_db_discovery_s130.h>
+#include "ble_dim_c.h"
 
 #include <board_conf.h>
 #include <board_export.h>
@@ -25,6 +26,7 @@
 #include <ble_dfu.h>
 #include <dfu_app_handler.h>
 
+#define LOG printf
 #define SCAN_INTERVAL              0x00A0                             /**< Determines scan interval in units of 0.625 millisecond. */
 #define SCAN_WINDOW                0x0050                             /**< Determines scan window in units of 0.625 millisecond. */
 #define MIN_CONNECTION_INTERVAL    MSEC_TO_UNITS(50, UNIT_1_25_MS)    /**< Determines maximum connection interval in millisecond. */
@@ -32,10 +34,10 @@
 #define SLAVE_LATENCY              0                                  /**< Determines slave latency in counts of connection events. */
 #define SUPERVISION_TIMEOUT        MSEC_TO_UNITS(4000, UNIT_10_MS)    /**< Determines supervision time-out in units of 10 millisecond. */
 
-#define TARGET_UUID                0x180D                             /**< Target device name that application is looking for. */
+#define TARGET_UUID                0xa000                             /**< Target device name that application is looking for. */
 #define MAX_PEER_COUNT             DEVICE_MANAGER_MAX_CONNECTIONS     /**< Maximum number of peer's application intends to manage. */
 #define UUID16_SIZE                2                                  /**< Size of 16 bit UUID */
-#define RSSI_CRITERIA              -50                                /**< Minimum RSSI value for peer peripheral. */
+#define RSSI_CRITERIA              -90                                /**< Minimum RSSI value for peer peripheral. */
 /**@breif Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST,SRC)                                                                  \
         do                                                                                       \
@@ -58,7 +60,9 @@ typedef enum
     BLE_WHITELIST_SCAN,                                           /**< Advertising with whitelist. */
     BLE_FAST_SCAN,                                                /**< Fast advertising running. */
 } ble_advertising_mode_t;
+static uint16_t                     m_peripheral_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 static ble_db_discovery_t           m_ble_db_discovery;                  /**< Structure used to identify the DB Discovery module. */
+static ble_dim_c_t                  m_ble_dim_c;                         /**< Structure used to identify the Battery Service client module. */
 static dm_application_instance_t    m_dm_app_id;                         /**< Application identifier. */
 static dm_handle_t                  m_dm_device_handle;                  /**< Device Identifier identifier. */
 static uint8_t                      m_peer_count = 0;                    /**< Number of peer's connected. */
@@ -176,10 +180,10 @@ static api_result_t device_manager_event_handler(const dm_handle_t    * p_handle
     {
         case DM_EVT_CONNECTION:
         {
-            printf("[APPL]: >> DM_EVT_CONNECTION\n");
+            LOG("[APPL]: >> DM_EVT_CONNECTION\n");
             ble_gap_addr_t * peer_addr;
             peer_addr = &p_event->event_param.p_gap_param->params.connected.peer_addr;
-            printf("[APPL]:[%02X %02X %02X %02X %02X %02X]: Connection Established\n",
+            LOG("[APPL]:[%02X %02X %02X %02X %02X %02X]: Connection Established\n",
                                 peer_addr->addr[0], peer_addr->addr[1], peer_addr->addr[2],
                                 peer_addr->addr[3], peer_addr->addr[4], peer_addr->addr[5]);
             nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
@@ -196,13 +200,13 @@ static api_result_t device_manager_event_handler(const dm_handle_t    * p_handle
             {
                 blec_scan_start();
             }
-            printf("[APPL]: << DM_EVT_CONNECTION\n");
+            LOG("[APPL]: << DM_EVT_CONNECTION\n");
             break;
         }
 
         case DM_EVT_DISCONNECTION:
         {
-            printf("[APPL]: >> DM_EVT_DISCONNECTION\n");
+            LOG("[APPL]: >> DM_EVT_DISCONNECTION\n");
             memset(&m_ble_db_discovery, 0 , sizeof (m_ble_db_discovery));
 
             nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
@@ -212,52 +216,52 @@ static api_result_t device_manager_event_handler(const dm_handle_t    * p_handle
                 blec_scan_start();
             }
             m_peer_count--;
-            printf("[APPL]: << DM_EVT_DISCONNECTION\n");
+            LOG("[APPL]: << DM_EVT_DISCONNECTION\n");
             break;
         }
 
         case DM_EVT_SECURITY_SETUP:
         {
-            printf("[APPL]:[0x%02X] >> DM_EVT_SECURITY_SETUP\n", p_handle->connection_id);
+            LOG("[APPL]:[0x%02X] >> DM_EVT_SECURITY_SETUP\n", p_handle->connection_id);
             // Slave securtiy request received from peer, if from a non bonded device, 
             // initiate security setup, else, wait for encryption to complete.
             err_code = dm_security_setup_req(&m_dm_device_handle);
             APP_ERROR_CHECK(err_code);
-            printf("[APPL]:[0x%02X] << DM_EVT_SECURITY_SETUP\n", p_handle->connection_id);
+            LOG("[APPL]:[0x%02X] << DM_EVT_SECURITY_SETUP\n", p_handle->connection_id);
             break;
         }
 
         case DM_EVT_SECURITY_SETUP_COMPLETE:
         {
-            printf("[APPL]: >> DM_EVT_SECURITY_SETUP_COMPLETE\n");
+            LOG("[APPL]: >> DM_EVT_SECURITY_SETUP_COMPLETE\n");
             break;
         }
 
         case DM_EVT_LINK_SECURED:
-            printf("[APPL]: >> DM_LINK_SECURED_IND\n");
-            printf("[APPL]: << DM_LINK_SECURED_IND\n");
+            LOG("[APPL]: >> DM_LINK_SECURED_IND\n");
+            LOG("[APPL]: << DM_LINK_SECURED_IND\n");
             break;
 
         case DM_EVT_DEVICE_CONTEXT_LOADED:
-            printf("[APPL]: >> DM_EVT_LINK_SECURED\n");
+            LOG("[APPL]: >> DM_EVT_LINK_SECURED\n");
             APP_ERROR_CHECK(event_result);
-            printf("[APPL]: << DM_EVT_DEVICE_CONTEXT_LOADED\n");
+            LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_LOADED\n");
             break;
 
         case DM_EVT_DEVICE_CONTEXT_STORED:
-            printf("[APPL]: >> DM_EVT_DEVICE_CONTEXT_STORED\n");
+            LOG("[APPL]: >> DM_EVT_DEVICE_CONTEXT_STORED\n");
             APP_ERROR_CHECK(event_result);
-            printf("[APPL]: << DM_EVT_DEVICE_CONTEXT_STORED\n");
+            LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_STORED\n");
             break;
 
         case DM_EVT_DEVICE_CONTEXT_DELETED:
-            printf("[APPL]: >> DM_EVT_DEVICE_CONTEXT_DELETED\n");
+            LOG("[APPL]: >> DM_EVT_DEVICE_CONTEXT_DELETED\n");
             APP_ERROR_CHECK(event_result);
-            printf("[APPL]: << DM_EVT_DEVICE_CONTEXT_DELETED\n");
+            LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_DELETED\n");
             break;
 
         default:
-            printf("[APPL]: unknown device manager event\n");
+            LOG("[APPL]: unknown device manager event\n");
             break;
     }
 
@@ -275,6 +279,7 @@ void device_manager_init(void)
 
     uint32_t               err_code;
 
+    LOG("%s: \n", __FUNCTION__);
     err_code = pstorage_init();
     APP_ERROR_CHECK(err_code);
     init_param.clear_persistent_data = true;
@@ -309,15 +314,15 @@ void blec_gap_event_timeout(const ble_gap_evt_t *p_gap_evt, uint8_t timeout_src)
 {
     if(timeout_src == BLE_GAP_TIMEOUT_SRC_SCAN)
     {
-        printf("[GAP event]: Scan timed out.\n");
+        LOG("[GAP event]: Scan timed out.\n");
         m_scan_mode = BLE_FAST_SCAN;
         blec_scan_start();
     }
     else if (timeout_src == BLE_GAP_TIMEOUT_SRC_CONN)
     {
-        printf("[GAP event]: Connection Request timed out.\n");
+        LOG("[GAP event]: Connection Request timed out.\n");
     }
-    printf("BLE GAP event\n");
+    LOG("BLE GAP event\n");
 }
 
 /**
@@ -383,14 +388,16 @@ void blec_gap_event_advertisement_report(ble_evt_t *p_ble_evt)
     if (err_code == NRF_SUCCESS)
     {
         uint16_t extracted_uuid;
-        printf("[BLE ADV] : ");
+        LOG("[BLE ADV] : ");
 
         // UUIDs found, look for matching UUID
+        /* Need to compare 128 bits of UUID */
         for (uint32_t u_index = 0; u_index < (type_data.data_len/UUID16_SIZE); u_index++)
         {
             UUID16_EXTRACT(&extracted_uuid, &type_data.p_data[u_index * UUID16_SIZE]);
 
-            printf("%x-",extracted_uuid);
+            LOG("UUID: %x-, TARGET UUID: %x\n", (unsigned int)
+                    extracted_uuid, (unsigned int) TARGET_UUID);
 
             if(extracted_uuid == TARGET_UUID)
             {
@@ -401,7 +408,7 @@ void blec_gap_event_advertisement_report(ble_evt_t *p_ble_evt)
                     err_code = sd_ble_gap_scan_stop();
                     if (err_code != NRF_SUCCESS)
                     {
-                        printf("[ADV_REP]: Scan stop failed, reason %ld\n", err_code);
+                        LOG("[ADV_REP]: Scan stop failed, reason %ld\n", err_code);
                     }
 
                     err_code = sd_ble_gap_connect(&p_gap_evt->params.adv_report.peer_addr,
@@ -409,13 +416,13 @@ void blec_gap_event_advertisement_report(ble_evt_t *p_ble_evt)
 
                     if (err_code != NRF_SUCCESS)
                     {
-                        printf("[ADV_REP]: Connection Request Failed, reason %ld\n", err_code);
+                        LOG("[ADV_REP]: Connection Request Failed, reason %ld\n", err_code);
                     }
                 }
                 return;
             }
         }
-        printf("\n ");
+        LOG("\n ");
     }
 }
 
@@ -432,8 +439,96 @@ static void scan_params_init(void)
     m_scan_param.timeout      = 0x001E;       // 30 seconds timeout.
 }
 
+/**
+ * @brief Database discovery collector initialization.
+ */
+static void db_discovery_init(void)
+{
+    uint32_t err_code = ble_db_discovery_init();
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Dimmer levelCollector Handler.
+ */
+static void dim_c_evt_handler(ble_dim_c_t * p_dim_c, ble_dim_c_evt_t * p_dim_c_evt)
+{
+    bool     success;
+    uint32_t err_code;
+
+    switch (p_dim_c_evt->evt_type)
+    {
+        case BLE_DIM_C_EVT_DISCOVERY_COMPLETE:
+            // Batttery service discovered. Enable notification of dimmer Level.
+            LOG("[APPL]: dimmer Service discovered. \r\n");
+
+            LOG("[APPL]: Reading dimmer level. \r\n");
+
+            err_code = ble_dim_c_bl_read(p_dim_c);
+            APP_ERROR_CHECK(err_code);
+
+
+            LOG("[APPL]: Enabling dimmer Level Notification. \r\n");
+            err_code = ble_dim_c_bl_notif_enable(p_dim_c);
+            APP_ERROR_CHECK(err_code);
+
+            break;
+
+        case BLE_DIM_C_EVT_BATT_NOTIFICATION:
+        {
+            LOG("[APPL]: dimmer Level received %d %%\r\n", p_dim_c_evt->params.dimmer_level);
+
+            //char bl_as_string[LCD_LLEN];
+
+            //sprintf(bl_as_string, "dimmer %d %%", p_dim_c_evt->params.dimmer_level);
+
+            //success = APPL_LCD_WRITE(bl_as_string, strlen(bl_as_string), LCD_LOWER_LINE, 0);
+            APP_ERROR_CHECK_BOOL(success);
+            break;
+        }
+
+        case BLE_DIM_C_EVT_BATT_READ_RESP:
+        {
+            LOG("[APPL]: dimmer Level Read as %d %%\r\n", p_dim_c_evt->params.dimmer_level);
+
+            //char bl_as_string[LCD_LLEN];
+
+            //sprintf(bl_as_string, "dimmer %d %%", p_dim_c_evt->params.dimmer_level);
+
+            //success = APPL_LCD_WRITE(bl_as_string, strlen(bl_as_string), LCD_LOWER_LINE, 0);
+            APP_ERROR_CHECK_BOOL(success);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+
+
+/**
+ * @brief dimmer level collector initialization.
+ */
+static void dim_c_init(void)
+{
+    ble_dim_c_init_t dim_c_init_obj;
+
+    dim_c_init_obj.evt_handler = dim_c_evt_handler;
+
+    uint32_t err_code = ble_dim_c_init(&m_ble_dim_c, &dim_c_init_obj);
+    APP_ERROR_CHECK(err_code);
+}
+
 void blec_init()
 {
     scan_params_init();
     device_manager_init();
+    db_discovery_init();
+
+    dim_c_init();
+}
+
+void blec_on_ble_evt (ble_evt_t *p_ble_evt)
+{
+    dm_ble_evt_handler(&m_peripheral_conn_handle, p_ble_evt); 
+    ble_db_discovery_on_ble_evt(&m_peripheral_conn_handle, &m_ble_db_discovery, p_ble_evt);
 }

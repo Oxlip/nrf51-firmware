@@ -135,10 +135,10 @@ typedef enum
 #define DM_TRC  app_trace_log  /**< Used for getting trace of execution in the module. */
 #define DM_DUMP app_trace_dump /**< Used for dumping octet information to get details of bond information etc. */
 #else //DM_DISABLE_LOGS
-#define DM_DUMP(...)           /**< Disables dumping of octet streams. */
-#define DM_LOG(...)            /**< Disables detailed logs. */
-#define DM_ERR(...)            /**< Disables error logs. */
-#define DM_TRC(...)            /**< Disables traces. */
+#define DM_DUMP printf          /**< Disables dumping of octet streams. */
+#define DM_LOG printf           /**< Disables detailed logs. */
+#define DM_ERR printf           /**< Disables error logs. */
+#define DM_TRC  printf           /**< Disables traces. */
 #endif //DM_DISABLE_LOGS
 /** @} */
 
@@ -545,7 +545,7 @@ static __INLINE bool update_status_bit_is_set(uint32_t index)
  */
 static __INLINE void application_instance_init(uint32_t index)
 {
-    DM_TRC("[DM]: Initializing Application Instance 0x%08X.\r\n", index);
+    DM_LOG("[DM]: Initializing Application Instance 0x%08X.\r\n", (unsigned int) index);
 
     m_application_table[index].ntf_cb  = NULL;
     m_application_table[index].state   = 0x00;
@@ -559,7 +559,7 @@ static __INLINE void application_instance_init(uint32_t index)
  */
 static __INLINE void connection_instance_init(uint32_t index)
 {
-    DM_TRC("[DM]: Initializing Connection Instance 0x%08X.\r\n", index);
+    DM_LOG("[DM]: Initializing Connection Instance 0x%08X.\r\n", (unsigned int) index);
     
     m_connection_table[index].state         = STATE_IDLE;
     m_connection_table[index].conn_handle   = BLE_CONN_HANDLE_INVALID;
@@ -575,7 +575,7 @@ static __INLINE void connection_instance_init(uint32_t index)
  */
 static __INLINE void peer_instance_init(uint32_t index)
 {
-    DM_TRC("[DM]: Initializing Peer Instance 0x%08X.\r\n", index);
+    DM_LOG("[DM]: Initializing Peer Instance 0x%08X.\r\n", (unsigned int) index);
     
     memset(m_peer_table[index].peer_id.id_addr_info.addr, 0, BLE_GAP_ADDR_LEN);
     memset(m_peer_table[index].peer_id.id_info.irk, 0, BLE_GAP_SEC_KEY_LEN);
@@ -1681,7 +1681,7 @@ ret_code_t dm_init(dm_init_param_t const * const p_init_param)
 
     DM_MUTEX_UNLOCK();
 
-    DM_TRC("[DM]: << dm_init.\r\n");
+    DM_LOG("[DM]: << dm_init.\r\n");
 
     return err_code;
 }
@@ -1722,7 +1722,7 @@ ret_code_t dm_register(dm_application_instance_t    * p_appl_instance,
 
     DM_MUTEX_UNLOCK();
 
-    DM_TRC("[DM]: << dm_register.\r\n");
+    DM_LOG("[DM]: << dm_register. err_code %d\r\n", (int) err_code);
 
     return err_code;
 }

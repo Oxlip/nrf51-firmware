@@ -11,7 +11,7 @@
 #include <ble_conn_params.h>
 #include <ble_gap.h>
 #include <pstorage.h>
-#include <device_manager.h>
+#include <device_manager_s130.h>
 
 #include <board_conf.h>
 #include <board_export.h>

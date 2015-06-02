@@ -8,7 +8,11 @@
 #include <ble_uuids.h>
 #include <ble_ss.h>
 #include <ble_common.h>
+#include <blec_common.h>
 #include <app_timer.h>
+
+#include <device_manager_s130.h>
+#include <ble_db_discovery_s130.h>
 
 /** UUIDs to advertise. */
 ble_uuid_t adv_uuids[] = {
@@ -27,4 +31,7 @@ ble_uuid_t * ble_get_adv_uuid_array()
 
 void device_on_ble_evt(ble_evt_t * p_ble_evt)
 {
+#ifdef USE_CENTRAL_MODE
+    blec_on_ble_evt(p_ble_evt);
+#endif
 }

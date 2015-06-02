@@ -24,3 +24,8 @@
 
 # Node modules
 node_modules
+
+*.sw?
+*cscope*
+ID
+
