@@ -17,7 +17,8 @@
 #include "app_trace.h"
 #include "nordic_common.h"
 
-#define SRV_DISC_START_HANDLE  0x0001                    /**< The start handle value used during service discovery. */
+/* TODO: running from 7 for now */
+#define SRV_DISC_START_HANDLE  0x0007                    /**< The start handle value used during service discovery. */
 #define DB_DISCOVERY_MAX_USERS BLE_DB_DISCOVERY_MAX_SRV  /**< The maximum number of users/registrations allowed by this module. */
 #define DB_LOG                 printf                    /**< A debug logger macro that can be used in this file to do logging information over UART. */
 
@@ -218,6 +219,8 @@ static void discovery_complete_evt_trigger(ble_db_discovery_t * const p_db_disco
                 // Too many events pending. Do nothing. (Ideally this should not happen.)
             }
         }
+    } else {
+        DB_LOG("%s: NULL event handler\n", __FUNCTION__);
     }
 }
 
@@ -261,7 +264,7 @@ static void on_srv_disc_completion(ble_db_discovery_t * p_db_discovery)
         err_code = sd_ble_gattc_primary_services_discover
                    (
                    p_db_discovery->conn_handle,
-                   SRV_DISC_START_HANDLE,
+                   m_num_of_discoveries_made,
                    NULL
                    );
         if (err_code != NRF_SUCCESS)
@@ -849,6 +852,8 @@ uint32_t ble_db_discovery_start(ble_db_discovery_t * const p_db_discovery,
     
     uint32_t err_code;
 
+    p_db_discovery->discovery_in_progress = true;
+
     err_code = sd_ble_gattc_primary_services_discover(p_db_discovery->conn_handle,
                                                       SRV_DISC_START_HANDLE,
                                                       NULL);
@@ -856,7 +861,6 @@ uint32_t ble_db_discovery_start(ble_db_discovery_t * const p_db_discovery,
     {
         return err_code;
     }
-    p_db_discovery->discovery_in_progress = true;
 
     return NRF_SUCCESS;
 }

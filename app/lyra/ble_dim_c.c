@@ -171,7 +171,7 @@ static void on_hvx(ble_dim_c_t * p_ble_dim_c, const ble_evt_t * p_ble_evt)
  */
 static void db_discovery_evt_handler(ble_db_discovery_evt_t * p_evt)
 {
-    LOG("%s: called!!! uuid %x, type %x\n", __FUNCTION__,
+    LOG("%s: uuid %x, type %x\n", __FUNCTION__,
             p_evt->params.discovered_db.srv_uuid.uuid,
             p_evt->params.discovered_db.srv_uuid.type);
     // Check if the Dimmer Service was discovered.
@@ -179,7 +179,7 @@ static void db_discovery_evt_handler(ble_db_discovery_evt_t * p_evt)
         &&
         p_evt->params.discovered_db.srv_uuid.uuid == BLE_UUID_DIMMER_SERVICE
         &&
-        p_evt->params.discovered_db.srv_uuid.type == BLE_UUID_TYPE_BLE)
+        p_evt->params.discovered_db.srv_uuid.type == BLE_UUID_TYPE_VENDOR_BEGIN)
     {
         /* FIXME: check uuid_type to be BLE or UNKNOWN */
         mp_ble_dim_c->conn_handle = p_evt->conn_handle;
@@ -234,7 +234,9 @@ static uint32_t cccd_configure(uint16_t conn_handle, uint16_t handle_cccd, bool 
     p_msg->req.write_req.gattc_params.p_value  = p_msg->req.write_req.gattc_value;
     p_msg->req.write_req.gattc_params.offset   = 0;
     p_msg->req.write_req.gattc_params.write_op = BLE_GATT_OP_WRITE_REQ;
+    /* TODO: LSB = Which dimmer instance for aura/mira */
     p_msg->req.write_req.gattc_value[0]        = LSB(cccd_val);
+    /* TODO: MSB = Value of the dimmer */
     p_msg->req.write_req.gattc_value[1]        = MSB(cccd_val);
     p_msg->conn_handle                         = conn_handle;
     p_msg->type                                = WRITE_REQ;
@@ -253,7 +255,7 @@ uint32_t ble_dim_c_init(ble_dim_c_t * p_ble_dim_c, ble_dim_c_init_t * p_ble_dim_
 
     ble_uuid_t dim_uuid;
 
-    dim_uuid.type                = BLE_UUID_TYPE_BLE; // astral service type
+    dim_uuid.type                = BLE_UUID_TYPE_VENDOR_BEGIN; // astral service type
     dim_uuid.uuid                = BLE_UUID_DIMMER_SERVICE;
 
     mp_ble_dim_c                 = p_ble_dim_c;

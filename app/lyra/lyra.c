@@ -80,6 +80,8 @@ void device_init()
     nrf_gpio_pin_set(GREEN_LED);
     buttons_init();
 
+#if BOARD_LYRA
     lis2dh_init();
+#endif
 }
 
