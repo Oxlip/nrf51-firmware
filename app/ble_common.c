@@ -451,9 +451,7 @@ void ble_late_init()
 #endif
     gap_params_init();
     uuid_init();
-#ifndef USE_CENTRAL_MODE
     services_init();
-#endif
     conn_params_init();
     sec_params_init();
 
