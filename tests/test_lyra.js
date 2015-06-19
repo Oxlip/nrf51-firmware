@@ -18,7 +18,7 @@ describe('Reachability', function(){
                 if (peripheral.rssi < RSSI_THRESHOLD) {
                     return;
                 }
-                if (peripheral.advertisement.localName.indexOf('Aura') > -1) {
+                if (peripheral.advertisement.localName.indexOf('Lyra') > -1) {
                     verify_characteristics(peripheral, done);
                 }
             });
@@ -33,21 +33,19 @@ function remove_dash(uuid) {
     return uuid.replace(/-/gi, '')
 }
 
-/* Verify Aura's Characterics are present */
-function verify_characteristics(aura, done) {
-    var serviceUUIDs = [remove_dash(nuton_uuids.BLE_UUID_DIMMER_SERVICE),
-                        remove_dash(nuton_uuids.BLE_UUID_CS_SERVICE)];
-    var characteristicUUIDs = [remove_dash(nuton_uuids.BLE_UUID_DIMMER_CHAR),
-                               remove_dash(nuton_uuids.BLE_UUID_CS_CHAR)];
-    aura.connect(function(error) {
+/* Verify lyra's Characterics are present */
+function verify_characteristics(lyra, done) {
+    var serviceUUIDs = [remove_dash(nuton_uuids.BLE_UUID_CS_SERVICE)];
+    var characteristicUUIDs = [remove_dash(nuton_uuids.BLE_UUID_BUTTON_CHAR)];
+    lyra.connect(function(error) {
         // set timeout
         var timeout = setTimeout(function() {
-            aura.disconnect();
+            lyra.disconnect();
             done();
         }, EXPECTED_TIMEOUT / 2);
 
         // discover services and characteristics
-        aura.discoverSomeServicesAndCharacteristics(serviceUUIDs, characteristicUUIDs,
+        lyra.discoverSomeServicesAndCharacteristics(serviceUUIDs, characteristicUUIDs,
             function(error, services, chars) {
 
                 // walk through each char and write a value to it
