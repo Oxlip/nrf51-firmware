@@ -8,6 +8,33 @@ var EXPECTED_TIMEOUT  = 6000
 var EXIT_GRACE_PERIOD = 2000; // milliseconds
 
 
+/*
+typedef struct {
+    ble_addr    address;       // address of the device
+    uint8_t     device_type;   // type of the device
+    uint16_t    value;         // value to be written
+} device_action_t;
+
+// BLE message
+typedef struct {
+    uint8_t         add;        // 0 - update. 1 - clear
+    uint8_t         button;     // button number (max 8)
+    uint8_t         sub_index;  // sub action index
+    device_action_t device_action;
+};
+*/
+var  ble_msg_struct = new cstruct.Schema({
+    add: cstruct.type.uint8,
+    button: cstruct.type.uint8,
+    sub_index: cstruct.type.uint8,
+
+    address: cstruct.type.uint48,
+    device_type: cstruct.type.uint8,
+    value: cstruct.type.uint16
+});
+
+cstruct.register('ble_msg', ble_msg_struct);
+
 describe('Reachability', function(){
 
     describe('Verify', function(){
@@ -51,8 +78,14 @@ function verify_characteristics(lyra, done) {
                 // walk through each char and write a value to it
                 // and then read the value back.
                 chars.forEach(function(characteristic) {
-                    var buf = new Buffer(2);
-                    buf.writeUInt16LE(0x0010, 0);
+                    var buf = cstruct.packSync('ble_msg', {add:1,
+                                                           button:0,
+                                                           sub_index:0,
+                                                           address:0x010203040506,
+                                                           device_type:1,
+                                                           value:100
+                                                           });
+
                     characteristic.write(buf);
 
                     characteristic.read(function(error, data) {

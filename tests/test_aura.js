@@ -1,12 +1,19 @@
 var assert = require('assert');
 var noble = require('noble');
 var async = require('async');
+var cstruct = require('c-struct');
 var nuton_uuids = require('./nuton_uuids');
 
 var RSSI_THRESHOLD    = -90;
 var EXPECTED_TIMEOUT  = 6000
 var EXIT_GRACE_PERIOD = 2000; // milliseconds
 
+var  ble_msg_struct = new cstruct.Schema({
+    index: cstruct.type.uint8,
+    value: cstruct.type.uint8
+});
+
+cstruct.register('ble_msg', ble_msg_struct);
 
 describe('Reachability', function(){
 
@@ -53,10 +60,8 @@ function verify_characteristics(aura, done) {
                 // walk through each char and write a value to it
                 // and then read the value back.
                 chars.forEach(function(characteristic) {
-                    var buf = new Buffer(2);
-                    buf.writeUInt16LE(0x0010, 0);
+                    var buf = cstruct.packSync('ble_msg', {index:2, value:50});
                     characteristic.write(buf);
-
                     characteristic.read(function(error, data) {
                         console.log(data);
                     });

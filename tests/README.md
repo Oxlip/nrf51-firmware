@@ -29,7 +29,7 @@ sudo ln -s /usr/bin/nodejs /usr/bin/node
 ```
 sudo apt-get install bluetooth bluez-utils libbluetooth-dev
 cd <repo>/tests
-sudo npm install noble bleno
+sudo npm install noble bleno c-struct
 sudo apt-get install libcap2-bin
 find -path '*noble*Release/hci-ble' -exec sudo setcap cap_net_raw+eip '{}' \;
 ```
