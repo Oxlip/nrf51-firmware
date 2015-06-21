@@ -82,7 +82,7 @@ uint32_t services_init(void)
     dimmer_param.support_notification   = true;
     dimmer_param.p_report_ref           = NULL;
     dimmer_param.initial_value          = 0;
-  
+
     BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
     BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
     err_code = ble_ss_init(&dimmer_ss, &ble_service_uuid, &ble_char_uuid, &dimmer_param);

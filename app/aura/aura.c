@@ -17,66 +17,66 @@
 app_timer_id_t cs_timer_id;
 static int zc_count=0;
 
+/** Binary format to communicate with the mobile app through BLE.
+ */
+typedef struct {
+    uint16_t  current;
+    uint16_t  watts;
+    uint8_t   volt;
+    uint8_t   freq;
+} __attribute__((__packed__ )) ble_cs_info;
+
+ble_cs_info cs_info = {0};
+
 /** Current sensor measurement handler
  */
 static void cs_meas_timeout_handler(void * p_context)
 {
-  uint32_t err_code;
-  uint16_t len = sizeof(float);
-  float cs_rms_a = (float) cs_get_rms_current(0) * 26;
-  float cs_rms_v = (float) cs_get_rms_voltage(0) * 700;
-  float cs_active_w = (float) cs_get_active_watts(0);
-  float cs_peak_a = (float) cs_get_peak_current(0);
-  float cs_peak_v = (float) cs_get_peak_voltage(0);
+#ifdef BOARD_AURA
+    float cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq;
 
-  printf("RMS Current0 %f RMS Volt0 %f Active Watts0 %f Peak A %f Peak V %f freq %f\n", cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, (float)cs_get_line_frequency());
-  cs_get_status();
+    cs_rms_a = (float) cs_get_rms_current(0) * 26;
+    cs_rms_v = (float) cs_get_rms_voltage(0) * 700;
+    cs_active_w = (float) cs_get_active_watts(0);
+    cs_peak_a = (float) cs_get_peak_current(0);
+    cs_peak_v = (float) cs_get_peak_voltage(0);
+    cs_freq = (float)cs_get_line_frequency();
 
+    cs_info.current = (uint16_t)cs_rms_a;
+    cs_info.volt = (uint16_t)cs_rms_v;
+    cs_info.watts = (uint8_t)cs_active_w;
+    cs_info.freq = (uint8_t)cs_freq;
+    printf("RMS Current0 %f RMS Volt0 %f Active Watts0 %f Peak A %f Peak V %f freq %f\n",
+            cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq);
+#else
+    cs_info.current = cs_info.current + 1;
+    cs_info.volt = 1;
+    cs_info.watts = 2;
+    cs_info.freq = 3;
+#endif
 
-  #if 0
-  printf("RMS Current1 %f RMS Volt1 %f Active Watts1 %f\n", 
-            (float) cs_get_rms_current(1), (float) cs_get_rms_voltage(1), (float) cs_get_active_watts(1));
-  #endif
-
-  // Update database
-  err_code = sd_ble_gatts_value_set(cs_ss.sensor_value_handles.value_handle,
-                                    0, &len, (uint8_t *)&cs_rms_a);
-  if (err_code != NRF_SUCCESS)
-  {
-    printf("Unable to set current sensor value %lx\n", err_code);
-    return;
-  }
-
-  // Send value if connected and notifying
-  if ((cs_ss.conn_handle != BLE_CONN_HANDLE_INVALID) && cs_ss.is_notification_supported)
-  {
-    ble_gatts_hvx_params_t hvx_params;
-
-    memset(&hvx_params, 0, sizeof(hvx_params));
-
-    hvx_params.handle = cs_ss.sensor_value_handles.value_handle;
-    hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
-    hvx_params.offset = 0;
-    hvx_params.p_len  = &len;
-    hvx_params.p_data = (uint8_t *)&cs_rms_a;
-
-    err_code = sd_ble_gatts_hvx(cs_ss.conn_handle, &hvx_params);
-  }
-
+    uint32_t err_code;
+    // Update BLE attribute database
+    err_code = ble_ss_sensor_value_update(&cs_ss, (uint8_t *)&cs_info, sizeof(cs_info));
+    if (err_code != NRF_SUCCESS)
+    {
+        printf("sd_ble_gatts_value_set failed: errorcode:%#lx.\n", err_code);
+        return;
+    }
 }
 
 void device_timers_init()
 {
-  uint32_t err_code;
-  err_code = app_timer_create(&cs_timer_id, APP_TIMER_MODE_REPEATED, cs_meas_timeout_handler);
-  APP_ERROR_CHECK(err_code);
+    uint32_t err_code;
+    err_code = app_timer_create(&cs_timer_id, APP_TIMER_MODE_REPEATED, cs_meas_timeout_handler);
+    APP_ERROR_CHECK(err_code);
 }
 
 void device_timers_start()
 {
-  uint32_t err_code;
-  err_code = app_timer_start(cs_timer_id, CS_MEAS_INTERVAL, NULL);
-  APP_ERROR_CHECK(err_code);
+    uint32_t err_code;
+    err_code = app_timer_start(cs_timer_id, CS_MEAS_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**@brief Function for handling button events.
@@ -145,7 +145,7 @@ device_init()
     nrf_gpio_cfg_sense_input(AURA_ZERO_CROSSING_PIN, NRF_GPIO_PIN_NOPULL, NRF_GPIO_PIN_SENSE_HIGH);
     app_gpiote_user_register(&zc_gpiote_id, 0, 1 << AURA_ZERO_CROSSING_PIN, zc_event_handler);
     app_gpiote_user_enable(zc_gpiote_id);
-    
+
     buttons_init();
 
     // Configure triac pin as output.
