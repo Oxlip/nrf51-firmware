@@ -126,13 +126,15 @@ void ble_ss_on_ble_evt(ble_ss_t * p_ss, ble_evt_t * p_ble_evt);
  * @note This function must be called upon reconnection if the sensor value has changed
  *       while the service has been disconnected from a bonded client.
  *
- * @param[in]   p_ss          Sensor Service structure.
- * @param[in]   sensor_value  New sensor measurement value (in percent of full capacity).
+ * @param[in]   p_ss    Sensor Service structure.
+ * @param[in]   buffer  New sensor measurement value.
+ * @param[in]   length  Length of the buffer.
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t ble_ss_sensor_value_update(ble_ss_t * p_ss, uint32_t sensor_value);
+uint32_t ble_ss_sensor_value_update(ble_ss_t * p_ss, uint8_t *buffer, uint16_t len);
 
 #endif // BLE_SS_H__
 
 /** @} */
+

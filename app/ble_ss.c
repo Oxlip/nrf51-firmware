@@ -228,7 +228,7 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
     attr_char_value.p_attr_md = &attr_md;
     attr_char_value.init_len  = sizeof(uint32_t);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len   = sizeof(uint32_t);
+    attr_char_value.max_len   = 20; //MAX packet length for update.
     attr_char_value.p_value   = (uint8_t *)&initial_sensor_value;
 
     err_code = sd_ble_gatts_characteristic_add(p_ss->service_handle, &char_md,
@@ -254,9 +254,9 @@ static uint32_t sensor_value_char_add(ble_ss_t * p_ss, ble_uuid_t * p_ble_uuid, 
         attr_md.rd_auth = 0;
         attr_md.wr_auth = 0;
         attr_md.vlen    = 0;
-        
+
         init_len = ble_srv_report_ref_encode(encoded_report_ref, p_ss_init->p_report_ref);
-        
+
         memset(&attr_char_value, 0, sizeof(attr_char_value));
 
         attr_char_value.p_uuid    = &ble_report_uuid;
@@ -306,61 +306,50 @@ uint32_t ble_ss_init(ble_ss_t * p_ss, ble_uuid_t * p_service_ble_uuid, ble_uuid_
 }
 
 
-uint32_t ble_ss_sensor_value_update(ble_ss_t * p_ss, uint32_t sensor_value)
+uint32_t ble_ss_sensor_value_update(ble_ss_t * p_ss, uint8_t *buffer, uint16_t length)
 {
     uint32_t err_code = NRF_SUCCESS;
-
-    if (sensor_value != p_ss->sensor_value_last)
-    {
-        uint16_t len = sizeof(sensor_value);
-
-        // Save new sensor value
-        p_ss->sensor_value_last = sensor_value;
+    uint16_t len = length;
 
 #ifdef USE_CENTRAL_MODE
-        ble_gatts_value_t value;
+    ble_gatts_value_t value;
 
-        value.len = len;
-        value.offset = 0;
-        value.p_value = (uint8_t *)&sensor_value;
+    value.len = len;
+    value.offset = 0;
+    value.p_value = buffer;
 
-        // Update database
-        err_code = sd_ble_gatts_value_set(p_ss->conn_handle,
-                                          p_ss->sensor_value_handles.value_handle,
-                                          &value);
+    // Update database
+    err_code = sd_ble_gatts_value_set(p_ss->conn_handle,
+                                      p_ss->sensor_value_handles.value_handle,
+                                      &value);
 
 #else
-        // Update database
-        err_code = sd_ble_gatts_value_set(p_ss->sensor_value_handles.value_handle,
-                                          0,
-                                          &len,
-                                          (uint8_t *)&sensor_value);
+    // Update database
+    err_code = sd_ble_gatts_value_set(p_ss->sensor_value_handles.value_handle,
+                                      0,
+                                      &len,
+                                      buffer);
 #endif
-        if (err_code != NRF_SUCCESS)
-        {
-            return err_code;
-        }
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
 
-        // Send value if connected and notifying
-        if ((p_ss->conn_handle != BLE_CONN_HANDLE_INVALID) && p_ss->is_notification_supported)
-        {
-            ble_gatts_hvx_params_t hvx_params;
+    // Send value if connected and notifying
+    if ((p_ss->conn_handle != BLE_CONN_HANDLE_INVALID) && p_ss->is_notification_supported)
+    {
+        ble_gatts_hvx_params_t hvx_params;
 
-            memset(&hvx_params, 0, sizeof(hvx_params));
-            len = sizeof(uint8_t);
+        memset(&hvx_params, 0, sizeof(hvx_params));
 
-            hvx_params.handle = p_ss->sensor_value_handles.value_handle;
-            hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
-            hvx_params.offset = 0;
-            hvx_params.p_len  = &len;
-            hvx_params.p_data = (uint8_t *)&sensor_value;
+        hvx_params.handle = p_ss->sensor_value_handles.value_handle;
+        hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+        hvx_params.offset = 0;
+        hvx_params.p_len  = &len;
+        hvx_params.p_data = buffer;
 
-            err_code = sd_ble_gatts_hvx(p_ss->conn_handle, &hvx_params);
-        }
-        else
-        {
-            err_code = NRF_ERROR_INVALID_STATE;
-        }
+        err_code = sd_ble_gatts_hvx(p_ss->conn_handle, &hvx_params);
+        err_code = NRF_SUCCESS;
     }
 
     return err_code;
