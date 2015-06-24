@@ -76,8 +76,8 @@ uint32_t services_init(void)
     lyra_bs_param.p_report_ref           = NULL;
     lyra_bs_param.initial_value          = 0;
 
-    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_BUTTON_SERVICE);
-    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_BUTTON_CHAR);
+    BLE_UUID_ASSIGN(ble_service_uuid, BLE_UUID_BUTTON_SERVICE);
+    BLE_UUID_ASSIGN(ble_char_uuid, BLE_UUID_BUTTON_CHAR);
     err_code = ble_ss_init(&lyra_bs_ss, &ble_service_uuid, &ble_char_uuid, &lyra_bs_param);
     APP_ERROR_CHECK(err_code);
 

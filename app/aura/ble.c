@@ -83,8 +83,8 @@ uint32_t services_init(void)
     dimmer_param.p_report_ref           = NULL;
     dimmer_param.initial_value          = 0;
 
-    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
-    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
+    BLE_UUID_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
+    BLE_UUID_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
     err_code = ble_ss_init(&dimmer_ss, &ble_service_uuid, &ble_char_uuid, &dimmer_param);
     APP_ERROR_CHECK(err_code);
 
@@ -103,8 +103,8 @@ uint32_t services_init(void)
     cs_param.p_report_ref           = NULL;
     cs_param.initial_value          = 0;
 
-    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
-    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);
+    BLE_UUID_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
+    BLE_UUID_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);
     err_code = ble_ss_init(&cs_ss, &ble_service_uuid, &ble_char_uuid, &cs_param);
     APP_ERROR_CHECK(err_code);
 

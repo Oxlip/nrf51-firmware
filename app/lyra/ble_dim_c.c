@@ -255,7 +255,7 @@ uint32_t ble_dim_c_init(ble_dim_c_t * p_ble_dim_c, ble_dim_c_init_t * p_ble_dim_
 
     ble_uuid_t dim_uuid;
 
-    dim_uuid.type                = BLE_UUID_TYPE_VENDOR_BEGIN; // astral service type
+    dim_uuid.type                = BLE_UUID_TYPE_VENDOR_BEGIN; // service type
     dim_uuid.uuid                = BLE_UUID_DIMMER_SERVICE;
 
     mp_ble_dim_c                 = p_ble_dim_c;

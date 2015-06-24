@@ -29,7 +29,7 @@
 static ble_dfu_t m_dfus;
 
 /**< UUID type registered with the SDK */
-uint8_t astral_uuid_type = BLE_UUID_TYPE_UNKNOWN;
+uint8_t oxlip_uuid_type = BLE_UUID_TYPE_UNKNOWN;
 
 /**< Security requirements for this application. */
 static ble_gap_sec_params_t m_sec_params;
@@ -342,9 +342,9 @@ static void device_information_service_init(void)
 static void uuid_init(void)
 {
     uint32_t err_code;
-    ble_uuid128_t base_uuid = {BLE_ASTRAL_UUID_BASE};
+    ble_uuid128_t base_uuid = {BLE_UUID_BASE};
 
-    err_code = sd_ble_uuid_vs_add(&base_uuid, &astral_uuid_type);
+    err_code = sd_ble_uuid_vs_add(&base_uuid, &oxlip_uuid_type);
     APP_ERROR_CHECK(err_code);
 }
 

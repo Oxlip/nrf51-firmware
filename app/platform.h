@@ -6,7 +6,7 @@
 #define __PLATFORM__
 
 
-#define MANUFACTURER_NAME               "Nuton"                                     /**< This will be passed to Device Information Service. */
+#define MANUFACTURER_NAME               "Oxlip"                                     /**< This will be passed to Device Information Service. */
 
 #define APP_TIMER_MAX_TIMERS            4                                           /**< Maximum number of simultaneously created timers. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
