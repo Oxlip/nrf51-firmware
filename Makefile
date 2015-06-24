@@ -21,7 +21,7 @@ SDK_SRCS =  app_gpiote.c \
             softdevice_handler.c \
             ble_debug_assert_handler.c \
             ble_error_log.c \
-            twi_hw_master.c \
+            twi_sw_master.c \
             simple_uart.c
 
 # Common platform files
