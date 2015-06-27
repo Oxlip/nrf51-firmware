@@ -13,6 +13,7 @@
 #include "board_conf.h"
 #include "smbus.h"
 #include "sensor.h"
+#include "dimmer.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
@@ -41,24 +42,15 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 }
 
 
-static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write) 
+static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write)
 {
-    printf("Dimmer percentage %d\n\r", p_evt_write->data[1]);
     if (p_evt_write->len == 0)
     {
+        printf("Invalid BLE data length");
         return;
     }
 
-    if (p_evt_write->data[1] == 0)
-    {
-        nrf_gpio_pin_clear(AURA_TOUCH_LED);
-        nrf_gpio_pin_clear(AURA_TRIAC_ENABLE);
-    }
-    else
-    {
-        nrf_gpio_pin_set(AURA_TOUCH_LED);
-        nrf_gpio_pin_set(AURA_TRIAC_ENABLE);
-    }
+    dimmer_enable(p_evt_write->data[0], p_evt_write->data[1]);
 }
 
 uint32_t services_init(void)

@@ -30,7 +30,7 @@
 #define ASSERT_LED_PIN_NO               2
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  4
-#define AURA_TRIAC_ENABLE               12
+#define TRIAC_1_PIN                     12
 
 #define UART_RX_PIN_NUMBER              23
 #define UART_TX_PIN_NUMBER              22
@@ -68,7 +68,7 @@
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  19
 
-#define AURA_TRIAC_ENABLE               19
+#define TRIAC_1_PIN                     19
 
 #define UART_RX_PIN_NUMBER              9
 #define UART_TX_PIN_NUMBER              11
@@ -99,7 +99,7 @@
 #define ASSERT_LED_PIN_NO               23
 /**< Glow LED when Touch button is pressed. */
 #define AURA_TOUCH_LED                  24
-#define AURA_TRIAC_ENABLE               24
+#define TRIAC_1_PIN                     24
 
 #define UART_RX_PIN_NUMBER              11
 #define UART_TX_PIN_NUMBER              9
@@ -119,6 +119,8 @@
 #define AURA_LED_RED                    2
 
 #define AURA_ZERO_CROSSING_PIN          13
+
+#define PLATFORM_MAX_TRIACS             1
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 #define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)

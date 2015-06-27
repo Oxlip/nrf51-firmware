@@ -176,7 +176,6 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
 #else
     if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
     {
-        uint32_t err_code;
         nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
 
         // Configure buttons with sense level low as wakeup source.
@@ -185,8 +184,11 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
                                  NRF_GPIO_PIN_SENSE_LOW);
 
         // Go to system-off mode (this function will not return; wakeup will cause a reset)
-        err_code = sd_power_system_off();
-        APP_ERROR_CHECK(err_code);
+        printf("BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT -> power_off()");
+        peripheral_advertising_start();
+        //uint32_t err_code;
+        //err_code = sd_power_system_off();
+        //APP_ERROR_CHECK(err_code);
     }
 #endif
 }
@@ -267,6 +269,10 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 #endif
         case BLE_GAP_EVT_TIMEOUT:
             handle_gap_event_timeout(p_ble_evt);
+            break;
+
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
             break;
 
         default:

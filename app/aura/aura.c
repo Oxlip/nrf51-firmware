@@ -10,17 +10,17 @@
 #include "platform.h"
 #include "board_conf.h"
 #include "sensor.h"
+#include "dimmer.h"
 #include "aura.h"
 
-#define CS_MEAS_INTERVAL          APP_TIMER_TICKS(2000, 0) /**< Current sensor measurement interval (ticks). */
+#define CS_MEAS_INTERVAL          APP_TIMER_TICKS(2000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
 
 app_timer_id_t cs_timer_id;
-static int zc_count=0;
 
 /** Binary format to communicate with the mobile app through BLE.
  */
 typedef struct {
-    uint16_t  current;
+    uint16_t  current;  // in mA
     uint16_t  watts;
     uint8_t   volt;
     uint8_t   freq;
@@ -28,39 +28,46 @@ typedef struct {
 
 ble_cs_info cs_info = {0};
 
+#define CS_RMS_A_MULTIPLIER     26
+#define CS_RMS_V_MULTIPLIER     700
+#define CS_ACTIVE_W_MULTIPLIER  1
+
+#define MILLI                   1000
+
 /** Current sensor measurement handler
  */
 static void cs_meas_timeout_handler(void * p_context)
 {
-#ifdef BOARD_AURA
-    float cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq;
+#ifndef BOARD_AURA
+    static
+#endif
+    float cs_rms_a=0.0026f, cs_rms_v=0.346f, cs_active_w=0.0009f, cs_peak_a, cs_peak_v, cs_freq;
 
-    cs_rms_a = (float) cs_get_rms_current(0) * 26;
-    cs_rms_v = (float) cs_get_rms_voltage(0) * 700;
+#ifdef BOARD_AURA
+    cs_rms_a = (float) cs_get_rms_current(0);
+    cs_rms_v = (float) cs_get_rms_voltage(0);
     cs_active_w = (float) cs_get_active_watts(0);
     cs_peak_a = (float) cs_get_peak_current(0);
     cs_peak_v = (float) cs_get_peak_voltage(0);
     cs_freq = (float)cs_get_line_frequency();
+#else
+    cs_rms_a += 0.001f;
+#endif
 
-    cs_info.current = (uint16_t)cs_rms_a;
-    cs_info.volt = (uint16_t)cs_rms_v;
-    cs_info.watts = (uint8_t)cs_active_w;
+    cs_info.current = (uint16_t)(cs_rms_a * CS_RMS_A_MULTIPLIER * MILLI);
+    cs_info.watts = (uint16_t)(cs_active_w * CS_ACTIVE_W_MULTIPLIER);
+    cs_info.volt = (uint8_t)(cs_rms_v * CS_RMS_V_MULTIPLIER);
     cs_info.freq = (uint8_t)cs_freq;
+
     printf("RMS Current0 %f RMS Volt0 %f Active Watts0 %f Peak A %f Peak V %f freq %f\n",
             cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq);
-#else
-    cs_info.current = cs_info.current + 1;
-    cs_info.volt = 1;
-    cs_info.watts = 2;
-    cs_info.freq = 3;
-#endif
 
     uint32_t err_code;
     // Update BLE attribute database
     err_code = ble_ss_sensor_value_update(&cs_ss, (uint8_t *)&cs_info, sizeof(cs_info));
     if (err_code != NRF_SUCCESS)
     {
-        printf("sd_ble_gatts_value_set failed: errorcode:%#lx.\n", err_code);
+        printf("ble_ss_sensor_value_update() failed: errorcode:%#lx.\n", err_code);
         return;
     }
 }
@@ -94,9 +101,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     {
         case AURA_TOUCH_BUTTON:
             /* Do the actual button press handling here. */
-            /* For now just turn on an LED */
-            printf("Toggling Triac\n");
-            nrf_gpio_pin_toggle(AURA_TRIAC_ENABLE);
+            triac_set(0, TRIAC_OPERATION_TOGGLE);
             break;
 
         default:
@@ -122,12 +127,19 @@ static void buttons_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-static app_gpiote_user_id_t  zc_gpiote_id;
 
-static void zc_event_handler(uint32_t event_pins_low_to_high, uint32_t event_pins_high_to_low)
+void
+triac_set(int triac, triac_operation_t operation)
 {
-    zc_count++;
+    if (operation == TRIAC_OPERATION_OFF){
+        nrf_gpio_pin_clear(TRIAC_1_PIN);
+    } else if (operation == TRIAC_OPERATION_ON){
+        nrf_gpio_pin_set(TRIAC_1_PIN);
+    } else if (operation == TRIAC_OPERATION_TOGGLE) {
+        nrf_gpio_pin_toggle(TRIAC_1_PIN);
+    }
 }
+
 
 void
 device_init()
@@ -141,15 +153,14 @@ device_init()
     nrf_gpio_pin_set(AURA_CS_RESET);
 #endif
 
-    // Configure zero crossing as sense interrupt.
-    nrf_gpio_cfg_sense_input(AURA_ZERO_CROSSING_PIN, NRF_GPIO_PIN_NOPULL, NRF_GPIO_PIN_SENSE_HIGH);
-    app_gpiote_user_register(&zc_gpiote_id, 0, 1 << AURA_ZERO_CROSSING_PIN, zc_event_handler);
-    app_gpiote_user_enable(zc_gpiote_id);
+    dimmer_init(50);
 
     buttons_init();
 
     // Configure triac pin as output.
-    nrf_gpio_cfg_output(AURA_TRIAC_ENABLE);
+    nrf_gpio_cfg_output(TRIAC_1_PIN);
 
+#if BOARD_AURA
     cs_calibrate();
+#endif
 }
