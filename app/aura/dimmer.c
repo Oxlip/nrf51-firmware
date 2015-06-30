@@ -86,6 +86,8 @@ dimmer_enable(int triac, int brightness)
     dimmer_config_t *config = &dimmer_config[triac];
     int darkness = 100 - brightness;
 
+    ble_dimmer_update_value(brightness);
+
     if (brightness == 0) {
         printf("Turning off\n");
         triac_set(triac, TRIAC_OPERATION_OFF);

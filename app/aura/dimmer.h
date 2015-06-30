@@ -16,4 +16,6 @@ void dimmer_init(uint8_t ac_frequency);
 void dimmer_enable(int triac, int percent);
 void dimmer_disable(int triac);
 
+void ble_dimmer_update_value(uint16_t value);
+
 #endif /* DIMMER_H_ */
