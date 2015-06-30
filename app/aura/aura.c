@@ -13,7 +13,7 @@
 #include "dimmer.h"
 #include "aura.h"
 
-#define CS_MEAS_INTERVAL          APP_TIMER_TICKS(2000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
+#define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
 
 app_timer_id_t cs_timer_id;
 
@@ -28,9 +28,9 @@ typedef struct {
 
 ble_cs_info cs_info = {0};
 
-#define CS_RMS_A_MULTIPLIER     26
+#define CS_RMS_A_MULTIPLIER     22.6f
 #define CS_RMS_V_MULTIPLIER     700
-#define CS_ACTIVE_W_MULTIPLIER  1
+#define CS_ACTIVE_W_MULTIPLIER  15.6f
 
 #define MILLI                   1000
 
@@ -55,7 +55,7 @@ static void cs_meas_timeout_handler(void * p_context)
 #endif
 
     cs_info.current = (uint16_t)(cs_rms_a * CS_RMS_A_MULTIPLIER * MILLI);
-    cs_info.watts = (uint16_t)(cs_active_w * CS_ACTIVE_W_MULTIPLIER);
+    cs_info.watts = (uint16_t)(cs_active_w * CS_ACTIVE_W_MULTIPLIER * MILLI);
     cs_info.volt = (uint8_t)(cs_rms_v * CS_RMS_V_MULTIPLIER);
     cs_info.freq = (uint8_t)cs_freq;
 
@@ -152,8 +152,6 @@ device_init()
     nrf_gpio_cfg_output(AURA_CS_RESET);
     nrf_gpio_pin_set(AURA_CS_RESET);
 #endif
-
-    dimmer_init(50);
 
     buttons_init();
 
