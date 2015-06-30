@@ -84,24 +84,25 @@ void
 dimmer_enable(int triac, int brightness)
 {
     dimmer_config_t *config = &dimmer_config[triac];
+    int darkness = 100 - brightness;
+
+    if (brightness == 0) {
+        printf("Turning off\n");
+        triac_set(triac, TRIAC_OPERATION_OFF);
+        return;
+    } else {
+        printf("Turning on\n");
+        triac_set(triac, TRIAC_OPERATION_ON);
+        return;
+    }
 
     if (!config->enabled) {
         dimmer_configured++;
     }
 
     config->enabled = 1;
-    if (brightness == 0 || brightness == 100) {
-        config->ticks = 0;
-        if (brightness == 0) {
-            triac_set(triac, TRIAC_OPERATION_OFF);
-        } else {
-            triac_set(triac, TRIAC_OPERATION_ON);
-        }
-    } else {
-        int darkness = 100 - brightness;
-        uint32_t timeout = dimmer_cb_granularity_ms * (darkness / 10);
-        config->ticks = APP_TIMER_TICKS(timeout, APP_TIMER_PRESCALER);
-    }
+    uint32_t timeout = dimmer_cb_granularity_ms * (darkness / 10);
+    config->ticks = APP_TIMER_TICKS(timeout, APP_TIMER_PRESCALER);
 
     /* If this is the first triac that needs to be dimmed,
        enable the zero cross interrupt */
