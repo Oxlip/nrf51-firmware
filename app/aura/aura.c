@@ -16,16 +16,7 @@
 
 app_timer_id_t cs_timer_id;
 
-/** Binary format to communicate with the mobile app through BLE.
- */
-typedef struct {
-    uint16_t  current;  // in mA
-    uint16_t  watts;
-    uint8_t   volt;
-    uint8_t   freq;
-} __attribute__((__packed__ )) ble_cs_info;
-
-ble_cs_info cs_info = {0};
+cs_info_t cs_info = {0};
 
 #define CS_RMS_A_MULTIPLIER     22.6f
 #define CS_RMS_V_MULTIPLIER     700
@@ -61,14 +52,7 @@ static void cs_meas_timeout_handler(void * p_context)
     printf("RMS Current0 %f RMS Volt0 %f Active Watts0 %f Peak A %f Peak V %f freq %f\n",
             cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq);
 
-    uint32_t err_code;
-    // Update BLE attribute database
-    err_code = ble_ss_sensor_value_update(&cs_ss, (uint8_t *)&cs_info, sizeof(cs_info));
-    if (err_code != NRF_SUCCESS)
-    {
-        printf("ble_ss_sensor_value_update() failed: errorcode:%#lx.\n", err_code);
-        return;
-    }
+    ble_cs_update_value(&cs_info);
 }
 
 void device_timers_init()

@@ -63,12 +63,19 @@ void ble_dimmer_update_value(uint16_t value)
 {
     uint32_t err_code;
     err_code = ble_ss_sensor_value_update(&dimmer_ss, (uint8_t *)&value, sizeof(value));
-    if (err_code != NRF_SUCCESS)
-    {
+    if (err_code != NRF_SUCCESS) {
         printf("failed to dimmer BLE AT: errorcode:%#lx.\n", err_code);
     }
 }
 
+void ble_cs_update_value(cs_info_t *cs_info)
+{
+    uint32_t err_code;
+    err_code = ble_ss_sensor_value_update(&cs_ss, (uint8_t *)cs_info, sizeof(cs_info_t));
+    if (err_code != NRF_SUCCESS) {
+        printf("Failed to update CS info with BLE AT: %#lx.\n", err_code);
+    }
+}
 
 uint32_t services_init(void)
 {
