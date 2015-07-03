@@ -44,16 +44,18 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 
 static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write)
 {
-    if (p_evt_write->len == 0)
-    {
-        printf("Invalid BLE data length");
+    dimmer_msg_t *msg;
+
+    if (p_evt_write->len != sizeof(dimmer_msg_t)) {
+        printf("Invalid Dimmer msg length %d\n", p_evt_write->len);
         return;
     }
 
-    if (p_evt_write->data[1]) {
-        triac_set(0, TRIAC_OPERATION_ON);
+    msg = (dimmer_msg_t *)p_evt_write->data;
+    if (msg->value) {
+        triac_set(msg->triac, TRIAC_OPERATION_ON);
     } else {
-        triac_set(0, TRIAC_OPERATION_OFF);
+        triac_set(msg->triac, TRIAC_OPERATION_OFF);
     }
 }
 
