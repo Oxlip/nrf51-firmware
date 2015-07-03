@@ -11,9 +11,9 @@
 #include <app_timer.h>
 
 #include "board_conf.h"
+#include "aura.h"
 #include "smbus.h"
 #include "sensor.h"
-#include "dimmer.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
@@ -51,7 +51,11 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
         return;
     }
 
-    dimmer_enable(p_evt_write->data[0], p_evt_write->data[1]);
+    if (p_evt_write->data[1]) {
+        triac_set(0, TRIAC_OPERATION_ON);
+    } else {
+        triac_set(0, TRIAC_OPERATION_OFF);
+    }
 }
 
 

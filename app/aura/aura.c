@@ -10,7 +10,6 @@
 #include "platform.h"
 #include "board_conf.h"
 #include "sensor.h"
-#include "dimmer.h"
 #include "aura.h"
 
 #define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
