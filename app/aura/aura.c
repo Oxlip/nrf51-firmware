@@ -110,17 +110,29 @@ static void buttons_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-
 void
 triac_set(int triac, triac_operation_t operation)
 {
+    static uint8_t triac_state = 0;
+
+    printf("Changing Triac %d to %d\n", triac_state, operation);
+
     if (operation == TRIAC_OPERATION_OFF){
         nrf_gpio_pin_clear(TRIAC_1_PIN);
+        triac_state = 0;
     } else if (operation == TRIAC_OPERATION_ON){
         nrf_gpio_pin_set(TRIAC_1_PIN);
+        triac_state = 1;
     } else if (operation == TRIAC_OPERATION_TOGGLE) {
         nrf_gpio_pin_toggle(TRIAC_1_PIN);
+        triac_state = !triac_state;
     }
+
+    dimmer_msg_t msg = {
+        .triac = 0,
+        .value = triac_state
+    };
+    ble_dimmer_update_value(&msg);
 }
 
 

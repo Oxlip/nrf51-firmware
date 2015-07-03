@@ -44,7 +44,6 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 
 static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write)
 {
-    printf("Received BLE dimmer write - setting dimmer to %d\n", p_evt_write->data[1]);
     if (p_evt_write->len == 0)
     {
         printf("Invalid BLE data length");
@@ -59,12 +58,12 @@ static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_ev
 }
 
 
-void ble_dimmer_update_value(uint16_t value)
+void ble_dimmer_update_value(dimmer_msg_t *msg)
 {
     uint32_t err_code;
-    err_code = ble_ss_sensor_value_update(&dimmer_ss, (uint8_t *)&value, sizeof(value));
+    err_code = ble_ss_sensor_value_update(&dimmer_ss, (uint8_t *)msg, sizeof(*msg));
     if (err_code != NRF_SUCCESS) {
-        printf("failed to dimmer BLE AT: errorcode:%#lx.\n", err_code);
+        printf("Failed to update dimmer msg with BLE AT: %#lx.\n", err_code);
     }
 }
 

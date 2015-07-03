@@ -9,6 +9,14 @@ typedef enum {
 
 void triac_set(int triac, triac_operation_t operation);
 
+
+/** Binary format to communicate with the mobile app through BLE.
+ */
+typedef struct {
+    uint8_t   triac;
+    int8_t    value;
+} __attribute__((__packed__ )) dimmer_msg_t;
+
 /** Binary format to communicate with the mobile app through BLE.
  */
 typedef struct {
@@ -18,7 +26,7 @@ typedef struct {
     uint8_t   freq;
 } __attribute__((__packed__ )) cs_info_t;
 
-void ble_dimmer_update_value(uint16_t value);
+void ble_dimmer_update_value(dimmer_msg_t *value);
 void ble_cs_update_value(cs_info_t *cs_info);
 
 #endif
