@@ -1,6 +1,7 @@
 var assert = require('assert');
 var noble = require('noble');
 var async = require('async');
+var cstruct = require('c-struct');
 var nuton_uuids = require('./nuton_uuids');
 
 var RSSI_THRESHOLD    = -90;
@@ -62,7 +63,7 @@ function remove_dash(uuid) {
 
 /* Verify lyra's Characterics are present */
 function verify_characteristics(lyra, done) {
-    var serviceUUIDs = [remove_dash(nuton_uuids.BLE_UUID_CS_SERVICE)];
+    var serviceUUIDs = [remove_dash(nuton_uuids.BLE_UUID_BUTTON_SERVICE)];
     var characteristicUUIDs = [remove_dash(nuton_uuids.BLE_UUID_BUTTON_CHAR)];
     lyra.connect(function(error) {
         // set timeout

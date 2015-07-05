@@ -12,10 +12,16 @@
 #include <app_timer.h>
 #include <board_conf.h>
 
+#include <pstorage.h>
 #include <device_manager_s130.h>
 #include <ble_db_discovery_s130.h>
+#include <pstorage_platform.h>
+#include "lyra_devices.h"
 
 ble_ss_t lyra_bs_ss;
+
+/**< Persistent storage handle for blocks requested by the module. */
+extern pstorage_handle_t lyra_pstorage_handle;
 
 /** UUIDs to advertise. */
 ble_uuid_t adv_uuids[] = {
@@ -42,17 +48,26 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 
 static void ble_lyra_bs_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write)
 {
+    int i;
+
     if (p_evt_write->len == 0) {
         return;
     }
 
+    for (i = 0; i < p_evt_write->len; i++) {
+        printf(" %02d ", p_evt_write->data[i]);
+    }
+    printf("\n");
+
+    nrf_gpio_pin_toggle(RED_LED);
     if (p_evt_write->data[1] == 0) {
         nrf_gpio_pin_clear(GREEN_LED);
     } else {
         nrf_gpio_pin_set(GREEN_LED);
     }
-}
 
+    dm_store_write_data_evt(p_evt_write->data, p_evt_write->len);
+}
 
 uint32_t services_init(void)
 {
