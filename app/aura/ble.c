@@ -18,22 +18,6 @@
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
 
-/** UUIDs to advertise. */
-ble_uuid_t adv_uuids[] = {
-    {BLE_UUID_DIMMER_SERVICE, BLE_UUID_TYPE_BLE},
-    {BLE_UUID_CS_SERVICE, BLE_UUID_TYPE_BLE}
-};
-
-uint8_t ble_get_adv_uuid_array_count()
-{
-    return sizeof(adv_uuids) / sizeof(ble_uuid_t);
-}
-
-ble_uuid_t * ble_get_adv_uuid_array()
-{
-    return adv_uuids;
-}
-
 
 void device_on_ble_evt(ble_evt_t * p_ble_evt)
 {
@@ -126,4 +110,9 @@ uint32_t services_init(void)
     APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
+}
+
+void ble_advertising_init()
+{
+    ble_advertising_common_init(NULL);
 }

@@ -36,8 +36,6 @@ static ble_gap_sec_params_t m_sec_params;
 /**< Handle of the current connection. */
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
 
-
-
 /**@brief Function for the GAP initialization.
  *
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
@@ -69,10 +67,10 @@ static void gap_params_init(void)
 
 /**@brief Function for starting advertising.
  */
-static void peripheral_advertising_start(void)
+void ble_advertising_start(void)
 {
-    uint32_t             err_code;
-    ble_gap_adv_params_t adv_params;
+    static ble_gap_adv_params_t adv_params;
+    uint32_t err_code;
 
     // Start advertising
     memset(&adv_params, 0, sizeof(adv_params));
@@ -88,16 +86,14 @@ static void peripheral_advertising_start(void)
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
 }
 
-extern ble_uuid_t adv_uuids[];
 /**@brief Function for initializing the Advertising functionality.
  *
  * @details Encodes the required advertising data and passes it to the stack.
- *          Also builds a structure to be passed to the stack when starting advertising.
  */
-static void advertising_init(void)
+void ble_advertising_common_init(ble_advdata_service_data_t *service_data)
 {
-    uint32_t      err_code;
     ble_advdata_t advdata;
+    uint32_t      err_code;
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
 
     // Build and set advertising data
@@ -107,8 +103,10 @@ static void advertising_init(void)
     advdata.include_appearance      = true;
     advdata.flags.size              = sizeof(flags);
     advdata.flags.p_data            = &flags;
-    advdata.uuids_complete.p_uuids  = ble_get_adv_uuid_array();
-    advdata.uuids_complete.uuid_cnt = ble_get_adv_uuid_array_count();
+    if (service_data) {
+        advdata.p_service_data_array    = service_data;
+        advdata.service_data_count      = 1;
+    }
 
     err_code = ble_advdata_set(&advdata, NULL);
     APP_ERROR_CHECK(err_code);
@@ -185,7 +183,7 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
 
         // Go to system-off mode (this function will not return; wakeup will cause a reset)
         printf("BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT -> power_off()");
-        peripheral_advertising_start();
+        ble_advertising_start();
         //uint32_t err_code;
         //err_code = sd_power_system_off();
         //APP_ERROR_CHECK(err_code);
@@ -215,7 +213,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-            peripheral_advertising_start();
+            ble_advertising_start();
             break;
 #ifdef USE_CENTRAL_MODE
         case BLE_GAP_EVT_ADV_REPORT:
@@ -462,8 +460,8 @@ void ble_late_init()
     sec_params_init();
 
     device_information_service_init();
-    advertising_init();
-    peripheral_advertising_start();
+    ble_advertising_init();
+    ble_advertising_start();
 #ifdef USE_CENTRAL_MODE
     blec_scan_start();
 #endif
