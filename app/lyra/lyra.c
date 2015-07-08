@@ -197,6 +197,8 @@ lyra_handle_button_event (uint8_t pin_no, uint8_t action)
     int               i, j;
     uint16_t          offset;
     uint32_t          err_code;
+    lyra_button_action_t *btn_action;
+    ble_gap_addr_t    peer_addr;
 
     p_handle = &lyra_pstorage_handle;
 
@@ -225,6 +227,13 @@ lyra_handle_button_event (uint8_t pin_no, uint8_t action)
         for (j = 0; j < sizeof(lyra_button_action_t); j++) {
             printf(" %02d ", flash_data[j]);
         }
+
+        /* Data read from pstorage contains button action and peer address */
+        btn_action = (lyra_button_action_t *) flash_data;
+        memcpy(&peer_addr.addr, btn_action->address, BLE_GAP_ADDR_LEN);
+
+        printf("%s: Sending button press event to peer\n", __FUNCTION__);
+        write_to_peer_device(peer_addr, &btn_action->value, 1);
     }
 }
 

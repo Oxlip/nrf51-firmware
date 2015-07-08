@@ -21,18 +21,12 @@ typedef struct lyra_button_char_event_ {
     uint8_t padding;
 } lyra_button_char_event_t;
 
-int
-read_si7013(float *temperature, int32_t *humidity);
+int read_si7013(float *temperature, int32_t *humidity);
+float lux_to_pct(float lux);
+float get_ambient_lux();
 
-float
-lux_to_pct(float lux);
-
-float
-get_ambient_lux();
-
-void
-dm_store_write_data_evt(uint8_t *data, uint8_t len);
-void
-lyra_handle_button_event (uint8_t pin_no, uint8_t action);
+void dm_store_write_data_evt(uint8_t *data, uint8_t len);
+void lyra_handle_button_event (uint8_t pin_no, uint8_t action);
+void write_to_peer_device(ble_gap_addr_t peer_addr, uint8_t *value, uint8_t len);
 
 #endif /* __LYRA_DEVICES_H__ */

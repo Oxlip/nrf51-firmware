@@ -62,7 +62,7 @@ typedef enum
 } ble_advertising_mode_t;
 static uint16_t                     m_peripheral_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 static ble_db_discovery_t           m_ble_db_discovery;                  /**< Structure used to identify the DB Discovery module. */
-static ble_dim_c_t                  m_ble_dim_c;                         /**< Structure used to identify the Battery Service client module. */
+ble_dim_c_t                         m_ble_dim_c;                         /**< Structure used to identify the Battery Service client module. */
 static dm_application_instance_t    m_dm_app_id;                         /**< Application identifier. */
 static dm_handle_t                  m_dm_device_handle;                  /**< Device Identifier identifier. */
 static uint8_t                      m_peer_count = 0;                    /**< Number of peer's connected. */
@@ -70,11 +70,12 @@ static uint8_t                      m_scan_mode;                         /**< Sc
 static bool                         m_memory_access_in_progress = false; /**< Flag to keep track of ongoing operations on persistent memory. */
 
 /**< Scan parameters requested for scanning and connection. */
-static ble_gap_scan_params_t m_scan_param;
+ble_gap_scan_params_t m_scan_param;
+
 /**
  * @brief Connection parameters requested for connection.
  */
-static const ble_gap_conn_params_t m_connection_param =
+const ble_gap_conn_params_t m_connection_param =
 {
     (uint16_t)MIN_CONNECTION_INTERVAL,   // Minimum connection
     (uint16_t)MAX_CONNECTION_INTERVAL,   // Maximum connection
@@ -194,7 +195,6 @@ static api_result_t device_manager_event_handler(const dm_handle_t    * p_handle
              * If not contiue with other connections and gracefully terminate
              * this connection.
              */
-
             // Discover peer's services.
             err_code = ble_db_discovery_start(&m_ble_db_discovery,
                                               p_event->event_param.p_gap_param->conn_handle);
