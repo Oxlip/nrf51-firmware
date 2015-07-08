@@ -58,9 +58,9 @@ static void buttons_init(void)
     uint32_t err_code;
     static app_button_cfg_t buttons[] =
     {
-        {TOUCH_BUTTON_1, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, button_event_handler},
-        {TOUCH_BUTTON_2, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, button_event_handler},
-        {TOUCH_BUTTON_3, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, button_event_handler},
+        {TOUCH_BUTTON_1, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
+        {TOUCH_BUTTON_2, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
+        {TOUCH_BUTTON_3, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
     };
 
     APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, false);
@@ -125,6 +125,7 @@ void device_init()
 
 #if BOARD_LYRA
     lis2dh_init();
+    scan_bus();
 #endif
 
     /* Pstorage handling for lyra */

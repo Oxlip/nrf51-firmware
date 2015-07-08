@@ -32,12 +32,14 @@
 #define TOUCH_BUTTON_1                  28
 #define TOUCH_BUTTON_2                  24
 #define TOUCH_BUTTON_3                  8
-#define TOUCH_BUTTON_4                  11
 
 #define RED_LED                         9
 #define GREEN_LED                       12
 
 #define STATUS_LED_1                    9
+
+#define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_HIGH
+#define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLDOWN
 
 #elif BOARD_DEV1
 
@@ -52,9 +54,6 @@
 /**< Button used to turn on/off the attached device. */
 #define POWER_BUTTON_PIN                17
 
-/**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)
-
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          18
 /**< Is on when device has connected. */
@@ -68,9 +67,11 @@
 #define TOUCH_BUTTON_1                  17
 #define TOUCH_BUTTON_2                  18
 #define TOUCH_BUTTON_3                  19
-#define TOUCH_BUTTON_4                  20
 
 #define STATUS_LED_1                    21
+
+#define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_LOW
+#define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLUP
 
 #elif BOARD_DEV2
 
@@ -98,20 +99,20 @@
 #define TOUCH_BUTTON_1                  17
 #define TOUCH_BUTTON_2                  18
 #define TOUCH_BUTTON_3                  19
-#define TOUCH_BUTTON_4                  20
 
 #define RED_LED                         21
 #define GREEN_LED                       22
 
 #define STATUS_LED_1                    21
 
+#define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_LOW
+#define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLUP
+
 #else
 
 #error "Board type not defined"
 
 #endif
-
-#define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 #define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)

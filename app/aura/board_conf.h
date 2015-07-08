@@ -35,9 +35,10 @@
 #define UART_RX_PIN_NUMBER              23
 #define UART_TX_PIN_NUMBER              22
 
-#define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
-
 #define AURA_CS_RESET                   11
+
+#define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_HIGH
+#define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLDOWN
 
 #elif BOARD_DEV1
 
@@ -56,9 +57,6 @@
 /**< Button used to turn on/off Aura LEDs. */
 #define AURA_TOUCH_BUTTON               18
 
-/**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)
-
 /**< Is on when device is advertising. */
 #define ADVERTISING_LED_PIN_NO          18
 /**< Is on when device has connected. */
@@ -73,7 +71,8 @@
 #define UART_RX_PIN_NUMBER              9
 #define UART_TX_PIN_NUMBER              11
 
-#define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
+#define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_LOW
+#define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLUP
 
 #elif BOARD_DEV2
 /* BOARD_AURA_DEV2 */
@@ -104,7 +103,8 @@
 #define UART_RX_PIN_NUMBER              11
 #define UART_TX_PIN_NUMBER              9
 
-#define BUTTON_PULL                     NRF_GPIO_PIN_PULLUP
+#define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_LOW
+#define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLUP
 
 #else
 
@@ -123,6 +123,6 @@
 #define PLATFORM_MAX_TRIACS             1
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)
+#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)
 
 #endif /* __BOARD_CONF__ */

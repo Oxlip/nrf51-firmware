@@ -100,7 +100,7 @@ static void buttons_init(void)
     uint32_t err_code;
     static app_button_cfg_t buttons[] =
     {
-        {AURA_TOUCH_BUTTON, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, button_event_handler},
+        {AURA_TOUCH_BUTTON, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
     };
 
     APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, false);
