@@ -98,6 +98,9 @@ dm_register_new_pstorage_handle (void)
     //All context with respect to a particular device is stored contiguously.
     pstorage_module_param_t param;
 
+    err_code = pstorage_init();
+    APP_ERROR_CHECK(err_code);
+
     /* Need the block size to be word aligned */
     param.block_size  = sizeof(lyra_button_action_t) * 4;
     param.block_count = LYRA_MAX_ACTION_COUNT;

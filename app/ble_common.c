@@ -19,11 +19,12 @@
 
 #include "platform.h"
 #include "ble_common.h"
-#include "blec_common.h"
 
 #include <ble_hci.h>
 #include <ble_dfu.h>
 #include <dfu_app_handler.h>
+
+#define LOG printf
 
 /**< DFU Support */
 static ble_dfu_t m_dfus;
@@ -33,6 +34,7 @@ uint8_t oxlip_uuid_type = BLE_UUID_TYPE_UNKNOWN;
 
 /**< Security requirements for this application. */
 static ble_gap_sec_params_t m_sec_params;
+
 /**< Handle of the current connection. */
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
 
@@ -163,15 +165,10 @@ static void conn_params_init(void)
 
 static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
 {
+#ifndef USE_CENTRAL_MODE
     const ble_gap_evt_t *p_gap_evt = &p_ble_evt->evt.gap_evt;
     uint8_t timeout_src = p_gap_evt->params.timeout.src;
 
-#ifdef USE_CENTRAL_MODE
-    if(p_gap_evt->conn_handle != m_conn_handle)
-    {
-        blec_gap_event_timeout(p_gap_evt, timeout_src);
-    }
-#else
     if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
     {
         nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
@@ -215,11 +212,6 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
             ble_advertising_start();
             break;
-#ifdef USE_CENTRAL_MODE
-        case BLE_GAP_EVT_ADV_REPORT:
-            blec_gap_event_advertisement_report(p_ble_evt);
-            break;
-#endif
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
 #ifdef USE_CENTRAL_MODE
@@ -309,9 +301,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 static void sys_evt_dispatch(uint32_t sys_evt)
 {
     pstorage_sys_event_handler(sys_evt);
-#ifdef USE_CENTRAL_MODE
-    blec_sys_event_handler(sys_evt);
-#endif
 }
 
 
@@ -439,9 +428,6 @@ static void ble_stack_init(void)
 void ble_init()
 {
     ble_stack_init();
-#ifdef USE_CENTRAL_MODE
-    blec_init();
-#endif
 }
 
 
@@ -462,7 +448,4 @@ void ble_late_init()
     device_information_service_init();
     ble_advertising_init();
     ble_advertising_start();
-#ifdef USE_CENTRAL_MODE
-    blec_scan_start();
-#endif
 }

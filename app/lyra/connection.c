@@ -8,7 +8,6 @@
 #include <ble_uuids.h>
 #include <ble_ss.h>
 #include <ble_common.h>
-#include <blec_common.h>
 #include <app_timer.h>
 #include <board_conf.h>
 
@@ -18,11 +17,36 @@
 #include <pstorage_platform.h>
 #include "lyra_devices.h"
 
+#define SCAN_INTERVAL              0x00A0                             /**< Determines scan interval in units of 0.625 millisecond. */
+#define SCAN_WINDOW                0x0050                             /**< Determines scan window in units of 0.625 millisecond. */
+#define MIN_CONNECTION_INTERVAL    MSEC_TO_UNITS(50, UNIT_1_25_MS)    /**< Determines maximum connection interval in millisecond. */
+#define MAX_CONNECTION_INTERVAL    MSEC_TO_UNITS(100, UNIT_1_25_MS)   /**< Determines maximum connection interval in millisecond. */
+#define SLAVE_LATENCY              0                                  /**< Determines slave latency in counts of connection events. */
+#define SUPERVISION_TIMEOUT        MSEC_TO_UNITS(4000, UNIT_10_MS)    /**< Determines supervision time-out in units of 10 millisecond. */
+
+
 extern pstorage_handle_t lyra_pstorage_handle;
 
 /**< Scan parameters requested for scanning and connection. */
-extern ble_gap_scan_params_t m_scan_param;
-extern const ble_gap_conn_params_t m_connection_param;
+static ble_gap_scan_params_t m_scan_param = {
+    .active       = 0,            // Active scanning set.
+    .selective    = 0,            // Selective scanning not set.
+    .interval     = SCAN_INTERVAL,// Scan interval.
+    .window       = SCAN_WINDOW,  // Scan window.
+    .p_whitelist  = NULL,         // No whitelist provided.
+    .timeout      = 0x001E,       // 30 seconds timeout.
+};
+
+/**
+ * @brief Connection parameters requested for connection.
+ */
+const ble_gap_conn_params_t m_connection_param =
+{
+    (uint16_t)MIN_CONNECTION_INTERVAL,   // Minimum connection
+    (uint16_t)MAX_CONNECTION_INTERVAL,   // Maximum connection
+    0,                                   // Slave latency
+    (uint16_t)SUPERVISION_TIMEOUT        // Supervision time-out
+};
 
 typedef struct peer_info_ {
     ble_gap_addr_t peer_addr;
@@ -63,6 +87,15 @@ write_to_peer_device (ble_gap_addr_t peer_addr, uint8_t *value, uint8_t len)
     {
         printf("[ADV_REP]: Scan stop failed, reason %ld\n", err_code);
     }
+
+    /* TODO: */
+    peer_info.peer_addr.addr[0] = 0xa4;
+    peer_info.peer_addr.addr[1] = 0xfb;
+    peer_info.peer_addr.addr[2] = 0xd9;
+    peer_info.peer_addr.addr[3] = 0x72;
+    peer_info.peer_addr.addr[4] = 0x02;
+    peer_info.peer_addr.addr[5] = 0x00;
+    peer_info.peer_addr.addr_type = BLE_GAP_ADDR_TYPE_PUBLIC;
 
     /* TODO: set the current state machine to disconnected here */
     peer_info.curr_state = BLE_GAP_EVT_DISCONNECTED;

@@ -9,7 +9,6 @@
 #include <ble_uuids.h>
 #include <ble_ss.h>
 #include <ble_common.h>
-#include <blec_common.h>
 #include <app_timer.h>
 #include <board_conf.h>
 
@@ -18,6 +17,7 @@
 #include <ble_db_discovery_s130.h>
 #include <pstorage_platform.h>
 #include "lyra_devices.h"
+#include <platform.h>
 
 extern void on_central_ble_evt(ble_evt_t * p_ble_evt);
 ble_ss_t lyra_bs_ss;
@@ -102,3 +102,4 @@ void ble_advertising_init()
 
     ble_advertising_common_init(&service_data);
 }
+

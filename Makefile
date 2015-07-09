@@ -29,8 +29,7 @@ COMMON_SRCS     = platform.c fault.c ble_common.c smbus.c
 
 ifeq ($(USE_SOFTDEVICE),s130)
 CFLAGS += -DUSE_CENTRAL_MODE=1
-SDK_SRCS += device_manager_central_s130.c ble_db_discovery.c
-COMMON_SRCS += blec_common.c ble_ss.c
+COMMON_SRCS += ble_ss.c
 endif
 
 ifneq ($(USE_SOFTDEVICE),s130)
