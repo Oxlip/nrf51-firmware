@@ -17,11 +17,9 @@
 #include <device_manager_s130.h>
 #include <ble_db_discovery_s130.h>
 #include <pstorage_platform.h>
-#include "ble_dim_c.h"
 #include "lyra_devices.h"
 
 extern void on_central_ble_evt(ble_evt_t * p_ble_evt);
-extern  ble_dim_c_t m_ble_dim_c;                         /**< Structure used to identify the Battery Service client module. */
 ble_ss_t lyra_bs_ss;
 
 /**< Persistent storage handle for blocks requested by the module. */
@@ -38,7 +36,6 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 #endif
 
     on_central_ble_evt(p_ble_evt);
-    ble_dim_c_on_ble_evt(&m_ble_dim_c, p_ble_evt);
 #endif
 }
 

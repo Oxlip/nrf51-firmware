@@ -12,7 +12,6 @@
 #include <pstorage.h>
 #include <device_manager_s130.h>
 #include <ble_db_discovery_s130.h>
-#include "ble_dim_c.h"
 
 #include <board_conf.h>
 #include <board_export.h>
@@ -62,7 +61,6 @@ typedef enum
 } ble_advertising_mode_t;
 static uint16_t                     m_peripheral_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 static ble_db_discovery_t           m_ble_db_discovery;                  /**< Structure used to identify the DB Discovery module. */
-ble_dim_c_t                         m_ble_dim_c;                         /**< Structure used to identify the Battery Service client module. */
 static dm_application_instance_t    m_dm_app_id;                         /**< Application identifier. */
 static dm_handle_t                  m_dm_device_handle;                  /**< Device Identifier identifier. */
 static uint8_t                      m_peer_count = 0;                    /**< Number of peer's connected. */
@@ -453,82 +451,15 @@ static void db_discovery_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Dimmer levelCollector Handler.
- */
-static void dim_c_evt_handler(ble_dim_c_t * p_dim_c, ble_dim_c_evt_t * p_dim_c_evt)
-{
-    uint32_t err_code;
-
-    switch (p_dim_c_evt->evt_type)
-    {
-        case BLE_DIM_C_EVT_DISCOVERY_COMPLETE:
-            // Batttery service discovered. Enable notification of dimmer Level.
-            LOG("[APPL]: dimmer Service discovered.\r \n");
-
-            LOG("[APPL]: Reading dimmer level. \r\n");
-
-            err_code = ble_dim_c_bl_read(p_dim_c);
-            APP_ERROR_CHECK(err_code);
-
-
-            /* FIXME: Not needed for Lyra, Aura */
-            LOG("[APPL]: Enabling dimmer Level Notification. \r\n");
-            err_code = ble_dim_c_bl_notif_enable(p_dim_c);
-            APP_ERROR_CHECK(err_code);
-
-            break;
-
-        case BLE_DIM_C_EVT_BATT_NOTIFICATION:
-        {
-            LOG("[APPL]: dimmer Level received %d %%\r\n", p_dim_c_evt->params.dimmer_level);
-
-            //char bl_as_string[LCD_LLEN];
-
-            //sprintf(bl_as_string, "dimmer %d %%", p_dim_c_evt->params.dimmer_level);
-
-            //success = APPL_LCD_WRITE(bl_as_string, strlen(bl_as_string), LCD_LOWER_LINE, 0);
-            //APP_ERROR_CHECK_BOOL(success);
-            break;
-        }
-
-        case BLE_DIM_C_EVT_BATT_READ_RESP:
-        {
-            LOG("[APPL]: dimmer Level Read as %d %%\r\n", p_dim_c_evt->params.dimmer_level);
-
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-
-
-/**
- * @brief dimmer level collector initialization.
- */
-static void dim_c_init(void)
-{
-    ble_dim_c_init_t dim_c_init_obj;
-
-    dim_c_init_obj.evt_handler = dim_c_evt_handler;
-
-    uint32_t err_code = ble_dim_c_init(&m_ble_dim_c, &dim_c_init_obj);
-    APP_ERROR_CHECK(err_code);
-}
-
 void blec_init()
 {
     scan_params_init();
     device_manager_init();
     db_discovery_init();
-
-    dim_c_init();
 }
 
 void blec_on_ble_evt (ble_evt_t *p_ble_evt)
 {
     dm_ble_evt_handler(&m_peripheral_conn_handle, p_ble_evt); 
     ble_db_discovery_on_ble_evt(&m_peripheral_conn_handle, &m_ble_db_discovery, p_ble_evt);
-    ble_dim_c_on_ble_evt(&m_ble_dim_c, p_ble_evt);
 }
