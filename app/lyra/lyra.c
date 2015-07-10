@@ -21,7 +21,7 @@ typedef struct {
     uint8_t address[6];     /* Address of the BLE target device. */
     uint8_t value;          /* Value to send when button pressed. */
     uint8_t is_valid;       /* Set to 1 if the this is valid else -1*/
-} action_info_t;
+} action_info_t  __attribute__ ((aligned (4)));
 
 #define MAX_BUTTONS         3
 #define ACTIONS_PER_BUTTON  3
@@ -29,8 +29,8 @@ typedef struct {
 
 action_info_t button_actions[MAX_BUTTONS][ACTIONS_PER_BUTTON];
 
-#define ACTION_INFO_OFFSET(button, sub_index)                           \
-        ((button * ACTIONS_PER_BUTTON * sizeof(action_info_t)) +          \
+#define ACTION_INFO_OFFSET(button, sub_index)                               \
+        ((button * ACTIONS_PER_BUTTON * sizeof(action_info_t)) +            \
          (sub_index * sizeof(action_info_t)))
 
 
@@ -59,7 +59,7 @@ send_value_to_peer(uint8_t button)
     offset = ACTION_INFO_OFFSET(button, 0);
     err = pstorage_load((uint8_t *)&btn_action, &m_pstorage_handle, sizeof(btn_action), offset);
     if (err != NRF_SUCCESS) {
-        printf("Failed to read value from pstorage");
+        printf("Failed to read value from pstorage %ld\n", err);
         //TODO - blink LED
         return;
     }
@@ -135,7 +135,7 @@ static void pstorage_cb_handler(pstorage_handle_t * p_handle,
      * upon button press next set of actions
      * - display the pstorage information - 1st item
      */
-    printf("%s: callback from flash events\n", __FUNCTION__);
+    printf("%s: op_code %d result %ld\n", __FUNCTION__, op_code, result);
 }
 
 /* Register a new pstorage_handle for storing lyra button actions */
@@ -150,8 +150,8 @@ register_pstorage_handle (void)
     APP_ERROR_CHECK(err_code);
 
     /* Need the block size to be word aligned */
-    param.block_size  = sizeof(action_info_t) * 4;
-    param.block_count = ALL_ACTION_COUNT;
+    param.block_size  = sizeof(action_info_t) * ALL_ACTION_COUNT;
+    param.block_count = 1;
     param.cb          = pstorage_cb_handler;
 
     err_code = pstorage_register(&param, &m_pstorage_handle);
@@ -169,9 +169,11 @@ void device_init()
 
     buttons_init();
 
+#ifdef BOARD_LYRA
     extern void scan_bus();
     scan_bus();
-    //lis2dh_init();
+    lis2dh_init();
+#endif
 
     /* Pstorage handling for lyra */
     register_pstorage_handle();
