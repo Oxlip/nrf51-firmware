@@ -14,13 +14,13 @@
 
 #include "lyra.h"
 
-extern void on_central_ble_evt(ble_evt_t * p_ble_evt);
+extern void ble_peer_on_ble_evt(ble_evt_t * p_ble_evt);
 ble_ss_t lyra_bs_ss;
 
 void device_on_ble_evt(ble_evt_t * p_ble_evt)
 {
     ble_ss_on_ble_evt(&lyra_bs_ss, p_ble_evt);
-    on_central_ble_evt(p_ble_evt);
+    ble_peer_on_ble_evt(p_ble_evt);
 }
 
 static void ble_lyra_bs_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write)
