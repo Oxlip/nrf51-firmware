@@ -11,12 +11,6 @@
 #include <app_timer.h>
 #include <board_conf.h>
 
-#include <pstorage.h>
-#include <device_manager_s130.h>
-#include <ble_db_discovery_s130.h>
-#include <pstorage_platform.h>
-#include "lyra_devices.h"
-
 #define SCAN_INTERVAL              0x00A0                             /**< Determines scan interval in units of 0.625 millisecond. */
 #define SCAN_WINDOW                0x0050                             /**< Determines scan window in units of 0.625 millisecond. */
 #define MIN_CONNECTION_INTERVAL    MSEC_TO_UNITS(50, UNIT_1_25_MS)    /**< Determines maximum connection interval in millisecond. */
@@ -24,8 +18,6 @@
 #define SLAVE_LATENCY              0                                  /**< Determines slave latency in counts of connection events. */
 #define SUPERVISION_TIMEOUT        MSEC_TO_UNITS(4000, UNIT_10_MS)    /**< Determines supervision time-out in units of 10 millisecond. */
 
-
-extern pstorage_handle_t lyra_pstorage_handle;
 
 /**< Scan parameters requested for scanning and connection. */
 static ble_gap_scan_params_t m_scan_param = {

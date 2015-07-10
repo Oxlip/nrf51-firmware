@@ -36,8 +36,6 @@
 #define RED_LED                         9
 #define GREEN_LED                       12
 
-#define STATUS_LED_1                    9
-
 #define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_HIGH
 #define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLDOWN
 
@@ -67,8 +65,6 @@
 #define TOUCH_BUTTON_1                  17
 #define TOUCH_BUTTON_2                  18
 #define TOUCH_BUTTON_3                  19
-
-#define STATUS_LED_1                    21
 
 #define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_LOW
 #define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLUP
@@ -102,8 +98,6 @@
 
 #define RED_LED                         21
 #define GREEN_LED                       22
-
-#define STATUS_LED_1                    21
 
 #define BUTTON_ACTIVE_STATE             APP_BUTTON_ACTIVE_LOW
 #define BUTTON_PIN_PULL                 NRF_GPIO_PIN_PULLUP
