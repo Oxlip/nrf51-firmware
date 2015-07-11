@@ -403,9 +403,12 @@ void ble_peer_on_ble_evt (ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GATTC_EVT_WRITE_RSP:
+            p_gattc_evt = &p_ble_evt->evt.gattc_evt;
             sm_handle_write_response(p_gattc_evt->conn_handle, p_gattc_evt->gatt_status);
+            break;
 
         case BLE_GAP_EVT_DISCONNECTED:
+            p_gattc_evt = &p_ble_evt->evt.gattc_evt;
             sm_handle_disconnected(p_gattc_evt->conn_handle);
             break;
 

@@ -26,8 +26,10 @@
 
 #define LOG printf
 
+#ifndef USE_CENTRAL_MODE
 /**< DFU Support */
 static ble_dfu_t m_dfus;
+#endif
 
 /**< UUID type registered with the SDK */
 uint8_t oxlip_uuid_type = BLE_UUID_TYPE_UNKNOWN;
@@ -372,6 +374,7 @@ static void reset_prepare(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#ifndef USE_CENTRAL_MODE
 /**@brief Generic dfu support for the app.
  *
  */
@@ -393,6 +396,7 @@ static void dfu_init(void)
 
     dfu_app_reset_prepare_set(reset_prepare);
 }
+#endif
 
 /**@brief Function for initializing the BLE stack.
  *
