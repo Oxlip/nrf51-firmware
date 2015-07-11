@@ -7,10 +7,12 @@
 #include <ble.h>
 #include <lis2dh.h>
 
+#include "common.h"
 #include "platform.h"
 #include "board_conf.h"
 #include "lyra.h"
 #include "pstorage.h"
+#include "nrf_soc.h"
 
 typedef enum {
     ACTION_INFO_INVALID = -1,
@@ -55,26 +57,34 @@ send_value_to_peer(uint8_t button)
     uint16_t          offset;
     uint32_t          err;
     action_info_t     btn_action[ACTIONS_PER_BUTTON];
+    pstorage_handle_t block_handle;
 
     offset = ACTION_INFO_OFFSET(button, 0);
-    err = pstorage_load((uint8_t *)&btn_action, &m_pstorage_handle, sizeof(btn_action), offset);
+
+    //Get the block handle.
+    err = pstorage_block_identifier_get(&m_pstorage_handle, 0, &block_handle);
+    if (err != NRF_SUCCESS) {
+        printf("Failed to get block identifier\n");
+    }
+
+    err = pstorage_load((uint8_t *)btn_action, &block_handle, sizeof(btn_action), offset);
     if (err != NRF_SUCCESS) {
         printf("Failed to read value from pstorage %ld\n", err);
         //TODO - blink LED
         return;
     }
+
     for (i = 0; i < ACTIONS_PER_BUTTON; i++) {
         ble_gap_addr_t    peer_addr;
-        if (btn_action[i].is_valid == ACTION_INFO_INVALID) {
-            return;
+        if ((uint8_t) btn_action[i].is_valid == (uint8_t) ACTION_INFO_INVALID) {
+            continue;
         }
+
         peer_addr.addr_type = BLE_GAP_ADDR_TYPE_PUBLIC;
         memcpy(&peer_addr.addr, btn_action[i].address, BLE_GAP_ADDR_LEN);
         write_to_peer_device(peer_addr, &btn_action[i].value, 1);
     }
 }
-
-
 
 /**@brief Function for handling button events.
  *
@@ -82,6 +92,10 @@ send_value_to_peer(uint8_t button)
  */
 static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
+    if (button_action == 0) {
+        return;
+    }
+
     /* Send an event notification to HUB */
     switch (pin_no)
     {
@@ -186,6 +200,8 @@ store_button_action(ble_action_info_msg_t *msg)
     action_info_t action;
     uint32_t offset;
     uint32_t err;
+    uint32_t addr, *data;
+    pstorage_handle_t block_handle;
 
     /*
      * Store the data received in RAM and write to pstorage at a specific
@@ -195,9 +211,11 @@ store_button_action(ble_action_info_msg_t *msg)
             msg->operation, msg->button, msg->sub_index, msg->device_type, msg->value);
     printf("address : ");
     for (int i = 0; i < 6; i++) {
-        printf(" %02d ", msg->address[i]);
+        printf(" %02x ", msg->address[i]);
     }
     printf("\n");
+
+    memset(&action.address, 0, sizeof(action.address));
 
     memcpy(&action.address, msg->address, sizeof(action.address));
     if (msg->operation == BLE_ACTION_INFO_OP_ADD) {
@@ -207,14 +225,37 @@ store_button_action(ble_action_info_msg_t *msg)
     }
     action.value = msg->value;
 
+    /* update RAM with the new values */
+    memcpy(&button_actions[msg->button][msg->sub_index], &action, sizeof(action));
+
+    //Get the block handle.
+    err = pstorage_block_identifier_get(&m_pstorage_handle, 0, &block_handle);
+    if (err != NRF_SUCCESS) {
+        printf("Failed to get block identifier\n");
+    }
+
     offset = ACTION_INFO_OFFSET(msg->button, msg->sub_index);
-    err = pstorage_store(&m_pstorage_handle, (uint8_t *)&action, sizeof(action), offset);
+    addr = block_handle.block_id;
+    addr += offset;
+
+    printf("Writing value %#x, validity %#x\n", action.value, action.is_valid);
+
+    /* update if there was valid data already stored in flash */
+    err = pstorage_load((uint8_t *)&action, &block_handle, sizeof(action), offset);
+    if ((uint8_t) action.is_valid != (uint8_t) ACTION_INFO_INVALID) {
+        /* Update flash with the new value */
+        data = (uint32_t *) &button_actions[msg->button][msg->sub_index];
+        err = pstorage_update(&block_handle, (uint8_t *)data, sizeof(action), offset);
+    } else {
+        /* Store the value in flash */
+        data = (uint32_t *) &button_actions[msg->button][msg->sub_index];
+        err = pstorage_store(&block_handle, (uint8_t *)data, sizeof(action), offset);
+    }
 
     if (err != NRF_SUCCESS) {
         printf("%s: failed - error: %#lx\n", __FUNCTION__, err);
+        /* Retry storing these values in flash */
         return;
     }
-
-    memcpy(&button_actions[msg->button][msg->sub_index], &action, sizeof(action));
 }
 

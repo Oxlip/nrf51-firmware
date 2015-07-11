@@ -2,8 +2,8 @@
 #define __LYRA_H__
 
 typedef enum {
+    BLE_ACTION_INFO_OP_REMOVE,
     BLE_ACTION_INFO_OP_ADD,
-    BLE_ACTION_INFO_OP_REMOVE
 } ble_action_info_op_t;
 
 typedef struct {

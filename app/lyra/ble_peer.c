@@ -144,6 +144,10 @@ write_to_peer_device (ble_gap_addr_t peer_addr, uint8_t *value, uint8_t len)
     uint32_t err_code;
     peer_info_t *peer_info;
 
+    printf("%s: Sending value %#x to peer: ", __FUNCTION__, (int) *value);
+    for (int i; i < 6; i++) printf("%02x:", peer_addr.addr[i]);
+    printf("\n");
+
     peer_info = get_free_peer_info();
     if (peer_info == NULL) {
         printf("All connections are active.\n");
@@ -324,12 +328,12 @@ sm_handle_write_response(uint16_t conn_handle, uint16_t gatt_status)
     peer_info = find_peer_by_conn_handle(conn_handle);
     if (peer_info == NULL) {
         printf("Ignoring write response event for conn %d\n", conn_handle);
-        return;
+        goto disconnect;
     }
 
     if (gatt_status != BLE_GATT_STATUS_SUCCESS) {
         printf("%s gatt error: %x\n", __FUNCTION__, gatt_status);
-        return;
+        goto disconnect;
     }
 
     if (peer_info->curr_state != BLE_GATTC_EVT_CHAR_DISC_RSP) {
@@ -339,6 +343,8 @@ sm_handle_write_response(uint16_t conn_handle, uint16_t gatt_status)
     }
 
     peer_info->curr_state = BLE_GATTC_EVT_WRITE_RSP;
+
+disconnect:
     sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
 }
 
