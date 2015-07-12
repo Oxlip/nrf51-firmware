@@ -86,6 +86,8 @@ send_value_to_peer(uint8_t button)
     }
 }
 
+extern void battery_start(void);
+
 /**@brief Function for handling button events.
  *
  * @param[in]   pin_no   The pin number of the button pressed.
@@ -107,6 +109,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             break;
         case TOUCH_BUTTON_3:
             send_value_to_peer(2);
+            battery_start();
             break;
         default:
             APP_ERROR_HANDLER(pin_no);
@@ -214,8 +217,6 @@ store_button_action(ble_action_info_msg_t *msg)
         printf(" %02x ", msg->address[i]);
     }
     printf("\n");
-
-    memset(&action.address, 0, sizeof(action.address));
 
     memcpy(&action.address, msg->address, sizeof(action.address));
     if (msg->operation == BLE_ACTION_INFO_OP_ADD) {

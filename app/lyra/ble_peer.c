@@ -328,7 +328,7 @@ sm_handle_write_response(uint16_t conn_handle, uint16_t gatt_status)
     peer_info = find_peer_by_conn_handle(conn_handle);
     if (peer_info == NULL) {
         printf("Ignoring write response event for conn %d\n", conn_handle);
-        goto disconnect;
+        return;
     }
 
     if (gatt_status != BLE_GATT_STATUS_SUCCESS) {
