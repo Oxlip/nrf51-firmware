@@ -1,37 +1,23 @@
-/* Copyright (c) 2012 Nordic Semiconductor. All Rights Reserved.
- *
- * The information contained herein is property of Nordic Semiconductor ASA.
- * Terms and conditions of usage are described in detail in NORDIC
- * SEMICONDUCTOR STANDARD SOFTWARE LICENSE AGREEMENT.
- *
- * Licensees are granted free, non-transferable use of the information. NO
- * WARRANTY of ANY KIND is provided. This heading must NOT be removed from
- * the file.
- *
- */
-
-/** @file
- *
- * @defgroup ble_sdk_app_hrs_eval_main main.c
- * @{
- * @ingroup ble_sdk_app_hrs_eval
- * @brief Main file for Heart Rate Service Sample Application for nRF51822 evaluation board
- *
- * This file contains the source code for a sample application using the Heart Rate service
- * (and also Battery and Device Information services) for the nRF51822 evaluation board (PCA10001).
- * This application uses the @ref ble_sdk_lib_conn_params module.
+/** Measures remaining capacity of battery and exposes it as a BLE service.
+ *  Modified from nrf ble_sdk_app_hrs example.
  */
 
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "nordic_common.h"
-#include "nrf.h"
-#include "app_error.h"
-#include "nrf_gpio.h"
-#include "nrf51_bitfields.h"
-#include "softdevice_handler.h"
-#include "app_util.h"
+#include <nordic_common.h>
+#include <nrf.h>
+#include <app_error.h>
+#include <nrf_gpio.h>
+#include <nrf51_bitfields.h>
+#include <softdevice_handler.h>
+#include <app_util.h>
+
+#include <ble_ss.h>
+#include <ble_common.h>
+#include "battery.h"
+
+ble_ss_t battery_ss;
 
 #define ADC_REF_VOLTAGE_IN_MILLIVOLTS        1200                                      /**< Reference voltage (in milli volts) used by ADC while doing conversion. */
 #define ADC_PRE_SCALING_COMPENSATION         3                                         /**< The ADC is configured to use VDD with 1/3 prescaling as input. And hence the result of conversion is to be multiplied by 3 to get the actual value of the battery voltage.*/
@@ -54,23 +40,25 @@ void ADC_IRQHandler(void)
     if (NRF_ADC->EVENTS_END != 0)
     {
         uint8_t     adc_result;
-        uint16_t    batt_lvl_in_milli_volts;
-        uint8_t     percentage_batt_lvl;
+        uint16_t    mv; // battery level in mv
+        uint8_t     percent; // battery level in percentage
 
         NRF_ADC->EVENTS_END     = 0;
         adc_result              = NRF_ADC->RESULT;
         NRF_ADC->TASKS_STOP     = 1;
 
-        batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) +
-                                  DIODE_FWD_VOLT_DROP_MILLIVOLTS;
-        percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
+        mv = ADC_RESULT_IN_MILLI_VOLTS(adc_result) + DIODE_FWD_VOLT_DROP_MILLIVOLTS;
+        percent = battery_level_in_percent(mv);
 
         printf("%s: Battery Level Percentage: %d, level: %dmv\n", __FUNCTION__,
-                (int) percentage_batt_lvl, (int) batt_lvl_in_milli_volts);
+                (int) percent, (int) mv);
+        uint32_t err;
+        err = ble_ss_sensor_value_update(&battery_ss, &percent, sizeof(percent));
+        APP_ERROR_CHECK(err);
     }
 }
 
-void battery_start(void)
+void battery_measure_start(void)
 {
     uint32_t err_code;
 
@@ -98,6 +86,30 @@ void battery_start(void)
     NRF_ADC->TASKS_START = 1;
 }
 
-/**
- * @}
- */
+void battery_service_init(void)
+{
+    uint32_t err_code;
+    ble_uuid_t ble_service_uuid;
+    ble_uuid_t ble_char_uuid;
+    ble_ss_init_t bat_ss_param;
+
+    // Initialize lyra_bs Service.
+    memset(&bat_ss_param, 0, sizeof(bat_ss_param));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bat_ss_param.sensor_value_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bat_ss_param.sensor_value_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bat_ss_param.sensor_value_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bat_ss_param.sensor_value_report_read_perm);
+
+    bat_ss_param.evt_write_handler      = NULL;
+    bat_ss_param.evt_auth_write_handler = NULL;
+    bat_ss_param.evt_auth_read_handler  = NULL;
+    bat_ss_param.support_notification   = true;
+    bat_ss_param.p_report_ref           = NULL;
+    bat_ss_param.initial_value          = 50;
+
+    BLE_UUID_ASSIGN_TYPE_STD(ble_service_uuid, BLE_UUID_BATTERY_SERVICE);
+    BLE_UUID_ASSIGN_TYPE_STD(ble_char_uuid, BLE_UUID_BATTERY_LEVEL_STATE_CHAR);
+    err_code = ble_ss_init(&battery_ss, &ble_service_uuid, &ble_char_uuid, &bat_ss_param);
+    APP_ERROR_CHECK(err_code);
+}

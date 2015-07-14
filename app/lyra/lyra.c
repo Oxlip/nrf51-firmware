@@ -1,18 +1,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <nrf_gpio.h>
+#include <nrf_soc.h>
 #include <app_timer.h>
 #include <app_gpiote.h>
 #include <app_button.h>
 #include <ble.h>
-#include <lis2dh.h>
+#include <pstorage.h>
 
-#include "common.h"
-#include "platform.h"
+#include <platform.h>
+#include <lis2dh.h>
+#include <common.h>
+
+#include "battery.h"
 #include "board_conf.h"
 #include "lyra.h"
-#include "pstorage.h"
-#include "nrf_soc.h"
 
 typedef enum {
     ACTION_INFO_INVALID = -1,
@@ -86,7 +88,6 @@ send_value_to_peer(uint8_t button)
     }
 }
 
-extern void battery_start(void);
 
 /**@brief Function for handling button events.
  *
@@ -97,6 +98,9 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     if (button_action == 0) {
         return;
     }
+
+    /* Measure battery whenever we wakeup */
+    battery_measure_start();
 
     /* Send an event notification to HUB */
     switch (pin_no)
@@ -109,7 +113,6 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             break;
         case TOUCH_BUTTON_3:
             send_value_to_peer(2);
-            battery_start();
             break;
         default:
             APP_ERROR_HANDLER(pin_no);
