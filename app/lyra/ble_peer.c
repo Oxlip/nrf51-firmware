@@ -145,7 +145,7 @@ write_to_peer_device (ble_gap_addr_t peer_addr, uint8_t *value, uint8_t len)
     peer_info_t *peer_info;
 
     printf("%s: Sending value %#x to peer: ", __FUNCTION__, (int) *value);
-    for (int i; i < 6; i++) printf("%02x:", peer_addr.addr[i]);
+    for (int i=0; i < 6; i++) printf("%02x:", peer_addr.addr[i]);
     printf("\n");
 
     peer_info = get_free_peer_info();
