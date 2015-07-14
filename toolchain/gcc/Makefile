@@ -4,7 +4,7 @@ define colorecho
 
 	printf "%-30s" $(notdir $3)
 	@tput sgr0
-	printf "%-50s\n" $(dir $3)
+	printf "%-50s\n" $(realpath $(dir $3))
 endef
 
 ifneq ($(VERBOSE), 1)
