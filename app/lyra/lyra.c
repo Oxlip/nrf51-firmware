@@ -197,6 +197,8 @@ void device_init()
 
     /* Pstorage handling for lyra */
     register_pstorage_handle();
+
+    battery_measure_start();
 }
 
 /* Store button action */

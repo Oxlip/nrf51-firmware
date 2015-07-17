@@ -42,6 +42,8 @@ void ADC_IRQHandler(void)
         uint8_t     adc_result;
         uint16_t    mv; // battery level in mv
         uint8_t     percent; // battery level in percentage
+        uint32_t    ble_msg = 0;
+        uint32_t    err;
 
         NRF_ADC->EVENTS_END     = 0;
         adc_result              = NRF_ADC->RESULT;
@@ -52,8 +54,8 @@ void ADC_IRQHandler(void)
 
         printf("%s: Battery Level Percentage: %d, level: %dmv\n", __FUNCTION__,
                 (int) percent, (int) mv);
-        uint32_t err;
-        err = ble_ss_sensor_value_update(&battery_ss, &percent, sizeof(percent));
+        ble_msg = percent | (mv << 16);
+        err = ble_ss_sensor_value_update(&battery_ss, (uint8_t *)&ble_msg, sizeof(ble_msg));
         APP_ERROR_CHECK(err);
     }
 }
