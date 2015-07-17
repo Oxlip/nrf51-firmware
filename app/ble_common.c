@@ -18,6 +18,7 @@
 #include <ble_uuids.h>
 
 #include "platform.h"
+#include "common.h"
 #include "ble_common.h"
 
 #include <ble_hci.h>
@@ -39,6 +40,7 @@ static ble_gap_sec_params_t m_sec_params;
 
 /**< Handle of the current connection. */
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
+
 
 /**@brief Function for the GAP initialization.
  *
@@ -87,7 +89,7 @@ void ble_advertising_start(void)
 
     err_code = sd_ble_gap_adv_start(&adv_params);
     APP_ERROR_CHECK(err_code);
-    nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+    set_advertisement_indicator(1);
 }
 
 /**@brief Function for initializing the Advertising functionality.
@@ -167,14 +169,15 @@ static void conn_params_init(void)
 
 static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
 {
-#ifndef USE_CENTRAL_MODE
     const ble_gap_evt_t *p_gap_evt = &p_ble_evt->evt.gap_evt;
     uint8_t timeout_src = p_gap_evt->params.timeout.src;
 
+    printf("BLE_GAP_TIMEOUT src = %d\n", timeout_src);
+
+
+#ifndef USE_CENTRAL_MODE
     if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
     {
-        nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-
         // Configure buttons with sense level low as wakeup source.
         nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
                                  BUTTON_PULL,
@@ -188,6 +191,10 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
         //APP_ERROR_CHECK(err_code);
     }
 #endif
+
+    if (timeout_src == BLE_GAP_TIMEOUT_SRC_CONN) {
+        set_connection_indicator(0);
+    }
 }
 
 
@@ -205,13 +212,12 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     {
         case BLE_GAP_EVT_CONNECTED:
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-            nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-            nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
+            set_connection_indicator(1);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
-            nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
+            set_connection_indicator(0);
             ble_advertising_start();
             break;
 
@@ -264,7 +270,10 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+            printf("BLE_GAP_EVT_CONN_PARAM_UPDATE - Not handled.\n");
+            break;
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+            printf("BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST - Not handled.\n");
             break;
 
         default:
@@ -350,7 +359,7 @@ static void advertising_stop(void)
     err_code = sd_ble_gap_adv_stop();
     APP_ERROR_CHECK(err_code);
 
-    nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+    set_advertisement_indicator(0);
 }
 
 static void reset_prepare(void)
@@ -367,8 +376,8 @@ static void reset_prepare(void)
        advertising_stop();
     }
 
-    nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-    nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
+    set_advertisement_indicator(0);
+    set_connection_indicator(0);
 
     err_code = ble_conn_params_stop();
     APP_ERROR_CHECK(err_code);

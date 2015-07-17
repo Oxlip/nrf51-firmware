@@ -27,13 +27,17 @@ void ble_late_init(void);
  */
 static void leds_init(void)
 {
+#ifdef CONNECTED_LED_PIN_NO
     nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
     nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-    nrf_gpio_cfg_output(ASSERT_LED_PIN_NO);
+    set_advertisement_indicator(0);
+    set_connection_indicator(0);
+#endif
 
-    nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-    nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-    nrf_gpio_pin_clear(ASSERT_LED_PIN_NO);
+#ifdef ASSERT_LED_PIN_NO
+    nrf_gpio_cfg_output(ASSERT_LED_PIN_NO);
+    set_debug_indicator(0);
+#endif
 }
 
 /**@brief Function for the Power manager.

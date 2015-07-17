@@ -34,7 +34,7 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
     recursive_error++;
     printf("App Error %#lx at %s %ld\n", error_code, p_file_name, line_num);
 
-    blink_led(ASSERT_LED_PIN_NO, 200, 200, -1);
+    blink_assert_led();
 
 #ifdef DEBUG
     // This call can be used for debug purposes during application development.
