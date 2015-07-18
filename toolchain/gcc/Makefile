@@ -1,3 +1,16 @@
+define colorecho
+	printf "%-15s" $2
+	@tput setaf $1
+
+	printf "%-30s" $(notdir $3)
+	@tput sgr0
+	printf "%-50s\n" $(realpath $(dir $3))
+endef
+
+ifneq ($(VERBOSE), 1)
+	MAKEFLAGS += -s
+endif
+
 TOOLCHAIN_PREFIX ?= arm-none-eabi
 
 AS = $(TOOLCHAIN_PATH)$(TOOLCHAIN_PREFIX)-as
@@ -113,11 +126,13 @@ include $(TEMPLATE_PATH)Makefile.posix
 endif
 
 $(HEX): $(OBJS) $(OBJS_AS)
+	$(call colorecho, 3, "Linking ", $@)
 	$(LD) $(LDFLAGS) $(OBJS_AS) $(OBJS) -o $(ELF)
 	$(OBJCOPY) -Oihex $(ELF) $(HEX)
 	$(OBJCOPY) -Obinary $(ELF) $(BIN)
 	$(SIZE) $(ELF)
 ifdef BOOTLOADER
+	$(call colorecho, 8, "Generating bootloader ", $@)
 	$(OBJCOPY) -Obinary $(OBJ_OPT_BIN) $(ELF) $(BIN)
 	$(OBJCOPY) -Obinary $(OBJ_OPT_UIRC) $(ELF) $(UICR_BIN)
 else
@@ -129,10 +144,12 @@ size: $(ELF)
 
 $(OUTPUT_PATH)%.o: %.c
 	$(MAKE_BUILD_FOLDER)
+	$(call colorecho, 5, "Compiling ", $<)
 	$(CC) $(LDFLAGS) $(CFLAGS) $< -o $@
 
 $(OUTPUT_PATH)%.os: %.s
 	$(MAKE_BUILD_FOLDER)
+	$(call colorecho, 6, "Assembling ", $<)
 	$(AS) $< -o $@
 
 -include $(DEPS)

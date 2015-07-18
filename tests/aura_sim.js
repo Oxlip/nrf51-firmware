@@ -87,7 +87,7 @@ bleno.on('stateChange', function(state) {
   console.log('on -> stateChange: ' + state);
 
   if (state === 'poweredOn') {
-    console.log(nuton_uuids.BLE_NUTON_UUID_AURA);
+    console.log(bleno.address)
     bleno.startAdvertising('Aura', [nuton_uuids.BLE_NUTON_UUID_AURA]);
   } else {
     bleno.stopAdvertising();
