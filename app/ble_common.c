@@ -175,7 +175,11 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
     printf("BLE_GAP_TIMEOUT src = %d\n", timeout_src);
 
 
-#ifndef USE_CENTRAL_MODE
+#ifdef USE_CENTRAL_MODE
+    if (timeout_src == BLE_GAP_TIMEOUT_SRC_CONN) {
+        set_connection_indicator(0);
+    }
+#else
     if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
     {
         // Configure buttons with sense level low as wakeup source.
@@ -191,10 +195,6 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
         //APP_ERROR_CHECK(err_code);
     }
 #endif
-
-    if (timeout_src == BLE_GAP_TIMEOUT_SRC_CONN) {
-        set_connection_indicator(0);
-    }
 }
 
 
