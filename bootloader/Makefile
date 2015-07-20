@@ -51,7 +51,7 @@ CFLAGS      += -Werror -Wall
 # Enable link time optimization.
 CFLAGS      += -flto
 
-ASMFLAGS    += -D__HEAP_SIZE=16 -D__STACK_SIZE=2048
+ASMFLAGS    += -D__HEAP_SIZE=0x100 -D__STACK_SIZE=2048
 CFLAGS      += -DPSTORAGE_RAW_MODE_ENABLE -DBOOTLOADER_BANKED 
 
 BOOTLOADER  = 1

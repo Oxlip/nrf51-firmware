@@ -5,7 +5,7 @@ GROUP(-lgcc -lc -lnosys)
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x00030000, LENGTH = 44K
-  RAM (rwx) : ORIGIN = 0x20002000, LENGTH = 8K
+  RAM (rwx) : ORIGIN = 0x20002000, LENGTH = 16K /* 8 kB is taken by S110,8 kB for app. */
   BOOTLOADER_SETTINGS (rw) : ORIGIN = 0x0003FC00, LENGTH = 1K
 }
 SECTIONS

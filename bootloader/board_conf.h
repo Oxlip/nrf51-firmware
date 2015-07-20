@@ -47,8 +47,8 @@
 /**< Is on when application has asserted. */
 #define ASSERT_LED_PIN_NO               23
 
-#define UART_RX_PIN_NUMBER              28
-#define UART_TX_PIN_NUMBER              29
+#define UART_RX_PIN_NUMBER              11
+#define UART_TX_PIN_NUMBER              9
 
 #else
 
