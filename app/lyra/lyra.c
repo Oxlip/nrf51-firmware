@@ -184,8 +184,13 @@ void device_init()
     nrf_gpio_cfg_output(RED_LED);
     nrf_gpio_cfg_output(GREEN_LED);
 
+#ifdef BOARD_LYRA
+    nrf_gpio_pin_clear(RED_LED);
+    nrf_gpio_pin_clear(GREEN_LED);
+#else
     nrf_gpio_pin_set(RED_LED);
     nrf_gpio_pin_set(GREEN_LED);
+#endif
 
     buttons_init();
 
