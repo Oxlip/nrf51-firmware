@@ -2,8 +2,7 @@
  * Common code to initalize BLE stack(softdevice) and handle BLE events.
  */
 
-#include <boards.h>
-#include <softdevice_handler.h>
+#include <softdevice_handler_appsh.h>
 #include <app_timer.h>
 #include <ble_types.h>
 #include <ble_advdata.h>
@@ -22,15 +21,9 @@
 #include "ble_common.h"
 
 #include <ble_hci.h>
-#include <ble_dfu.h>
-#include <dfu_app_handler.h>
 
 #define LOG printf
 
-#ifndef USE_CENTRAL_MODE
-/**< DFU Support */
-static ble_dfu_t m_dfus;
-#endif
 
 /**< UUID type registered with the SDK */
 uint8_t oxlip_uuid_type = BLE_UUID_TYPE_UNKNOWN;
@@ -100,15 +93,13 @@ void ble_advertising_common_init(ble_advdata_service_data_t *service_data)
 {
     ble_advdata_t advdata;
     uint32_t      err_code;
-    uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
 
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
 
     advdata.name_type               = BLE_ADVDATA_FULL_NAME;
     advdata.include_appearance      = true;
-    advdata.flags.size              = sizeof(flags);
-    advdata.flags.p_data            = &flags;
+    advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
     if (service_data) {
         advdata.p_service_data_array    = service_data;
         advdata.service_data_count      = 1;
@@ -123,9 +114,6 @@ void ble_advertising_common_init(ble_advdata_service_data_t *service_data)
  */
 static void sec_params_init(void)
 {
-#ifndef USE_CENTRAL_MODE
-    m_sec_params.timeout      = SEC_PARAM_TIMEOUT;
-#endif
     m_sec_params.bond         = SEC_PARAM_BOND;
     m_sec_params.mitm         = SEC_PARAM_MITM;
     m_sec_params.io_caps      = SEC_PARAM_IO_CAPABILITIES;
@@ -174,27 +162,13 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
 
     printf("BLE_GAP_TIMEOUT src = %d\n", timeout_src);
 
-
-#ifdef USE_CENTRAL_MODE
     if (timeout_src == BLE_GAP_TIMEOUT_SRC_CONN) {
         set_connection_indicator(0);
-    }
-#else
-    if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
-    {
-        // Configure buttons with sense level low as wakeup source.
-        nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
-                                 BUTTON_PULL,
-                                 NRF_GPIO_PIN_SENSE_LOW);
-
-        // Go to system-off mode (this function will not return; wakeup will cause a reset)
-        printf("BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT -> power_off()");
+    } else if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISING) {
+#ifndef USE_CENTRAL_MODE
         ble_advertising_start();
-        //uint32_t err_code;
-        //err_code = sd_power_system_off();
-        //APP_ERROR_CHECK(err_code);
-    }
 #endif
+    }
 }
 
 
@@ -222,51 +196,29 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-#ifdef USE_CENTRAL_MODE
             err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
                                                    BLE_GAP_SEC_STATUS_SUCCESS,
                                                    &m_sec_params,
                                                    //bonding is not supported for now.
                                                    NULL);
-#else
-            err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
-                                                   BLE_GAP_SEC_STATUS_SUCCESS,
-                                                   &m_sec_params);
-#endif
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-#ifdef USE_CENTRAL_MODE
             err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0, 0);
-#else
-            err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0);
-#endif
             APP_ERROR_CHECK(err_code);
             break;
 
-        case BLE_GAP_EVT_AUTH_STATUS:
-            m_auth_status = p_ble_evt->evt.gap_evt.params.auth_status;
-            break;
-
-#ifndef USE_CENTRAL_MODE
-        case BLE_GAP_EVT_SEC_INFO_REQUEST:
-            p_enc_info = &m_auth_status.periph_keys.enc_info;
-            if (p_enc_info->div == p_ble_evt->evt.gap_evt.params.sec_info_request.div)
-            {
-                err_code = sd_ble_gap_sec_info_reply(m_conn_handle, p_enc_info, NULL);
-                APP_ERROR_CHECK(err_code);
-            }
-            else
-            {
-                // No keys found for this device
-                err_code = sd_ble_gap_sec_info_reply(m_conn_handle, NULL, NULL);
-                APP_ERROR_CHECK(err_code);
-            }
-            break;
-#endif
         case BLE_GAP_EVT_TIMEOUT:
             handle_gap_event_timeout(p_ble_evt);
+            break;
+
+        case BLE_GAP_EVT_AUTH_STATUS:
+            printf("BLE_GAP_EVT_AUTH_STATUS - Not handled.\n");
+            break;
+
+        case BLE_GAP_EVT_SEC_INFO_REQUEST:
+            printf("BLE_GAP_EVT_SEC_INFO_REQUEST - Not handled.\n");
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:
@@ -295,9 +247,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
     device_on_ble_evt(p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
-#ifndef USE_CENTRAL_MODE
-    ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);
-#endif
     on_ble_evt(p_ble_evt);
 }
 
@@ -383,29 +332,6 @@ static void reset_prepare(void)
     APP_ERROR_CHECK(err_code);
 }
 
-#ifndef USE_CENTRAL_MODE
-/**@brief Generic dfu support for the app.
- *
- */
-static void dfu_init(void)
-{
-    uint32_t err_code;
-    ble_dfu_init_t dfus_init;
-
-    /*
-     * service_error_handler - Not used as only the switch from app
-     * to DFU mode is required and not full dfu service.
-     */
-    memset(&dfus_init, 0, sizeof(dfus_init));
-    dfus_init.evt_handler = dfu_app_on_dfu_evt;
-    dfus_init.error_handler = NULL;
-
-    err_code = ble_dfu_init(&m_dfus, &dfus_init);
-    APP_ERROR_CHECK(err_code);
-
-    dfu_app_reset_prepare_set(reset_prepare);
-}
-#endif
 
 /**@brief Function for initializing the BLE stack.
  *
@@ -416,7 +342,7 @@ static void ble_stack_init(void)
     uint32_t err_code;
 
     // Initialize the SoftDevice handler module.
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_SYNTH_250_PPM, true);
+    SOFTDEVICE_HANDLER_APPSH_INIT(NRF_CLOCK_LFCLKSRC_SYNTH_250_PPM, true);
 
     // Enable BLE stack
     ble_enable_params_t ble_enable_params;
@@ -449,9 +375,6 @@ void ble_init()
  */
 void ble_late_init()
 {
-#ifndef USE_CENTRAL_MODE
-    dfu_init();
-#endif
     gap_params_init();
     uuid_init();
     services_init();

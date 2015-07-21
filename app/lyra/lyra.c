@@ -132,7 +132,7 @@ static void buttons_init(void)
         {TOUCH_BUTTON_3, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
     };
 
-    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, false);
+    app_button_init(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY);
 
     // Start handling button presses immediately.
     err_code = app_button_enable();

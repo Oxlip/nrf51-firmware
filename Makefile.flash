@@ -1,0 +1,103 @@
+# Make targets for flashing the device.
+
+FLASH_START_ADDRESS = $(shell $(OBJDUMP) -h $(ELF_OUTPUT) -j .text | grep .text | awk '{print $$4}')
+
+ifdef SEGGER_SERIAL
+JLINKEXE_OPTION = -SelectEmuBySn $(SEGGER_SERIAL)
+JLINKGDBSERVER_OPTION = -select USB=$(SEGGER_SERIAL)
+endif
+
+JLINK = ! JLinkExe $(JLINK_OPTIONS) $(JLINKEXE_OPTION)
+JLINKGDBSERVER = JLinkGDBServer $(JLINK_OPTIONS) $(JLINKGDBSERVER_OPTION)
+
+SOFTDEVICE_OUTPUT = $(BLD_DIRECTORY)/$(notdir $(SOFTDEVICE))
+FLASH_JLINK_OUT = $(BLD_DIRECTORY)/flash.jlink
+FLASH_SD_JLINK_OUT = $(BLD_DIRECTORY)/flash-softdevice.jlink
+FLASH_UICR_JLINK_OUT = $(BLD_DIRECTORY)/flash-uicr.jlink
+RECOVER_JLINK_OUT = $(BLD_DIRECTORY)/recover.jlink
+PIN_RESET_JLINK_OUT = $(BLD_DIRECTORY)/pin-reset.jlink
+RESET_JLINK_OUT = $(BLD_DIRECTORY)/reset.jlink
+ERASE_ALL_JLINK_OUT = $(BLD_DIRECTORY)/erase-all.jlink
+
+TERMINAL ?= gnome-terminal -e
+
+# Gdb infos
+GDB_PORT_NUMBER = 2331
+
+ifdef BOOTLOADER
+  BFLASH = flash-uicr
+else
+  BFLASH =
+endif
+
+flash: all $(BFLASH) $(FLASH_JLINK_OUT)
+	$(JLINK) $(FLASH_JLINK_OUT)
+
+$(FLASH_JLINK_OUT):
+	printf "r\nloadbin $(BIN_OUTPUT) $(FLASH_START_ADDRESS)\nr\ng\nexit\n" > $@
+
+$(FLASH_SD_JLINK_OUT):
+	# Write to NVMC to enable write. Write mainpart, write UICR. Assumes device is erased.
+	printf "w4 4001e504 1\nloadbin \"$(SOFTDEVICE_OUTPUT:.hex=.bin)\" 0\nr\ng\nexit\n" > $@
+
+$(FLASH_UICR_JLINK_OUT):
+	printf "w4 4001e504 1\nloadbin \"$(UICR_BIN)\" 0x10001014\nr\ng\nexit\n" > $@
+
+flash-softdevice: erase-all $(FLASH_SD_JLINK_OUT)
+ifndef SOFTDEVICE
+	$(error "You need to set the SOFTDEVICE command-line parameter to a path (without spaces) to the softdevice hex-file")
+endif
+
+	$(OBJCOPY) -I ihex -O binary $(SOFTDEVICE) $(SOFTDEVICE_OUTPUT:.hex=.bin)
+	$(JLINK) $(FLASH_SD_JLINK_OUT)
+
+flash-uicr: $(FLASH_UICR_JLINK_OUT)
+	$(JLINK) $^
+
+recover: $(RECOVER_JLINK_OUT) $(ERASE_ALL_JLINK_OUT) $(PIN_RESET_JLINK_OUT)
+	$(JLINK) $(RECOVER_JLINK_OUT)
+	$(JLINK) $(ERASE_ALL_JLINK_OUT)
+	$(JLINK) $(PIN_RESET_JLINK_OUT)
+
+$(RECOVER_JLINK_OUT):
+	printf "si 0\nt0\nsleep 1\ntck1\nsleep 1\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\ntck0\nsleep 100\nsi 1\nr\nexit\n" > $@
+
+$(PIN_RESET_JLINK_OUT):
+	printf "w4 40000544 1\nr\nexit\n" > $@
+
+pin-reset: $(PIN_RESET_JLINK_OUT)
+	$(JLINK) $^
+
+reset: $(RESET_JLINK_OUT)
+	$(JLINK) $^
+
+$(RESET_JLINK_OUT):
+	printf "r\ng\nexit\n" > $@
+
+erase-all: $(ERASE_ALL_JLINK_OUT)
+	$(JLINK) $^
+
+$(ERASE_ALL_JLINK_OUT):
+	# Write to NVMC to enable erase, do erase all, wait for completion. reset
+	printf "w4 4001e504 2\nw4 4001e50c 1\nsleep 100\nr\nexit\n" > $@
+
+enable-bootloader: erase-all flash-softdevice $(FLASH_UICR_JLINK_OUT)
+	$(JLINK) $(FLASH_UICR_JLINK_OUT)
+
+disable-bootloader: erase-all flash-softdevice
+
+startdebug: debug-gdbinit
+	$(TERMINAL) "$(JLINKGDBSERVER) -port $(GDB_PORT_NUMBER)"
+	sleep 1
+	$(TERMINAL) "$(GDB) $(ELF_OUTPUT)"
+
+debug-gdbinit:
+	printf "target remote localhost:$(GDB_PORT_NUMBER)\nset remote memory-write-packet-size 1024\nset remote memory-write-packet-size fixed\nload\nmon speed 1000\nmon reset\nbreak main\nbreak\n" > .gdbinit
+
+
+clean_flash_intermediate:
+	rm -f $(BLD_DIRECTORY)/*.jlink
+	rm -f $(BLD_DIRECTORY)/JLink.log
+	rm -f $(BLD_DIRECTORY)/.gdbinit
+
+.PHONY: flash flash-softdevice erase-all startdebug clean_flash_intermediate

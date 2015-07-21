@@ -310,8 +310,6 @@ uint32_t ble_ss_sensor_value_update(ble_ss_t * p_ss, uint8_t *buffer, uint16_t l
 {
     uint32_t err_code = NRF_SUCCESS;
     uint16_t len = length;
-
-#ifdef USE_CENTRAL_MODE
     ble_gatts_value_t value;
 
     value.len = len;
@@ -322,14 +320,6 @@ uint32_t ble_ss_sensor_value_update(ble_ss_t * p_ss, uint8_t *buffer, uint16_t l
     err_code = sd_ble_gatts_value_set(p_ss->conn_handle,
                                       p_ss->sensor_value_handles.value_handle,
                                       &value);
-
-#else
-    // Update database
-    err_code = sd_ble_gatts_value_set(p_ss->sensor_value_handles.value_handle,
-                                      0,
-                                      &len,
-                                      buffer);
-#endif
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
