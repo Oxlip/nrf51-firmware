@@ -16,8 +16,8 @@
 #include "platform.h"
 #include "common.h"
 
-#define UART_RX_BUF_SIZE 10
-#define UART_TX_BUF_SIZE 100
+#define UART_RX_BUF_SIZE 16
+#define UART_TX_BUF_SIZE 128
 
 
 /* BLE init routines from ble_common.c */
@@ -80,7 +80,7 @@ static void uart_init(void)
         UART_BAUDRATE_BAUDRATE_Baud115200
     };
 
-    APP_UART_FIFO_INIT( &comm_params,
+    APP_UART_FIFO_INIT(&comm_params,
                        UART_RX_BUF_SIZE,
                        UART_TX_BUF_SIZE,
                        uart_error_handle,

@@ -11,7 +11,6 @@ REPO_ROOT       := $(dir $(lastword $(MAKEFILE_LIST)))
 
 SDK_PATH        = $(REPO_ROOT)/sdk/9.0/
 SDK_COMPONENT_DIR = $(SDK_PATH)/components/
-TOOLCHAIN_DIR   = $(abspath $(SDK_COMPONENT_DIR)/toolchain/gcc)
 
 MK := mkdir
 RM := rm -rf
@@ -83,7 +82,7 @@ $(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
 $(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c)
 
 #assembly files common to all targets
-ASM_SOURCE_FILES  = $(abspath $(SDK_COMPONENT_DIR)/toolchain/gcc/gcc_startup_nrf51.s)
+ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/app/startup_nrf51.s)
 
 #includes common to all targets
 INC_PATHS += -I$(abspath $(CURDIR))
@@ -111,7 +110,7 @@ INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/util)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/trace)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/hal)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/toolchain/gcc)
-INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/toolchain)
+INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/toolchain/)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/common)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/ble/ble_db_discovery)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler)
