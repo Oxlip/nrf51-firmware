@@ -35,14 +35,14 @@ endif
 flash: all $(BFLASH) $(FLASH_JLINK_OUT)
 	$(JLINK) $(FLASH_JLINK_OUT)
 
-$(FLASH_JLINK_OUT):
+$(FLASH_JLINK_OUT): $(BUILD_DIRECTORIES)
 	printf "r\nloadbin $(BIN_OUTPUT) $(FLASH_START_ADDRESS)\nr\ng\nexit\n" > $@
 
-$(FLASH_SD_JLINK_OUT):
+$(FLASH_SD_JLINK_OUT): $(BUILD_DIRECTORIES)
 	# Write to NVMC to enable write. Write mainpart, write UICR. Assumes device is erased.
 	printf "w4 4001e504 1\nloadbin \"$(SOFTDEVICE_OUTPUT:.hex=.bin)\" 0\nr\ng\nexit\n" > $@
 
-$(FLASH_UICR_JLINK_OUT):
+$(FLASH_UICR_JLINK_OUT): $(BUILD_DIRECTORIES)
 	printf "w4 4001e504 1\nloadbin \"$(UICR_BIN)\" 0x10001014\nr\ng\nexit\n" > $@
 
 flash-softdevice: erase-all $(FLASH_SD_JLINK_OUT)
@@ -61,10 +61,10 @@ recover: $(RECOVER_JLINK_OUT) $(ERASE_ALL_JLINK_OUT) $(PIN_RESET_JLINK_OUT)
 	$(JLINK) $(ERASE_ALL_JLINK_OUT)
 	$(JLINK) $(PIN_RESET_JLINK_OUT)
 
-$(RECOVER_JLINK_OUT):
+$(RECOVER_JLINK_OUT): $(BUILD_DIRECTORIES)
 	printf "si 0\nt0\nsleep 1\ntck1\nsleep 1\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\nt0\nsleep 2\nt1\nsleep 2\ntck0\nsleep 100\nsi 1\nr\nexit\n" > $@
 
-$(PIN_RESET_JLINK_OUT):
+$(PIN_RESET_JLINK_OUT): $(BUILD_DIRECTORIES)
 	printf "w4 40000544 1\nr\nexit\n" > $@
 
 pin-reset: $(PIN_RESET_JLINK_OUT)
@@ -73,13 +73,13 @@ pin-reset: $(PIN_RESET_JLINK_OUT)
 reset: $(RESET_JLINK_OUT)
 	$(JLINK) $^
 
-$(RESET_JLINK_OUT):
+$(RESET_JLINK_OUT): $(BUILD_DIRECTORIES)
 	printf "r\ng\nexit\n" > $@
 
 erase-all: $(ERASE_ALL_JLINK_OUT)
 	$(JLINK) $^
 
-$(ERASE_ALL_JLINK_OUT):
+$(ERASE_ALL_JLINK_OUT): $(BUILD_DIRECTORIES)
 	# Write to NVMC to enable erase, do erase all, wait for completion. reset
 	printf "w4 4001e504 2\nw4 4001e50c 1\nsleep 100\nr\nexit\n" > $@
 
