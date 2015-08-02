@@ -457,6 +457,9 @@ uint32_t nrf_drv_gpiote_in_event_addr_get(nrf_drv_gpiote_pin_t pin)
     return nrf_gpiote_event_addr_get(event);
 }
 
+typedef void (*app_gpiote_event_handler_t)(uint32_t event_pins_low_to_high,
+                                           uint32_t event_pins_high_to_low);
+
 /**@brief GPIOTE user type. */
 typedef struct
 {
@@ -554,19 +557,30 @@ void GPIOTE_IRQHandler(void)
     uint32_t mask = (uint32_t)NRF_GPIOTE_INT_IN0_MASK;
     for (i = 0; i < NUMBER_OF_GPIO_TE; i++)
     {
-        if (nrf_gpiote_event_is_set(event) && nrf_gpiote_int_is_enabled(1 << i))
+        if (nrf_gpiote_event_is_set(event) && nrf_gpiote_int_is_enabled(mask))
         {
             nrf_gpiote_event_clear(event);
             status |= mask;
         }
         mask <<= 1;
-        event = (nrf_gpiote_events_t)((uint32_t)event + 4);
+        /* Incrementing to next event, utilizing the fact that events are grouped together
+         * in ascending order. */
+        event = (nrf_gpiote_events_t)((uint32_t)event + sizeof(uint32_t));
+    }
+
+    /* collect PORT status event, if event is set read pins state. Processing is postponed to the
+     * end of interrupt. */
+    if (nrf_gpiote_event_is_set(NRF_GPIOTE_EVENTS_PORT))
+    {
+        nrf_gpiote_event_clear(NRF_GPIOTE_EVENTS_PORT);
+        status |= (uint32_t)NRF_GPIOTE_INT_PORT_MASK;
+        input = nrf_gpio_pins_read();
     }
 
     /* Process pin events. */
     if (status & NRF_GPIOTE_INT_IN_MASK)
     {
-        mask = 1;
+        mask = (uint32_t)NRF_GPIOTE_INT_IN0_MASK;
         for (i = 0; i < NUMBER_OF_GPIO_TE; i++)
         {
             if (mask & status)
@@ -585,18 +599,16 @@ void GPIOTE_IRQHandler(void)
         /* Process port event. */
         for (i = 0; i < GPIOTE_CONFIG_NUM_OF_LOW_POWER_EVENTS; i++)
         {
-            //TODO - I am not sure whether this works or not .
-            // got this patch from https://devzone.nordicsemi.com/question/40670/sdk81-app_gpiote-and-nrf_drv_gpiote-conflict/
-            uint8_t pin_and_sense = m_cb.port_handlers_pins[channel_port_get(i)-NUMBER_OF_GPIO_TE];
-            nrf_drv_gpiote_pin_t pin = (pin_and_sense & ~SENSE_FIELD_MASK);
-            nrf_gpiote_polarity_t polarity =
-                    (nrf_gpiote_polarity_t)((pin_and_sense & SENSE_FIELD_MASK) >> SENSE_FIELD_POS);
-            mask = 1 << pin;
-            if (pin_in_use_by_port(pin))
+            if (m_cb.port_handlers_pins[i] != PIN_NOT_USED)
             {
+                uint8_t pin_and_sense = m_cb.port_handlers_pins[i];
+                nrf_drv_gpiote_pin_t pin = (pin_and_sense & ~SENSE_FIELD_MASK);
                 nrf_drv_gpiote_evt_handler_t handler = channel_handler_get(channel_port_get(pin));
                 if (handler)
                 {
+                    nrf_gpiote_polarity_t polarity =
+                            (nrf_gpiote_polarity_t)((pin_and_sense & SENSE_FIELD_MASK) >> SENSE_FIELD_POS);
+                    mask = 1 << pin;
                     nrf_gpio_pin_sense_t sense = nrf_gpio_pin_sense_get(pin);
                     if (((mask & input) && (sense==NRF_GPIO_PIN_SENSE_HIGH)) ||
                        (!(mask & input) && (sense==NRF_GPIO_PIN_SENSE_LOW))  )
@@ -614,4 +626,5 @@ void GPIOTE_IRQHandler(void)
         }
     }
 }
+
 //lint -restore
