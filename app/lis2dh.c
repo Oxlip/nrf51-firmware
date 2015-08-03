@@ -8,7 +8,7 @@
 #include <nrf_gpio.h>
 #include <app_gpiote.h>
 
-#include "board_conf.h"
+#include <boards.h>
 
 #define LIS2DH_INT1_PIN             6
 #define LIS2DH_INT2_PIN             5

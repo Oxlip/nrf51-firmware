@@ -13,8 +13,12 @@
 #include <common.h>
 
 #include "battery.h"
-#include "board_conf.h"
+#include <boards.h>
 #include "lyra.h"
+
+#define GREEN_LED LED_1
+#define RED_LED   LED_2
+
 
 typedef enum {
     ACTION_INFO_INVALID = -1,
@@ -105,13 +109,13 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     /* Send an event notification to HUB */
     switch (pin_no)
     {
-        case TOUCH_BUTTON_1:
+        case BUTTON_1:
             send_value_to_peer(0);
             break;
-        case TOUCH_BUTTON_2:
+        case BUTTON_2:
             send_value_to_peer(1);
             break;
-        case TOUCH_BUTTON_3:
+        case BUTTON_3:
             send_value_to_peer(2);
             break;
         default:
@@ -120,6 +124,10 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     }
 }
 
+/**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
+#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)
+
+
 /**@brief Function for initializing the button handler module.
  */
 static void buttons_init(void)
@@ -127,9 +135,9 @@ static void buttons_init(void)
     uint32_t err_code;
     static app_button_cfg_t buttons[] =
     {
-        {TOUCH_BUTTON_1, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
-        {TOUCH_BUTTON_2, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
-        {TOUCH_BUTTON_3, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
+        {BUTTON_1, BUTTON_ACTIVE_STATE, BUTTON_PULL, button_event_handler},
+        {BUTTON_2, BUTTON_ACTIVE_STATE, BUTTON_PULL, button_event_handler},
+        {BUTTON_3, BUTTON_ACTIVE_STATE, BUTTON_PULL, button_event_handler},
     };
 
     err_code = app_button_init(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY);

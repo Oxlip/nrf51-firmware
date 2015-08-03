@@ -11,7 +11,7 @@
 #include <ble_ss.h>
 #include <ble_common.h>
 #include <app_timer.h>
-#include <board_conf.h>
+#include <boards.h>
 
 #include "battery.h"
 

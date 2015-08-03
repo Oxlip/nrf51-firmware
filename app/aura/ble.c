@@ -10,7 +10,7 @@
 #include <ble_common.h>
 #include <app_timer.h>
 
-#include "board_conf.h"
+#include <boards.h>
 #include "aura.h"
 #include "smbus.h"
 #include "sensor.h"

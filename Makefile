@@ -90,6 +90,7 @@ ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/app/startup_nrf51.s)
 #includes common to all targets
 INC_PATHS += -I$(abspath $(CURDIR))
 INC_PATHS += -I$(abspath $(REPO_ROOT)/app/)
+INC_PATHS += -I$(abspath $(REPO_ROOT)/boards/)
 INC_PATHS += -I$(abspath $(REPO_ROOT)/app/include)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/config)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/scheduler)
@@ -161,7 +162,6 @@ CFLAGS += -fno-builtin --short-enums
 CFLAGS += -DBUILD_TIME='"$(BUILD_TIME)"'
 
 CFLAGS += -DSWI_DISABLE0
-CFLAGS += -D$(BOARD)
 CFLAGS += -D$(SOFTDEVICE_UPPER)
 
 
@@ -181,7 +181,6 @@ ASMFLAGS += -DNRF51
 ASMFLAGS += -DBLE_STACK_SUPPORT_REQD
 
 ASMFLAGS += -DSWI_DISABLE0
-ASMFLAGS += -D$(BOARD)
 ASMFLAGS += -D$(SOFTDEVICE_UPPER)
 
 

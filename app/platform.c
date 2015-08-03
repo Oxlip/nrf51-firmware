@@ -10,7 +10,7 @@
 #include <app_timer_appsh.h>
 #include <twi_master.h>
 
-#include <board_conf.h>
+#include <boards.h>
 #include <board_export.h>
 
 #include "platform.h"
@@ -71,8 +71,8 @@ static void uart_init(void)
     uint32_t                     err_code;
     const app_uart_comm_params_t comm_params =
     {
-        UART_RX_PIN_NUMBER,
-        UART_TX_PIN_NUMBER,
+        RX_PIN_NUMBER,
+        TX_PIN_NUMBER,
         -1,
         -1,
         false,

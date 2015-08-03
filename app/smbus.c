@@ -1,6 +1,6 @@
 #include <twi_master.h>
 #include <nrf_gpio.h>
-#include "board_conf.h"
+#include <boards.h>
 #include <stdio.h>
 
 

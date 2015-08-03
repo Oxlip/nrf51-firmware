@@ -10,7 +10,7 @@
 #include <ble_ss.h>
 #include <ble_common.h>
 #include <app_timer.h>
-#include <board_conf.h>
+#include <boards.h>
 
 #define SCAN_INTERVAL              0x00A0                             /**< Determines scan interval in units of 0.625 millisecond. */
 #define SCAN_WINDOW                0x0050                             /**< Determines scan window in units of 0.625 millisecond. */

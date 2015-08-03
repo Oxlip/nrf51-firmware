@@ -16,7 +16,7 @@
 #include <dfu_app_handler.h>
 #endif // BLE_DFU_APP_SUPPORT
 
-#include <board_conf.h>
+#include <boards.h>
 #include <board_export.h>
 #include <ble_uuids.h>
 
@@ -297,8 +297,8 @@ static void device_information_service_init(void)
 
     ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, (char *)MANUFACTURER_NAME);
     ble_srv_ascii_to_utf8(&dis_init.serial_num_str, (char *)"FILL MAC_ID HERE");
-    ble_srv_ascii_to_utf8(&dis_init.hw_rev_str, (char *)DEVICE_HW_REVISION_ID);
-    ble_srv_ascii_to_utf8(&dis_init.fw_rev_str, (char *)DEVICE_FW_REVISION_ID);
+    //ble_srv_ascii_to_utf8(&dis_init.hw_rev_str, (char *)DEVICE_HW_REVISION_ID);
+    //ble_srv_ascii_to_utf8(&dis_init.fw_rev_str, (char *)DEVICE_FW_REVISION_ID);
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init.dis_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dis_init.dis_attr_md.write_perm);

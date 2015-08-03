@@ -6,7 +6,7 @@
 #include <app_button.h>
 
 #include "platform.h"
-#include "board_conf.h"
+#include <boards.h>
 #include "twi_master.h"
 #include "sensor.h"
 

@@ -9,7 +9,6 @@ LIBRARY_PATHS   += $(REPO_ROOT)/app/aura
 DEVICE          = NRF51
 DEVICE_VARIANT  = xxac
 TARGET_CHIP     = nrf51822
-BOARD           = BOARD_PCA10001
 USE_SOFTDEVICE  = s110
 SOFTDEVICE      = $(REPO_ROOT)/lib/s110_nrf51_8.0.0_softdevice.hex
 

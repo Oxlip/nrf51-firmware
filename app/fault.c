@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <common.h>
 #include <nrf_gpio.h>
-#include <board_conf.h>
+#include <boards.h>
 #include <common.h>
 #include <ble_debug_assert_handler.h>
 

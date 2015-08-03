@@ -9,7 +9,6 @@ LIBRARY_PATHS   += $(REPO_ROOT)/app/lyra
 DEVICE          = NRF51
 DEVICE_VARIANT  = xxac
 TARGET_CHIP     = nrf51822
-BOARD           = BOARD_PCA10001
 USE_SOFTDEVICE  = s130
 SOFTDEVICE      = $(REPO_ROOT)/lib/s130_nrf51_1.0.0_softdevice.hex
 
