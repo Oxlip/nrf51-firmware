@@ -10,7 +10,11 @@
 #include <ble_conn_params.h>
 #include <ble_gap.h>
 #include <pstorage.h>
-#include <device_manager_s130.h>
+#define BLE_DFU_APP_SUPPORT
+#ifdef BLE_DFU_APP_SUPPORT
+#include <ble_dfu.h>
+#include <dfu_app_handler.h>
+#endif // BLE_DFU_APP_SUPPORT
 
 #include <board_conf.h>
 #include <board_export.h>
@@ -21,6 +25,18 @@
 #include "ble_common.h"
 
 #include <ble_hci.h>
+
+#ifdef BLE_DFU_APP_SUPPORT
+#define DFU_REV_MAJOR                    0x00                                       /** DFU Major revision number to be exposed. */
+#define DFU_REV_MINOR                    0x01                                       /** DFU Minor revision number to be exposed. */
+#define DFU_REVISION                     ((DFU_REV_MAJOR << 8) | DFU_REV_MINOR)     /** DFU Revision number to be exposed. Combined of major and minor versions. */
+#define APP_SERVICE_HANDLE_START         0x000C                                     /**< Handle of first application specific service when when service changed characteristic is present. */
+#define BLE_HANDLE_MAX                   0xFFFF                                     /**< Max handle value in BLE. */
+
+static ble_dfu_t                         m_dfus;                                    /**< Structure used to identify the DFU service. */
+
+#endif // BLE_DFU_APP_SUPPORT
+
 
 #define LOG printf
 
@@ -247,6 +263,9 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
     device_on_ble_evt(p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
+#ifdef BLE_DFU_APP_SUPPORT
+    ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);
+#endif // BLE_DFU_APP_SUPPORT
     on_ble_evt(p_ble_evt);
 }
 
@@ -311,6 +330,13 @@ static void advertising_stop(void)
     set_advertisement_indicator(0);
 }
 
+/** @snippet [DFU BLE Reset prepare] */
+/**@brief Function for preparing for system reset.
+ *
+ * @details This function implements @ref dfu_app_reset_prepare_t. It will be called by 
+ *          @ref dfu_app_handler.c before entering the bootloader/DFU.
+ *          This allows the current running application to shut down gracefully.
+ */
 static void reset_prepare(void)
 {
     uint32_t err_code;
@@ -320,16 +346,17 @@ static void reset_prepare(void)
         // Disconnect from peer.
         err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
         APP_ERROR_CHECK(err_code);
-    } else {
-       // If not connected, then the device will be advertising.
-       advertising_stop();
     }
-
-    set_advertisement_indicator(0);
-    set_connection_indicator(0);
+    else
+    {
+        // If not connected, the device will be advertising. Hence stop the advertising.
+        advertising_stop();
+    }
 
     err_code = ble_conn_params_stop();
     APP_ERROR_CHECK(err_code);
+
+    nrf_delay_ms(500);
 }
 
 
@@ -360,6 +387,28 @@ static void ble_stack_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#ifdef BLE_DFU_APP_SUPPORT
+static void dfu_service_init()
+{
+    uint32_t err_code;
+    ble_dfu_init_t dfus_init;
+
+    // Initialize the Device Firmware Update Service.
+    memset(&dfus_init, 0, sizeof(dfus_init));
+
+    dfus_init.evt_handler   = dfu_app_on_dfu_evt;
+    dfus_init.error_handler = NULL;
+    dfus_init.evt_handler   = dfu_app_on_dfu_evt;
+    dfus_init.revision      = DFU_REVISION;
+
+    err_code = ble_dfu_init(&m_dfus, &dfus_init);
+    APP_ERROR_CHECK(err_code);
+
+    dfu_app_reset_prepare_set(reset_prepare);
+    //dfu_app_dm_appl_instance_set(m_app_handle);
+}
+#endif // BLE_DFU_APP_SUPPORT
+
 
 /**@brief Function for initializing the BLE.
  *
@@ -378,6 +427,10 @@ void ble_late_init()
     gap_params_init();
     uuid_init();
     services_init();
+
+#ifdef BLE_DFU_APP_SUPPORT
+    dfu_service_init();
+#endif
     conn_params_init();
     sec_params_init();
 

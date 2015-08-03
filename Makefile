@@ -79,7 +79,10 @@ $(abspath $(SDK_COMPONENT_DIR)/ble/ble_error_log/ble_error_log.c) \
 $(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/ble_flash/ble_flash.c) \
 $(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/gpiote/nrf_drv_gpiote.c) \
 $(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
-$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c)
+$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c) \
+$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/dfu_app_handler.c) \
+$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/bootloader_util.c) \
+$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c)
 
 #assembly files common to all targets
 ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/app/startup_nrf51.s)
@@ -116,6 +119,7 @@ INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/ble/ble_db_discovery)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/ble/ble_error_log)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/ble_flash)
+INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu)
 
 # Common platform files
 C_SOURCE_FILES += $(DEVICE_SRCS)
