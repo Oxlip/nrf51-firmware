@@ -15,7 +15,6 @@ SDK_COMPONENT_DIR = $(SDK_PATH)/components/
 MK := mkdir
 RM := rm -rf
 
-#echo suspend
 ifeq ("$(VERBOSE)","1")
 NO_ECHO := 
 else
@@ -73,8 +72,6 @@ $(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dis/ble_dis.c) \
 $(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dfu/ble_dfu.c) \
 $(abspath $(SDK_COMPONENT_DIR)/ble/ble_debug_assert_handler/ble_debug_assert_handler.c) \
 $(abspath $(SDK_COMPONENT_DIR)/toolchain/system_nrf51.c) \
-$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/twi_master/incubated/twi_sw_master.c) \
 $(abspath $(SDK_COMPONENT_DIR)/ble/ble_error_log/ble_error_log.c) \
 $(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/ble_flash/ble_flash.c) \
 $(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/gpiote/nrf_drv_gpiote.c) \
@@ -82,7 +79,9 @@ $(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
 $(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c) \
 $(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/dfu_app_handler.c) \
 $(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/bootloader_util.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c)
+$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c) \
+$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler.c) \
+$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/twi_master/incubated/twi_sw_master.c)
 
 #assembly files common to all targets
 ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/app/startup_nrf51.s)
@@ -92,7 +91,6 @@ INC_PATHS += -I$(abspath $(CURDIR))
 INC_PATHS += -I$(abspath $(REPO_ROOT)/app/)
 INC_PATHS += -I$(abspath $(REPO_ROOT)/boards/)
 INC_PATHS += -I$(abspath $(REPO_ROOT)/app/include)
-INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/config)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/scheduler)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/gpiote)
@@ -137,9 +135,9 @@ ifeq ($(BLD_TYPE),debug)
 CFLAGS+=-DDEBUG -g3
 endif
 
-BLD_DIRECTORY = _build
+BLD_DIRECTORY = $(REPO_ROOT)/_build
 
-OBJECT_DIRECTORY = $(BLD_DIRECTORY)/$(BLD_TYPE)/
+OBJECT_DIRECTORY = $(BLD_DIRECTORY)/$(BLD_TYPE)/$(PROJECT_NAME)
 LISTING_DIRECTORY = $(BLD_DIRECTORY)
 OUTPUT_BINARY_DIRECTORY = $(BLD_DIRECTORY)
 
@@ -179,7 +177,6 @@ ASMFLAGS += -x assembler-with-cpp
 ASMFLAGS += -DSOFTDEVICE_PRESENT
 ASMFLAGS += -DNRF51
 ASMFLAGS += -DBLE_STACK_SUPPORT_REQD
-
 ASMFLAGS += -DSWI_DISABLE0
 ASMFLAGS += -D$(SOFTDEVICE_UPPER)
 
@@ -198,9 +195,9 @@ vpath %.s $(ASM_PATHS)
 
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 
-OUTPUT_FILENAME := $(PROJECT_NAME)_$(TARGET_CHIP)_$(DEVICE_VARIANT)_$(USE_SOFTDEVICE)
+OUTPUT_FILENAME := $(PROJECT_NAME)-$(BLD_TYPE)_$(TARGET_CHIP)_$(DEVICE_VARIANT)_$(USE_SOFTDEVICE)
 LINKER_SCRIPT_DIR := $(abspath $(REPO_ROOT)/ldscripts)
-LINKER_SCRIPT := nrf51_$(USE_SOFTDEVICE)_$(DEVICE_VARIANT).ld
+LINKER_SCRIPT ?= nrf51_$(USE_SOFTDEVICE)_$(DEVICE_VARIANT).ld
 
 ## Create build directories
 $(BUILD_DIRECTORIES):
@@ -219,7 +216,7 @@ $(OBJECT_DIRECTORY)/%.o: %.s
 ELF_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).elf
 HEX_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
 BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).bin
-UICR_BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME)-uirc.bin
+UICR_BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME)-uicr.bin
 
 # Link
 $(ELF_OUTPUT): $(BUILD_DIRECTORIES) $(OBJECTS)
