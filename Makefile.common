@@ -218,6 +218,9 @@ HEX_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
 BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).bin
 UICR_BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME)-uicr.bin
 
+OBJ_OPT_UIRC = --only-section .uicrBootStartAddress
+OBJ_OPT_BIN  = --remove-section .uicrBootStartAddress
+
 # Link
 $(ELF_OUTPUT): $(BUILD_DIRECTORIES) $(OBJECTS)
 	$(call colorecho, 3, "Linking ", $@)
@@ -226,7 +229,7 @@ $(ELF_OUTPUT): $(BUILD_DIRECTORIES) $(OBJECTS)
 ## Create binary .bin file from the .elf file
 $(BIN_OUTPUT): $(ELF_OUTPUT)
 	$(call colorecho, 2, "Generating ", $@)
-	$(NO_ECHO)$(OBJCOPY) -O binary $(ELF_OUTPUT) $@
+	$(NO_ECHO)$(OBJCOPY) -O binary $(OBJ_OPT_BIN) $(ELF_OUTPUT) $@
 ifdef BOOTLOADER
 	$(call colorecho, 8, "Generating bootloader ", $@)
 	$(NO_ECHO)$(OBJCOPY) -O binary $(OBJ_OPT_UIRC) $(ELF_OUTPUT) $(UICR_BIN_OUTPUT)

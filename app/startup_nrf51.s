@@ -173,7 +173,11 @@ Reset_Handler:
 .flash_to_ram_loop_end:
     ldr    r0, =SystemInit
     blx    r0
+#ifdef BOOTLOADER
+    ldr    r0, =bootloader_start
+#else
     ldr    r0, =main
+#endif
     bx     r0
     .pool
     .size Reset_Handler, . - Reset_Handler
