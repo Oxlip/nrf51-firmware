@@ -91,13 +91,18 @@ static void uart_init(void)
 
 /**@brief Initialize debug functionality.
  */
-static void debug_init(void)
+void debug_init(void)
 {
 #ifdef DEBUG
+#ifdef BOOTLOADER
+    const char app[] = "Bootloader";
+#else
+    const char app[] = "Firmware";
+#endif
     uart_init();
     app_trace_init();
 
-    printf("Firmware Date: %s %s\n", __DATE__, __TIME__);
+    printf("%s Date: %s %s\n", app, __DATE__, __TIME__);
 #endif
 }
 
