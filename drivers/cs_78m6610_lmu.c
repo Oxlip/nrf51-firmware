@@ -1,3 +1,6 @@
+/*
+ * Driver for current sensor - 78M6610+LMU.
+ */
 #include <stdio.h>
 #include <string.h>
 #include <nrf_gpio.h>
@@ -5,10 +8,9 @@
 #include <app_gpiote.h>
 #include <app_button.h>
 
-#include "platform.h"
+#include <platform.h>
 #include <boards.h>
-#include "twi_master.h"
-#include "sensor.h"
+#include <twi_master.h>
 
 #define CURRENT_SENSOR_ADDRESS  0x2
 #define UPPER_BIT               24

@@ -6,10 +6,9 @@
 #include <app_button.h>
 #include <ble.h>
 
-#include "ble_ss.h"
-#include "platform.h"
+#include <ble_ss.h>
+#include <platform.h>
 #include <boards.h>
-#include "sensor.h"
 #include "aura.h"
 
 #define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
