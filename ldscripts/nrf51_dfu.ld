@@ -1,7 +1,7 @@
 /* Linker script to configure memory regions. */
 
 SEARCH_DIR(.)
-GROUP(-lgcc -lc -lnosys)
+GROUP(-lnosys)
 
 MEMORY
 {
@@ -11,7 +11,7 @@ MEMORY
    *  those values do not match. The check is performed in main.c, see
    *  APP_ERROR_CHECK_BOOL(*((uint32_t *)NRF_UICR_BOOT_START_ADDRESS) == BOOTLOADER_REGION_START);
    */
-  FLASH (rx) : ORIGIN = 0x3C000, LENGTH = 0x44 * 1024
+  FLASH (rx) : ORIGIN = 220 * 1024, LENGTH = (256-220) * 1024
 
   /** RAM Region for bootloader. This setting is suitable when used with s110, s120, s130, s310. */
   RAM (rwx) :  ORIGIN = 0x20002C00, LENGTH = 16 * 1024
@@ -22,7 +22,7 @@ MEMORY
   NOINIT (rwx) :  ORIGIN = 0x20007F80, LENGTH = 0x80
 
   /** Location of bootloader setting in at the last flash page. */
-  BOOTLOADER_SETTINGS (rw) : ORIGIN = 0x0003FC00, LENGTH = 0x0400
+  BOOTLOADER_SETTINGS (rw) : ORIGIN = 0x0003FC00, LENGTH = 1 * 1024
 
   /** Location in UICR where bootloader start address is stored. */
   UICR_BOOTLOADER (r) : ORIGIN = 0x10001014, LENGTH = 0x04
