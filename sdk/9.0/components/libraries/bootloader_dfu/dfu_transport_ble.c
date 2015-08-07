@@ -46,7 +46,7 @@
 #define BLE_HANDLE_MAX                       0xFFFF                                                  /**< Max handle value is BLE. */
 
 #undef DEVICE_NAME
-#define DEVICE_NAME                          "BOOTLOADER"                                            /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                          "DFU"                                                   /**< Name of device. Will be included in the advertising data. */
 
 
 #define MIN_CONN_INTERVAL                    (uint16_t)(MSEC_TO_UNITS(15, UNIT_1_25_MS))             /**< Minimum acceptable connection interval (11.25 milliseconds). */
