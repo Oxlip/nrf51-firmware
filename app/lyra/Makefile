@@ -1,4 +1,4 @@
-DEVICE_SRCS     = lyra.c ../lis2dh.c ble.c ble_peer.c battery.c
+DEVICE_SRCS     = lyra.c ble.c ble_peer.c battery.c ../../drivers/lis2dh.c
 
 PROJECT_NAME    = lyra
 SOURCE_PATHS    += $(REPO_ROOT)/app/lyra

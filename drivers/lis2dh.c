@@ -7,13 +7,9 @@
 #include <twi_master.h>
 #include <nrf_gpio.h>
 #include <app_gpiote.h>
-
+#include <lis2dh_config.h>
 #include <boards.h>
 
-#define LIS2DH_INT1_PIN             6
-#define LIS2DH_INT2_PIN             5
-
-#define LIS2DH_I2C_ADDR             0x18
 
 #define LIS2DH_REG_STATUS_AUX       0x7
 #define LIS2DH_REG_OUT_TEMP_L       0xC

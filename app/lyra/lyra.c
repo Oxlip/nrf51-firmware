@@ -9,8 +9,8 @@
 #include <pstorage.h>
 
 #include <platform.h>
-#include <lis2dh.h>
 #include <common.h>
+#include <drivers/lis2dh.h>
 
 #include "battery.h"
 #include <boards.h>
