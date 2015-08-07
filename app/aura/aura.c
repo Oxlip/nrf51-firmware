@@ -6,10 +6,9 @@
 #include <app_button.h>
 #include <ble.h>
 
-#include "ble_ss.h"
-#include "platform.h"
-#include "board_conf.h"
-#include "sensor.h"
+#include <ble_ss.h>
+#include <platform.h>
+#include <boards.h>
 #include "aura.h"
 
 #define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
@@ -69,6 +68,8 @@ void device_timers_start()
     APP_ERROR_CHECK(err_code);
 }
 
+#define TOUCH_POWER_BUTTON BUTTON_1
+
 /**@brief Function for handling button events.
  *
  * @param[in]   pin_no   The pin number of the button pressed.
@@ -82,7 +83,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 
     switch (pin_no)
     {
-        case AURA_TOUCH_BUTTON:
+        case TOUCH_POWER_BUTTON:
             /* Do the actual button press handling here. */
             triac_set(0, TRIAC_OPERATION_TOGGLE);
             break;
@@ -92,6 +93,8 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     }
 }
 
+/**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
+#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(100, APP_TIMER_PRESCALER)
 
 /**@brief Function for initializing the button handler module.
  */
@@ -100,10 +103,10 @@ static void buttons_init(void)
     uint32_t err_code;
     static app_button_cfg_t buttons[] =
     {
-        {AURA_TOUCH_BUTTON, BUTTON_ACTIVE_STATE, BUTTON_PIN_PULL, button_event_handler},
+        {TOUCH_POWER_BUTTON, BUTTON_ACTIVE_STATE, BUTTON_PULL, button_event_handler},
     };
 
-    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, false);
+    app_button_init(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY);
 
     // Start handling button presses immediately.
     err_code = app_button_enable();
@@ -118,13 +121,13 @@ triac_set(int triac, triac_operation_t operation)
     printf("Changing Triac %d to %d\n", triac_state, operation);
 
     if (operation == TRIAC_OPERATION_OFF){
-        nrf_gpio_pin_clear(TRIAC_1_PIN);
+        nrf_gpio_pin_clear(TRIAC_1);
         triac_state = 0;
     } else if (operation == TRIAC_OPERATION_ON){
-        nrf_gpio_pin_set(TRIAC_1_PIN);
+        nrf_gpio_pin_set(TRIAC_1);
         triac_state = 1;
     } else if (operation == TRIAC_OPERATION_TOGGLE) {
-        nrf_gpio_pin_toggle(TRIAC_1_PIN);
+        nrf_gpio_pin_toggle(TRIAC_1);
         triac_state = !triac_state;
     }
 
@@ -140,8 +143,8 @@ void
 device_init()
 {
     // configure LEDs
-    nrf_gpio_cfg_output(AURA_TOUCH_LED);
-    nrf_gpio_pin_set(AURA_TOUCH_LED);
+    nrf_gpio_cfg_output(LED_1);
+    nrf_gpio_pin_set(LED_1);
 
 #ifdef AURA_CS_RESET
     nrf_gpio_cfg_output(AURA_CS_RESET);
@@ -151,7 +154,7 @@ device_init()
     buttons_init();
 
     // Configure triac pin as output.
-    nrf_gpio_cfg_output(TRIAC_1_PIN);
+    nrf_gpio_cfg_output(TRIAC_1);
 
 #if BOARD_AURA
     cs_calibrate();

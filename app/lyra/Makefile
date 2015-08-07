@@ -1,16 +1,15 @@
-MAKEFILE_DIR    := $(dir $(lastword $(MAKEFILE_LIST)))
-
-DEVICE_SRCS     = lyra.c ../lis2dh.c ble.c ble_peer.c battery.c
+DEVICE_SRCS     = lyra.c ble.c ble_peer.c battery.c ../../drivers/lis2dh.c
 
 PROJECT_NAME    = lyra
-SOURCE_PATHS    += $(MAKEFILE_DIR)/app/lyra
-LIBRARY_PATHS   += $(MAKEFILE_DIR)/app/lyra
+SOURCE_PATHS    += $(REPO_ROOT)/app/lyra
+LIBRARY_PATHS   += $(REPO_ROOT)/app/lyra
 
 # Device and build infos
 
 DEVICE          = NRF51
-BOARD           = BOARD_PCA10001
+DEVICE_VARIANT  = xxac
+TARGET_CHIP     = nrf51822
 USE_SOFTDEVICE  = s130
-SOFTDEVICE      = $(MAKEFILE_DIR)/lib/s130_nrf51_1.0.0-3.alpha_softdevice.hex
+SOFTDEVICE      = $(REPO_ROOT)/softdevice/s130_nrf51_1.0.0_softdevice.hex
 
-include ../../Makefile
+include ../../Makefile.common

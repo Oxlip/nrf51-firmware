@@ -10,10 +10,8 @@
 #include <ble_common.h>
 #include <app_timer.h>
 
-#include "board_conf.h"
+#include <boards.h>
 #include "aura.h"
-#include "smbus.h"
-#include "sensor.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
