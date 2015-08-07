@@ -2,7 +2,7 @@ define colorecho
 	printf "%-15s" $2
 	@tput setaf $1
 
-	printf "%-30s" $(notdir $3)
+	printf "%-30s " $(notdir $3)
 	@tput sgr0
 	printf "%-50s\n" $(realpath $(dir $3))
 endef
@@ -47,41 +47,52 @@ SOFTDEVICE_UPPER = `echo $(USE_SOFTDEVICE) | tr a-z A-Z`
 
 #source common to all targets
 C_SOURCE_FILES += \
-$(abspath $(REPO_ROOT)/app/platform.c) \
-$(abspath $(REPO_ROOT)/app/fault.c) \
-$(abspath $(REPO_ROOT)/app/ble_common.c) \
-$(abspath $(REPO_ROOT)/app/ble_ss.c) \
-$(abspath $(REPO_ROOT)/app/smbus.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/button/app_button.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/hal/nrf_delay.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_advdata.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_conn_params.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/common/nrf_drv_common.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/gpiote/app_gpiote.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/scheduler/app_scheduler.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/util/nrf_assert.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/uart/retarget.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/uart/app_uart_fifo.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/fifo/app_fifo.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/crc16/crc16.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/trace/app_trace.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_srv_common.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dis/ble_dis.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dfu/ble_dfu.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/ble_debug_assert_handler/ble_debug_assert_handler.c) \
-$(abspath $(SDK_COMPONENT_DIR)/toolchain/system_nrf51.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/ble_error_log/ble_error_log.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/ble_flash/ble_flash.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/gpiote/nrf_drv_gpiote.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
-$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/dfu_app_handler.c) \
-$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/bootloader_util.c) \
-$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c) \
-$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler.c) \
-$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/twi_master/incubated/twi_sw_master.c)
+	$(abspath $(REPO_ROOT)/app/platform.c) \
+	$(abspath $(REPO_ROOT)/app/fault.c) \
+	$(abspath $(REPO_ROOT)/app/ble_common.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/hal/nrf_delay.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_advdata.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_conn_params.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/common/nrf_drv_common.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/scheduler/app_scheduler.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/crc16/crc16.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_srv_common.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dfu/ble_dfu.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/ble/ble_debug_assert_handler/ble_debug_assert_handler.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/toolchain/system_nrf51.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/dfu_app_handler.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu/bootloader_util.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/gpiote/nrf_drv_gpiote.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/libraries/gpiote/app_gpiote.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler.c) \
+	$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c)
+
+ifeq ($(BLD_TYPE), debug)
+	C_SOURCE_FILES += \
+		$(abspath $(SDK_COMPONENT_DIR)/libraries/util/nrf_assert.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/libraries/uart/retarget.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/uart/app_uart_fifo.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/libraries/fifo/app_fifo.c)
+endif
+
+ifdef BOOTLOADER
+	C_SOURCE_FILES += \
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage_raw.c)
+else
+	C_SOURCE_FILES += \
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/twi_master/incubated/twi_sw_master.c) \
+		$(abspath $(REPO_ROOT)/app/smbus.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dis/ble_dis.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/libraries/button/app_button.c) \
+		$(abspath $(REPO_ROOT)/app/ble_ss.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/ble/ble_error_log/ble_error_log.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/libraries/trace/app_trace.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/ble_flash/ble_flash.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c)
+endif
 
 #assembly files common to all targets
 ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/app/startup_nrf51.s)
@@ -130,7 +141,6 @@ INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_bas_c)
 endif
 
 
-BLD_TYPE ?= release
 ifeq ($(BLD_TYPE),debug)
 CFLAGS+=-DDEBUG -g3
 endif
@@ -152,13 +162,12 @@ CFLAGS += -mcpu=cortex-m0
 CFLAGS += -mthumb -mabi=aapcs --std=gnu99
 CFLAGS += -Wall -Werror
 CFLAGS += -flto
-CFLAGS += -O3
+CFLAGS += -Os -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables
 CFLAGS += -mfloat-abi=soft
 # keep every function in separate section. This will allow linker to dump unused functions
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin --short-enums
 CFLAGS += -DBUILD_TIME='"$(BUILD_TIME)"'
-
 CFLAGS += -DSWI_DISABLE0
 CFLAGS += -D$(SOFTDEVICE_UPPER)
 
@@ -170,7 +179,7 @@ LDFLAGS += -mcpu=cortex-m0
 # let linker to dump unused sections
 LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
-LDFLAGS += --specs=nano.specs -lc -lnosys -u _printf_float
+LDFLAGS += --specs=nano.specs
 
 # Assembler flags
 ASMFLAGS += -x assembler-with-cpp
@@ -231,7 +240,7 @@ $(BIN_OUTPUT): $(ELF_OUTPUT)
 	$(call colorecho, 2, "Generating ", $@)
 	$(NO_ECHO)$(OBJCOPY) -O binary $(OBJ_OPT_BIN) $(ELF_OUTPUT) $@
 ifdef BOOTLOADER
-	$(call colorecho, 8, "Generating bootloader ", $@)
+	$(call colorecho, 6, "Extract UICR ", $(UICR_BIN_OUTPUT))
 	$(NO_ECHO)$(OBJCOPY) -O binary $(OBJ_OPT_UIRC) $(ELF_OUTPUT) $(UICR_BIN_OUTPUT)
 endif
 

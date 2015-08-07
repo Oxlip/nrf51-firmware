@@ -1,3 +1,5 @@
+export BLD_TYPE ?= debug
+
 MAKEFLAGS += --no-print-directory
 
 %:
@@ -19,4 +21,5 @@ MAKEFLAGS += --no-print-directory
 	@TARGET_DEVICE_TYPE=$* make -C bootloader flash-softdevice
 
 clean:
-	rm -rf _build
+	@echo "Erasing build directory"
+	@rm -rf _build
