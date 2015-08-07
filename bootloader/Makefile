@@ -23,10 +23,10 @@ DEVICE_VARIANT  = xxac
 TARGET_CHIP     = nrf51822
 ifeq ($(TARGET_DEVICE_TYPE),lyra)
 USE_SOFTDEVICE  = s130
-SOFTDEVICE      = $(REPO_ROOT)/lib/s130_nrf51_1.0.0_softdevice.hex
+SOFTDEVICE      = $(REPO_ROOT)/softdevice/s130_nrf51_1.0.0_softdevice.hex
 else
 USE_SOFTDEVICE  = s110
-SOFTDEVICE      = $(REPO_ROOT)/lib/s110_nrf51_8.0.0_softdevice.hex
+SOFTDEVICE      = $(REPO_ROOT)/softdevice/s110_nrf51_8.0.0_softdevice.hex
 endif
 
 BOOTLOADER 		:= 1

@@ -47,9 +47,9 @@ SOFTDEVICE_UPPER = `echo $(USE_SOFTDEVICE) | tr a-z A-Z`
 
 #source common to all targets
 C_SOURCE_FILES += \
-	$(abspath $(REPO_ROOT)/app/platform.c) \
-	$(abspath $(REPO_ROOT)/app/fault.c) \
-	$(abspath $(REPO_ROOT)/app/ble_common.c) \
+	$(abspath $(REPO_ROOT)/common/platform.c) \
+	$(abspath $(REPO_ROOT)/common/fault.c) \
+	$(abspath $(REPO_ROOT)/common/ble_common.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/hal/nrf_delay.c) \
@@ -95,13 +95,12 @@ else
 endif
 
 #assembly files common to all targets
-ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/app/startup_nrf51.s)
+ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/common/startup_nrf51.s)
 
 #includes common to all targets
 INC_PATHS += -I$(abspath $(CURDIR))
-INC_PATHS += -I$(abspath $(REPO_ROOT)/app/)
 INC_PATHS += -I$(abspath $(REPO_ROOT)/boards/)
-INC_PATHS += -I$(abspath $(REPO_ROOT)/app/include)
+INC_PATHS += -I$(abspath $(REPO_ROOT)/include)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/scheduler)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/gpiote)
@@ -134,6 +133,9 @@ INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu)
 # Common platform files
 C_SOURCE_FILES += $(DEVICE_SRCS)
 
+BOARD_TYPE ?= PCA10028
+CFLAGS += -DBOARD_$(BOARD_TYPE)
+
 ifeq ($(USE_SOFTDEVICE),s130)
 CFLAGS += -DUSE_CENTRAL_MODE=1
 C_SOURCE_FILES += $(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_bas_c/ble_bas_c.c)
@@ -147,9 +149,9 @@ endif
 
 BLD_DIRECTORY = $(REPO_ROOT)/_build
 
-OBJECT_DIRECTORY = $(BLD_DIRECTORY)/$(BLD_TYPE)/$(PROJECT_NAME)
+OBJECT_DIRECTORY = $(BLD_DIRECTORY)/$(BLD_TYPE)/$(PROJECT_NAME)/$(BOARD_TYPE)
 LISTING_DIRECTORY = $(BLD_DIRECTORY)
-OUTPUT_BINARY_DIRECTORY = $(BLD_DIRECTORY)
+OUTPUT_BINARY_DIRECTORY = $(BLD_DIRECTORY)/$(BLD_TYPE)/$(PROJECT_NAME)
 
 # Sorting removes duplicates
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
@@ -204,7 +206,7 @@ vpath %.s $(ASM_PATHS)
 
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 
-OUTPUT_FILENAME := $(PROJECT_NAME)-$(BLD_TYPE)_$(TARGET_CHIP)_$(DEVICE_VARIANT)_$(USE_SOFTDEVICE)
+OUTPUT_FILENAME := $(PROJECT_NAME)-$(BLD_TYPE)-$(BOARD_TYPE)_$(TARGET_CHIP)_$(DEVICE_VARIANT)_$(USE_SOFTDEVICE)
 LINKER_SCRIPT_DIR := $(abspath $(REPO_ROOT)/ldscripts)
 LINKER_SCRIPT ?= nrf51_$(USE_SOFTDEVICE)_$(DEVICE_VARIANT).ld
 

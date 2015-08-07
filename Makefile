@@ -11,6 +11,9 @@ MAKEFLAGS += --no-print-directory
 %-flash-softdevice:
 	@make -C app/$* flash-softdevice
 
+%-start-debug:
+	@make -C app/$* start-debug
+
 %-bootloader:
 	@TARGET_DEVICE_TYPE=$* make -C bootloader
 

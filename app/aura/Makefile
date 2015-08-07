@@ -10,6 +10,6 @@ DEVICE          = NRF51
 DEVICE_VARIANT  = xxac
 TARGET_CHIP     = nrf51822
 USE_SOFTDEVICE  = s110
-SOFTDEVICE      = $(REPO_ROOT)/lib/s110_nrf51_8.0.0_softdevice.hex
+SOFTDEVICE      = $(REPO_ROOT)/softdevice/s110_nrf51_8.0.0_softdevice.hex
 
 include ../../Makefile.common
