@@ -27,9 +27,9 @@ TERMINAL ?= gnome-terminal -e
 GDB_PORT_NUMBER = 2331
 
 ifdef BOOTLOADER
-  BFLASH = flash-uicr
+	BFLASH = flash-uicr
 else
-  BFLASH =
+	BFLASH =
 endif
 
 flash: all $(BFLASH) $(FLASH_JLINK_OUT)
@@ -43,7 +43,7 @@ $(FLASH_SD_JLINK_OUT): $(BUILD_DIRECTORIES)
 	printf "w4 4001e504 1\nloadbin \"$(SOFTDEVICE_OUTPUT:.hex=.bin)\" 0\nr\ng\nexit\n" > $@
 
 $(FLASH_UICR_JLINK_OUT): $(BUILD_DIRECTORIES)
-	printf "w4 4001e504 1\nloadbin \"$(UICR_BIN)\" 0x10001014\nr\ng\nexit\n" > $@
+	printf "w4 4001e504 1\nloadbin \"$(UICR_BIN_OUTPUT)\" 0x10001014\nr\ng\nexit\n" > $@
 
 flash-softdevice: erase-all $(FLASH_SD_JLINK_OUT)
 ifndef SOFTDEVICE
@@ -88,7 +88,7 @@ enable-bootloader: erase-all flash-softdevice $(FLASH_UICR_JLINK_OUT)
 
 disable-bootloader: erase-all flash-softdevice
 
-startdebug: debug-gdbinit
+start-debug: debug-gdbinit
 	$(TERMINAL) "$(JLINKGDBSERVER) -port $(GDB_PORT_NUMBER)"
 	sleep 1
 	$(TERMINAL) "$(GDB) $(ELF_OUTPUT)"
