@@ -84,7 +84,6 @@ else
 	C_SOURCE_FILES += \
 		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/twi_master/incubated/twi_sw_master.c) \
-		$(abspath $(REPO_ROOT)/app/smbus.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dis/ble_dis.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/libraries/button/app_button.c) \
 		$(abspath $(REPO_ROOT)/app/ble_ss.c) \

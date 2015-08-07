@@ -12,7 +12,6 @@
 
 #include <boards.h>
 #include "aura.h"
-#include "smbus.h"
 #include "sensor.h"
 
 ble_ss_t dimmer_ss;
