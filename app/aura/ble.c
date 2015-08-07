@@ -10,28 +10,11 @@
 #include <ble_common.h>
 #include <app_timer.h>
 
-#include "board_conf.h"
-#include "smbus.h"
-#include "sensor.h"
+#include <boards.h>
+#include "aura.h"
 
 ble_ss_t dimmer_ss;
 ble_ss_t cs_ss;
-
-/** UUIDs to advertise. */
-ble_uuid_t adv_uuids[] = {
-    {BLE_UUID_DIMMER_SERVICE, BLE_UUID_TYPE_BLE},
-    {BLE_UUID_CS_SERVICE, BLE_UUID_TYPE_BLE}
-};
-
-uint8_t ble_get_adv_uuid_array_count()
-{
-    return sizeof(adv_uuids) / sizeof(ble_uuid_t);
-}
-
-ble_uuid_t * ble_get_adv_uuid_array()
-{
-    return adv_uuids;
-}
 
 
 void device_on_ble_evt(ble_evt_t * p_ble_evt)
@@ -41,23 +24,39 @@ void device_on_ble_evt(ble_evt_t * p_ble_evt)
 }
 
 
-static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write) 
+static void ble_dimmer_write_event(ble_ss_t * p_ss, ble_gatts_evt_write_t * p_evt_write)
 {
-    printf("Dimmer percentage %d\n\r", p_evt_write->data[1]);
-    if (p_evt_write->len == 0)
-    {
+    dimmer_msg_t *msg;
+
+    if (p_evt_write->len != sizeof(dimmer_msg_t)) {
+        printf("Invalid Dimmer msg length %d\n", p_evt_write->len);
         return;
     }
 
-    if (p_evt_write->data[1] == 0)
-    {
-        nrf_gpio_pin_clear(AURA_TOUCH_LED);
-        nrf_gpio_pin_clear(AURA_TRIAC_ENABLE);
+    msg = (dimmer_msg_t *)p_evt_write->data;
+    if (msg->value) {
+        triac_set(msg->triac, TRIAC_OPERATION_ON);
+    } else {
+        triac_set(msg->triac, TRIAC_OPERATION_OFF);
     }
-    else
-    {
-        nrf_gpio_pin_set(AURA_TOUCH_LED);
-        nrf_gpio_pin_set(AURA_TRIAC_ENABLE);
+}
+
+
+void ble_dimmer_update_value(dimmer_msg_t *msg)
+{
+    uint32_t err_code;
+    err_code = ble_ss_sensor_value_update(&dimmer_ss, (uint8_t *)msg, sizeof(*msg));
+    if (err_code != NRF_SUCCESS) {
+        printf("Failed to update dimmer msg with BLE AT: %#lx.\n", err_code);
+    }
+}
+
+void ble_cs_update_value(cs_info_t *cs_info)
+{
+    uint32_t err_code;
+    err_code = ble_ss_sensor_value_update(&cs_ss, (uint8_t *)cs_info, sizeof(cs_info_t));
+    if (err_code != NRF_SUCCESS) {
+        printf("Failed to update CS info with BLE AT: %#lx.\n", err_code);
     }
 }
 
@@ -82,9 +81,9 @@ uint32_t services_init(void)
     dimmer_param.support_notification   = true;
     dimmer_param.p_report_ref           = NULL;
     dimmer_param.initial_value          = 0;
-  
-    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
-    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
+
+    BLE_UUID_ASSIGN(ble_service_uuid, BLE_UUID_DIMMER_SERVICE);
+    BLE_UUID_ASSIGN(ble_char_uuid, BLE_UUID_DIMMER_CHAR);
     err_code = ble_ss_init(&dimmer_ss, &ble_service_uuid, &ble_char_uuid, &dimmer_param);
     APP_ERROR_CHECK(err_code);
 
@@ -103,10 +102,15 @@ uint32_t services_init(void)
     cs_param.p_report_ref           = NULL;
     cs_param.initial_value          = 0;
 
-    BLE_UUID_ASTRAL_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
-    BLE_UUID_ASTRAL_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);
+    BLE_UUID_ASSIGN(ble_service_uuid, BLE_UUID_CS_SERVICE);
+    BLE_UUID_ASSIGN(ble_char_uuid, BLE_UUID_CS_CHAR);
     err_code = ble_ss_init(&cs_ss, &ble_service_uuid, &ble_char_uuid, &cs_param);
     APP_ERROR_CHECK(err_code);
 
     return NRF_SUCCESS;
+}
+
+void ble_advertising_init()
+{
+    ble_advertising_common_init(NULL);
 }

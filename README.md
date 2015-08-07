@@ -8,38 +8,49 @@ gcc version(~ >= 4.8.3) with lto support is required.
 
 ### Directory Layout
     nrf51-firmware/
-     --toolchain/   Toolchain setup.
-     --sdk/         SDK headers.
-     --lib/         Library binary/hex file(s).
-     --tools/       Tools releated to BLE.
-     --tests/       Unit tests using pytest framework.
+     --sdk/         SDK files.
+     --softdevice/  Softdevice binary/hex file(s).
+     --boards/      Board Specific Headers.
+     --ldscripts/   Linker scripts for all boards.
      --bootloader/  Device Firmware Update.
+     --common/      Common code.
+     --include/     Common header files.
      --app/         App source code.
-        platform.c  Common nrf51 related code.
-        ble.c       Common source code related to BLE.
-        6lowpan.c   Common code related to 6lowpan.
-        Makefile    Common defines
-        --include/  Common header files.
         --aura/     Aura specific files.
         --lyra/     Lyra specific files.
-        --mira/     Mira specific files.
+     --tests/       Unit tests using pytest framework.
+     --tools/       Tools releated to BLE.
 
 ### Build
 
-To build image go to the appropriate device directory(aura, lyra etc) and issue *make* command.
 Since we have multiple boards(development kit, proto, production) board type has to be defined as a macro.
- BOARD_AURA - Aura production/proto board. 
- BOARD_DEV1 - Development kit(nrf51-ek).
- BOARD_DEV2 - New development kit(nrf51-dk).
+ BOARD_PCA10028 - Development kit(nrf51-dk).
+ BOARD_AURA - Aura production/proto board.
+ BOARD_LYRA - Lyra production/proto board.
 
- If board type is not defined then it would default to production board.
+If no board type is specified then PCA10028 is used.
+
 ```sh
 echo "Debug version - debug symbols and no optimization"
-make debug
-echo "Production version - Optimized for size."
-make release
-echo "Debug version for development kit"
-CFLAGS=-DBOARD_AURA make debug
+make aura
+
+echo "Optimized for size."
+BLD_TYPE=release make aura
+
+echo "Aura Production board and make release image"
+BOARD_TYPE=AURA_V1 BLD_TYPE=release make aura
+
+echo "Lyra Production board and make debug image"
+BOARD_TYPE=LYRA_V1 make lyra
+
+echo "Bootloader for Aura"
+make aura-bootloader
+
+echo "Bootloader for Lyra"
+make lyra-bootloader
+
+echo "Clean all object files"
+make clean
 ```
 
 ## Flash
@@ -47,19 +58,17 @@ To flash you must have issued make command to build first and jlink installed in
 
 ```sh
 echo "Flash the softdevice first"
-make flash-softdevice
+make aura-flash-softdevice
 echo "Programs the app into flash"
-make flash
+make aura-flash
+
+echo "Flash bootloader"
+make aura-bootloader-flash
 
 echo "Erase all contents from the flash"
 make erase-all
-
-echo "Recover from bad firmware"
-make recover
 ```
 
 ### Jlink installation
-To be updated
-
-## DFU
-To be updated.
+Download and install JLinkExe
+https://www.segger.com/jlink-software.html

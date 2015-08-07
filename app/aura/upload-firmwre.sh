@@ -1,6 +1,6 @@
 #!/bin/bash
 expect -c "
-spawn sftp firmware@nuton.in
+spawn sftp firmware@oxlip.in
 expect \"password\"
 send \"binaryRocks\r\"
 expect \"sftp>\"
@@ -11,4 +11,4 @@ expect \"sftp>\"
 send \"bye\r\""
 
 
-curl "https://nuton.in/download/update_firmware?dt=aura&hw=v1&filename=aura_s110.bin&fw_date=`cat _build/build_time.txt`"
+curl "https://oxlip.in/download/update_firmware?dt=aura&hw=v1&filename=aura_s110.bin&fw_date=`cat _build/build_time.txt`"
