@@ -110,7 +110,3 @@ uint32_t services_init(void)
     return NRF_SUCCESS;
 }
 
-void ble_advertising_init()
-{
-    ble_advertising_common_init(NULL);
-}

@@ -8,6 +8,7 @@
 #include <ble_types.h>
 #include <ble_advdata.h>
 #include <ble_srv_common.h>
+#include <ble_advertising.h>
 
 /** @brief Set .type and .uuid fields of ble_uuid_struct to specified uuid value. */
 #define BLE_UUID_ASSIGN(instance, value) do {\
@@ -22,8 +23,7 @@
 /**< UUID type registered with the SDK */
 extern uint8_t oxlip_uuid_type;
 
-void ble_advertising_common_init(ble_advdata_service_data_t *service_data);
-void ble_advertising_init(void);
-void ble_advertising_start(void);
+void advertising_init(void);
+void ble_advertising_service_data_set(ble_advdata_service_data_t *service_data);
 
 #endif

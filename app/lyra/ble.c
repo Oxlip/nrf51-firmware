@@ -73,13 +73,3 @@ uint32_t services_init(void)
     return NRF_SUCCESS;
 }
 
-uint8_t ble_button_state = 0;
-void ble_advertising_init()
-{
-    ble_advdata_service_data_t service_data;
-    service_data.service_uuid = BLE_UUID_BUTTON_SERVICE;
-    service_data.data.size = sizeof(ble_button_state);
-    service_data.data.p_data = &ble_button_state;
-
-    ble_advertising_common_init(&service_data);
-}

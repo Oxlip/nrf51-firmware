@@ -80,34 +80,19 @@ static void gap_params_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for starting advertising.
- */
-void ble_advertising_start(void)
+static int advertisment_in_progress = 0;
+static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
-    static ble_gap_adv_params_t adv_params;
-    uint32_t err_code;
-
-    // Start advertising
-    memset(&adv_params, 0, sizeof(adv_params));
-
-    adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
-    adv_params.p_peer_addr = NULL;
-    adv_params.fp          = BLE_GAP_ADV_FP_ANY;
-    adv_params.interval    = APP_ADV_INTERVAL;
-    adv_params.timeout     = APP_ADV_TIMEOUT_IN_SECONDS;
-
-    err_code = sd_ble_gap_adv_start(&adv_params);
-    APP_ERROR_CHECK(err_code);
-    set_advertisement_indicator(1);
+    printf("Starting advertisement");
 }
 
+
+static ble_advdata_t advdata;
+
 /**@brief Function for initializing the Advertising functionality.
- *
- * @details Encodes the required advertising data and passes it to the stack.
  */
-void ble_advertising_common_init(ble_advdata_service_data_t *service_data)
+void advertising_init(void)
 {
-    ble_advdata_t advdata;
     uint32_t      err_code;
 
     // Build and set advertising data
@@ -115,11 +100,31 @@ void ble_advertising_common_init(ble_advdata_service_data_t *service_data)
 
     advdata.name_type               = BLE_ADVDATA_FULL_NAME;
     advdata.include_appearance      = true;
-    advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
-    if (service_data) {
-        advdata.p_service_data_array    = service_data;
-        advdata.service_data_count      = 1;
+    advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+
+    ble_adv_modes_config_t options = {0};
+    options.ble_adv_fast_enabled  = BLE_ADV_FAST_ENABLED;
+    options.ble_adv_fast_interval = APP_ADV_INTERVAL;
+    options.ble_adv_fast_timeout  = APP_ADV_TIMEOUT_IN_SECONDS;
+
+    err_code = ble_advertising_init(&advdata, NULL, &options, on_adv_evt, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for setting the service data in the advertisement packets.
+ *
+ * @details Encodes the required advertising data and passes it to the stack.
+ */
+void ble_advertising_service_data_set(ble_advdata_service_data_t *service_data)
+{
+    uint32_t      err_code;
+
+    if (!service_data) {
+        return;
     }
+
+    advdata.p_service_data_array    = service_data;
+    advdata.service_data_count      = 1;
 
     err_code = ble_advdata_set(&advdata, NULL);
     APP_ERROR_CHECK(err_code);
@@ -182,7 +187,7 @@ static void handle_gap_event_timeout(ble_evt_t *p_ble_evt)
         set_connection_indicator(0);
     } else if (timeout_src == BLE_GAP_TIMEOUT_SRC_ADVERTISING) {
 #ifndef USE_CENTRAL_MODE
-        ble_advertising_start();
+        ble_advertising_start(BLE_ADV_MODE_FAST);
 #endif
     }
 }
@@ -201,6 +206,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
+            advertisment_in_progress = 0;
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             set_connection_indicator(1);
             break;
@@ -208,7 +214,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             set_connection_indicator(0);
-            ble_advertising_start();
+            ble_advertising_start(BLE_ADV_MODE_FAST);
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
@@ -226,6 +232,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
+            advertisment_in_progress = 0;
             handle_gap_event_timeout(p_ble_evt);
             break;
 
@@ -435,6 +442,8 @@ void ble_late_init()
     sec_params_init();
 
     device_information_service_init();
-    ble_advertising_init();
-    ble_advertising_start();
+    advertising_init();
+    uint32_t err_code;
+    err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
+    APP_ERROR_CHECK(err_code);
 }
