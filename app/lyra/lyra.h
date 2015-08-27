@@ -19,4 +19,6 @@ typedef struct {
 void store_button_action(ble_action_info_msg_t *data);
 void write_to_peer_device(ble_gap_addr_t peer_addr, uint8_t *value, uint8_t len);
 
+void ble_advertising_set_button(uint8_t pressed, uint8_t held);
+
 #endif

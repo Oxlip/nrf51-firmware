@@ -10,6 +10,7 @@
 
 #include <platform.h>
 #include <common.h>
+#include <ble_common.h>
 #include <drivers/lis2dh.h>
 
 #include "battery.h"
@@ -111,17 +112,21 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     {
         case BUTTON_1:
             send_value_to_peer(0);
+            ble_advertising_set_button(0, 0);
             break;
         case BUTTON_2:
             send_value_to_peer(1);
+            ble_advertising_set_button(1, 0);
             break;
         case BUTTON_3:
             send_value_to_peer(2);
+            ble_advertising_set_button(2, 0);
             break;
         default:
             APP_ERROR_HANDLER(pin_no);
             break;
     }
+    ble_advertising_start(BLE_ADV_MODE_FAST);
 }
 
 /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
