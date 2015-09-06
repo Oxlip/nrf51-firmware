@@ -19,6 +19,22 @@
 #define UART_RX_BUF_SIZE 16
 #define UART_TX_BUF_SIZE 128
 
+bool scan_i2c_bus(void)
+{
+  uint8_t addr = 0, data = 0, data_lenght = 1;
+  int found = 0;
+  for (addr = 0; addr < 128; addr++) {
+    if (twi_master_transfer(addr << 1 | TWI_READ_BIT, &data, data_lenght, false)) {
+      found = 1;
+      printf("Found device on address %u(%#x)\n", addr, addr);
+    }
+  }
+  if (!found) {
+    printf("Failed to find any devices on the bus!\n");
+  }
+  return found;
+}
+
 
 /* BLE init routines from ble_common.c */
 void ble_init(void);

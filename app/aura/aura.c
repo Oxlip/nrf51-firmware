@@ -9,6 +9,7 @@
 #include <ble_ss.h>
 #include <platform.h>
 #include <boards.h>
+#include <drivers/cs_78m6610_lmu.h>
 #include "aura.h"
 
 #define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
@@ -27,12 +28,12 @@ cs_info_t cs_info = {0};
  */
 static void cs_meas_timeout_handler(void * p_context)
 {
-#ifndef BOARD_AURA
+#if BOARDTYPE == AURA_V1
     static
 #endif
     float cs_rms_a=0.0026f, cs_rms_v=0.346f, cs_active_w=0.0009f, cs_peak_a, cs_peak_v, cs_freq;
 
-#ifdef BOARD_AURA
+#if BOARDTYPE == AURA_V1
     cs_rms_a = (float) cs_get_rms_current(0);
     cs_rms_v = (float) cs_get_rms_voltage(0);
     cs_active_w = (float) cs_get_active_watts(0);
@@ -156,7 +157,7 @@ device_init()
     // Configure triac pin as output.
     nrf_gpio_cfg_output(TRIAC_1);
 
-#if BOARD_AURA
+#if BOARDTYPE == AURA_V1
     cs_calibrate();
 #endif
 }

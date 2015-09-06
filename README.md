@@ -24,9 +24,9 @@ gcc version(~ >= 4.8.3) with lto support is required.
 ### Build
 
 Since we have multiple boards(development kit, proto, production) board type has to be defined as a macro.
- BOARD_PCA10028 - Development kit(nrf51-dk).
- BOARD_AURA - Aura production/proto board.
- BOARD_LYRA - Lyra production/proto board.
+ PCA10028 - Development kit(nrf51-dk).
+ AURA_V1 - Aura production/proto board.
+ LYRA_V1 - Lyra production/proto board.
 
 If no board type is specified then PCA10028 is used.
 
