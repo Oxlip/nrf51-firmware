@@ -198,7 +198,7 @@ void device_init()
     nrf_gpio_cfg_output(RED_LED);
     nrf_gpio_cfg_output(GREEN_LED);
 
-#if BOARD_TYPE == LYRA_V1
+#ifdef BOARD_LYRA_V1
     nrf_gpio_pin_clear(RED_LED);
     nrf_gpio_pin_clear(GREEN_LED);
 #else
@@ -208,7 +208,7 @@ void device_init()
 
     buttons_init();
 
-#if BOARD_TYPE == LYRA_V1
+#ifdef BOARD_LYRA_V1
     extern void scan_i2c_bus();
     scan_i2c_bus();
     lis2dh_init();
