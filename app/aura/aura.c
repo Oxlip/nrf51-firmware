@@ -28,38 +28,30 @@ cs_info_t cs_info = {0};
  */
 static void cs_meas_timeout_handler(void * p_context)
 {
-#if BOARDTYPE == AURA_V1
-    static
-#endif
-    float cs_rms_a=0.0026f, cs_rms_v=0.346f, cs_active_w=0.0009f, cs_peak_a, cs_peak_v, cs_freq;
+    float cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq;
 
-#if BOARDTYPE == AURA_V1
     cs_rms_a = (float) cs_get_rms_current(0);
     cs_rms_v = (float) cs_get_rms_voltage(0);
     cs_active_w = (float) cs_get_active_watts(0);
     cs_peak_a = (float) cs_get_peak_current(0);
     cs_peak_v = (float) cs_get_peak_voltage(0);
     cs_freq = (float)cs_get_line_frequency();
-#else
-    cs_rms_a += 0.001f;
-#endif
 
     cs_info.current = (uint16_t)(cs_rms_a * CS_RMS_A_MULTIPLIER * MILLI);
     cs_info.watts = (uint16_t)(cs_active_w * CS_ACTIVE_W_MULTIPLIER * MILLI);
     cs_info.volt = (uint8_t)(cs_rms_v * CS_RMS_V_MULTIPLIER);
     cs_info.freq = (uint8_t)cs_freq;
 
-    printf("RMS Current0 %f RMS Volt0 %f Active Watts0 %f Peak A %f Peak V %f freq %f\n",
-            cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq);
-
     ble_cs_update_value(&cs_info);
 }
 
 void device_timers_init()
 {
+#ifndef BOARD_PCA10028
     uint32_t err_code;
     err_code = app_timer_create(&cs_timer_id, APP_TIMER_MODE_REPEATED, cs_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
+#endif
 }
 
 void device_timers_start()
@@ -119,7 +111,8 @@ triac_set(int triac, triac_operation_t operation)
 {
     static uint8_t triac_state = 0;
 
-    printf("Changing Triac %d to %d\n", triac_state, operation);
+    printf("Triac state - current %s. Requested op %d\n",
+            triac_state ? "On" : "Off", operation);
 
     if (operation == TRIAC_OPERATION_OFF){
         nrf_gpio_pin_clear(TRIAC_1);
@@ -145,7 +138,12 @@ device_init()
 {
     // configure LEDs
     nrf_gpio_cfg_output(LED_1);
+
+#ifdef BOARD_AURA_V1
+    nrf_gpio_pin_clear(LED_1);
+#else
     nrf_gpio_pin_set(LED_1);
+#endif
 
 #ifdef AURA_CS_RESET
     nrf_gpio_cfg_output(AURA_CS_RESET);
@@ -157,7 +155,7 @@ device_init()
     // Configure triac pin as output.
     nrf_gpio_cfg_output(TRIAC_1);
 
-#if BOARDTYPE == AURA_V1
+#ifdef BOARD_AURA_V1
     cs_calibrate();
 #endif
 }
