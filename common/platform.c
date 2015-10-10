@@ -118,7 +118,7 @@ void debug_init(void)
     uart_init();
     app_trace_init();
 
-    printf("%s Date: %s %s\n", app, __DATE__, __TIME__);
+    printf("%s (%s) Date: %s %s\n", app, DEVICE_NAME, __DATE__, __TIME__);
 #endif
 }
 
