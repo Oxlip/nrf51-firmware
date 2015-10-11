@@ -14,6 +14,8 @@
 
 #define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
 
+#define TOUCH_LED       LED_4
+
 app_timer_id_t cs_timer_id;
 
 cs_info_t cs_info = {0};
@@ -24,17 +26,50 @@ cs_info_t cs_info = {0};
 
 #define MILLI                   1000
 
+
+static void led_on(int pin)
+{
+#ifdef BOARD_AURA_V1
+    nrf_gpio_pin_clear(pin);
+#else
+    nrf_gpio_pin_set(pin);
+#endif
+}
+
+static void led_off(int pin)
+{
+#ifdef BOARD_AURA_V1
+    nrf_gpio_pin_set(pin);
+#else
+    nrf_gpio_pin_clear(pin);
+#endif
+}
+
+static void led_toggle(int pin)
+{
+    nrf_gpio_pin_toggle(pin);
+}
+
+static void configure_leds()
+{
+    // configure LEDs
+    nrf_gpio_cfg_output(LED_1);
+    nrf_gpio_cfg_output(LED_2);
+    nrf_gpio_cfg_output(LED_3);
+    nrf_gpio_cfg_output(TOUCH_LED);
+
+    led_on(TOUCH_LED);
+}
+
 /** Current sensor measurement handler
  */
 static void cs_meas_timeout_handler(void * p_context)
 {
-    float cs_rms_a, cs_rms_v, cs_active_w, cs_peak_a, cs_peak_v, cs_freq;
+    float cs_rms_a, cs_rms_v, cs_active_w, cs_freq;
 
     cs_rms_a = (float) cs_get_rms_current(0);
     cs_rms_v = (float) cs_get_rms_voltage(0);
     cs_active_w = (float) cs_get_active_watts(0);
-    cs_peak_a = (float) cs_get_peak_current(0);
-    cs_peak_v = (float) cs_get_peak_voltage(0);
     cs_freq = (float)cs_get_line_frequency();
 
     cs_info.current = (uint16_t)(cs_rms_a * CS_RMS_A_MULTIPLIER * MILLI);
@@ -116,12 +151,15 @@ triac_set(int triac, triac_operation_t operation)
 
     if (operation == TRIAC_OPERATION_OFF){
         nrf_gpio_pin_clear(TRIAC_1);
+        led_off(TOUCH_LED);
         triac_state = 0;
     } else if (operation == TRIAC_OPERATION_ON){
         nrf_gpio_pin_set(TRIAC_1);
+        led_on(TOUCH_LED);
         triac_state = 1;
     } else if (operation == TRIAC_OPERATION_TOGGLE) {
         nrf_gpio_pin_toggle(TRIAC_1);
+        led_toggle(TOUCH_LED);
         triac_state = !triac_state;
     }
 
@@ -132,18 +170,10 @@ triac_set(int triac, triac_operation_t operation)
     ble_dimmer_update_value(&msg);
 }
 
-
 void
 device_init()
 {
-    // configure LEDs
-    nrf_gpio_cfg_output(LED_1);
-
-#ifdef BOARD_AURA_V1
-    nrf_gpio_pin_clear(LED_1);
-#else
-    nrf_gpio_pin_set(LED_1);
-#endif
+    configure_leds();
 
 #ifdef AURA_CS_RESET
     nrf_gpio_cfg_output(AURA_CS_RESET);

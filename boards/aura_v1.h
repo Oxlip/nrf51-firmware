@@ -8,8 +8,8 @@
 #define LED_1          0
 #define LED_2          1
 #define LED_3          2
-#define LED_4          3
-#define LED_STOP       3
+#define LED_4          4
+#define LED_STOP       4
 
 #define LEDS_LIST { LED_1, LED_2, LED_3, LED_4 }
 
@@ -18,7 +18,7 @@
 #define BUTTON_START   3
 #define BUTTON_1       3
 #define BUTTON_STOP    3
-#define BUTTON_PULL    NRF_GPIO_PIN_PULLDOWN
+#define BUTTON_PULL    NRF_GPIO_PIN_NOPULL
 #define BUTTON_ACTIVE_STATE  APP_BUTTON_ACTIVE_HIGH
 
 #define BUTTONS_LIST { BUTTON_1 }
