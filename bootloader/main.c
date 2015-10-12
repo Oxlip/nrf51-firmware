@@ -144,11 +144,6 @@ void services_init()
 
 }
 
-void ble_advertising_init()
-{
-
-}
-
 void debug_init(void);
 
 /**@brief Function for bootloader main entry.
@@ -194,8 +189,10 @@ void bootloader_start(void)
         scheduler_init();
     }
 
-    dfu_start  = app_reset;
-    printf("dfu_start %d app valid %d\n", dfu_start, bootloader_app_is_valid(DFU_BANK_0_REGION_START));
+    dfu_start = app_reset;
+    printf("App present:%s. DFU Requested:%s\n",
+           bootloader_app_is_valid(DFU_BANK_0_REGION_START) ? "Yes" : "No",
+           dfu_start ? "Yes" : "No");
 
     if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
     {

@@ -17,7 +17,7 @@ MAKEFLAGS += --no-print-directory
 %-bootloader:
 	@TARGET_DEVICE_TYPE=$* make -C bootloader
 
-%-bootloader-flash:
+%-bootloader_flash:
 	@TARGET_DEVICE_TYPE=$* make -C bootloader flash
 
 %-bootloader-flash-softdevice:

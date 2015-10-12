@@ -49,7 +49,6 @@ SOFTDEVICE_UPPER = `echo $(USE_SOFTDEVICE) | tr a-z A-Z`
 C_SOURCE_FILES += \
 	$(abspath $(REPO_ROOT)/common/platform.c) \
 	$(abspath $(REPO_ROOT)/common/fault.c) \
-	$(abspath $(REPO_ROOT)/common/ble_common.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/libraries/timer/app_timer_appsh.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/hal/nrf_delay.c) \
@@ -59,7 +58,6 @@ C_SOURCE_FILES += \
 	$(abspath $(SDK_COMPONENT_DIR)/libraries/scheduler/app_scheduler.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/libraries/crc16/crc16.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/ble/common/ble_srv_common.c) \
-	$(abspath $(SDK_COMPONENT_DIR)/ble/ble_advertising/ble_advertising.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dfu/ble_dfu.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/ble/ble_debug_assert_handler/ble_debug_assert_handler.c) \
 	$(abspath $(SDK_COMPONENT_DIR)/toolchain/system_nrf51.c) \
@@ -80,11 +78,14 @@ endif
 
 ifdef BOOTLOADER
 	C_SOURCE_FILES += \
-		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage_raw.c)
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage_raw.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c)
 else
 	C_SOURCE_FILES += \
+		$(abspath $(REPO_ROOT)/common/ble_common.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/pstorage/pstorage.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/twi_master/incubated/twi_sw_master.c) \
+		$(abspath $(SDK_COMPONENT_DIR)/ble/ble_advertising/ble_advertising.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/ble/ble_services/ble_dis/ble_dis.c) \
 		$(abspath $(SDK_COMPONENT_DIR)/libraries/button/app_button.c) \
 		$(abspath $(REPO_ROOT)/app/ble_ss.c) \
