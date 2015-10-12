@@ -23,6 +23,12 @@ MAKEFLAGS += --no-print-directory
 %-bootloader-flash-softdevice:
 	@TARGET_DEVICE_TYPE=$* make -C bootloader flash-softdevice
 
+build-tags:
+	@echo "Building cscope and ctag files"
+	@find ./ -type f \( -iname \*.c -o -iname \*.h \) > cscope.files
+	@cscope -b
+	@ctags -L cscope.files
+
 clean:
 	@echo "Erasing build directory"
 	@rm -rf _build
