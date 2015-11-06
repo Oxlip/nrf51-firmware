@@ -230,6 +230,7 @@ ELF_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).elf
 HEX_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
 BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).bin
 UICR_BIN_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME)-uicr.bin
+DFU_ZIP_OUTPUT = $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME)-dfu.zip
 
 OBJ_OPT_UIRC = --only-section .uicrBootStartAddress
 OBJ_OPT_BIN  = --remove-section .uicrBootStartAddress
@@ -253,7 +254,11 @@ $(HEX_OUTPUT): $(ELF_OUTPUT)
 	$(call colorecho, 2, "Generating ", $@)
 	$(NO_ECHO)$(OBJCOPY) -O ihex $(ELF_OUTPUT) $@
 
-all: $(ELF_OUTPUT) $(HEX_OUTPUT) $(BIN_OUTPUT)
+$(DFU_ZIP_OUTPUT): $(HEX_OUTPUT)
+	$(call colorecho, 2, "Generating ", $@)
+	nrfutil dfu genpkg --application $(HEX_OUTPUT) $@
+
+all: $(ELF_OUTPUT) $(HEX_OUTPUT) $(BIN_OUTPUT) $(DFU_ZIP_OUTPUT)
 	$(NO_ECHO)$(SIZE) $(ELF_OUTPUT)
 
 clean: clean_flash_intermediate
