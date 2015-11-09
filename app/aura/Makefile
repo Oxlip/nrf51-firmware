@@ -1,4 +1,4 @@
-DEVICE_SRCS     = ble.c aura.c ../../drivers/cs_78m6610_lmu.c
+DEVICE_SRCS     = ble.c aura.c cs.c ../../drivers/cs_78m6610_lmu.c
 
 PROJECT_NAME    = aura
 SOURCE_PATHS    += $(REPO_ROOT)/app/aura

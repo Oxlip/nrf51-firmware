@@ -11,21 +11,9 @@
 #include <boards.h>
 #include <drivers/cs_78m6610_lmu.h>
 #include "aura.h"
-
-#define CS_MEAS_INTERVAL          APP_TIMER_TICKS(3000, APP_TIMER_PRESCALER) /**< Current sensor measurement interval (ticks). */
+#include "cs.h"
 
 #define TOUCH_LED       LED_4
-
-app_timer_id_t cs_timer_id;
-
-cs_info_t cs_info = {0};
-
-#define CS_RMS_A_MULTIPLIER     22.6f
-#define CS_RMS_V_MULTIPLIER     700
-#define CS_ACTIVE_W_MULTIPLIER  15.6f
-
-#define MILLI                   1000
-
 
 static void led_on(int pin)
 {
@@ -61,39 +49,14 @@ static void configure_leds()
     led_on(TOUCH_LED);
 }
 
-/** Current sensor measurement handler
- */
-static void cs_meas_timeout_handler(void * p_context)
-{
-    float cs_rms_a, cs_rms_v, cs_active_w, cs_freq;
-
-    cs_rms_a = (float) cs_get_rms_current(0);
-    cs_rms_v = (float) cs_get_rms_voltage(0);
-    cs_active_w = (float) cs_get_active_watts(0);
-    cs_freq = (float)cs_get_line_frequency();
-
-    cs_info.current = (uint16_t)(cs_rms_a * CS_RMS_A_MULTIPLIER * MILLI);
-    cs_info.watts = (uint16_t)(cs_active_w * CS_ACTIVE_W_MULTIPLIER * MILLI);
-    cs_info.volt = (uint8_t)(cs_rms_v * CS_RMS_V_MULTIPLIER);
-    cs_info.freq = (uint8_t)cs_freq;
-
-    ble_cs_update_value(&cs_info);
-}
-
 void device_timers_init()
 {
-#ifndef BOARD_PCA10028
-    uint32_t err_code;
-    err_code = app_timer_create(&cs_timer_id, APP_TIMER_MODE_REPEATED, cs_meas_timeout_handler);
-    APP_ERROR_CHECK(err_code);
-#endif
+    cs_timers_init();
 }
 
 void device_timers_start()
 {
-    uint32_t err_code;
-    err_code = app_timer_start(cs_timer_id, CS_MEAS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
+    cs_timers_start();
 }
 
 #define TOUCH_POWER_BUTTON BUTTON_1
