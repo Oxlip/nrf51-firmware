@@ -13,3 +13,5 @@ USE_SOFTDEVICE  = s130
 SOFTDEVICE      = $(REPO_ROOT)/softdevice/s130_nrf51_1.0.0_softdevice.hex
 
 include ../../Makefile.common
+
+CFLAGS += -DPOWER_MANAGE_ENABLED
