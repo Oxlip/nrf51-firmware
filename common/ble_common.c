@@ -80,10 +80,9 @@ static void gap_params_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-static int advertisment_in_progress = 0;
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
-    printf("Starting advertisement");
+    printf("BLE Advertisement event %d\n", ble_adv_evt);
 }
 
 
@@ -206,7 +205,6 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            advertisment_in_progress = 0;
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             set_connection_indicator(1);
             break;
@@ -232,7 +230,6 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
-            advertisment_in_progress = 0;
             handle_gap_event_timeout(p_ble_evt);
             break;
 
