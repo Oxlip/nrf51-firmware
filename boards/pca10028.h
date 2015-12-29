@@ -22,6 +22,10 @@
 #define LED_4          24
 #define LED_STOP       24
 
+#define ADVERTISING_LED_PIN_NO      LED_1
+#define CONNECTED_LED_PIN_NO        LED_2
+#define ASSERT_LED_PIN_NO           LED_3
+
 #define LEDS_LIST { LED_1, LED_2, LED_3, LED_4 }
 
 #define BSP_LED_0      LED_1
@@ -67,7 +71,7 @@
 #define TX_PIN_NUMBER  9
 #define CTS_PIN_NUMBER 10
 #define RTS_PIN_NUMBER 8
-#define HWFC           true
+#define HWFC           false
 
 #define SPIS_MISO_PIN  28    // SPI MISO signal. 
 #define SPIS_CSN_PIN   12    // SPI CSN signal. 
