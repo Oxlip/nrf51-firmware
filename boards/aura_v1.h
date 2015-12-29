@@ -13,6 +13,11 @@
 
 #define LEDS_LIST { LED_1, LED_2, LED_3, LED_4 }
 
+#define BSP_LED_0      LED_1
+#define BSP_LED_1      LED_2
+#define BSP_LED_2      LED_3
+#define BSP_LED_3      LED_4
+
 #define BUTTONS_NUMBER 1
 
 #define BUTTON_START   3
