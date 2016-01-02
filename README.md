@@ -2,11 +2,38 @@ nrf51-firmware
 ==============
 Firmware for nrf51822 based chips.
 
-## Develop
-/usr/bin/arm-none-eabi-gcc and binutils are need to be in your system path.
-gcc version(~ >= 4.8.3) with lto support is required.
+## Setup
 
-### Directory Layout
+#### Toolchain
+`gcc` is used for compiling and linking so /usr/bin/arm-none-eabi-gcc and binutils 
+needs to be in your system path.
+gcc version(~ >= 4.8.3) with lto support is required. In Ubuntu 14.04 the
+following steps would install it.
+
+```sh
+sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded
+sudo apt-get update
+sudo apt-get install gcc-arm-none-eabi
+```
+Ref: https://launchpad.net/~terry.guo/+archive/ubuntu/gcc-arm-embedded
+
+#### JLinkExe
+`JLinkExe` is used for flashing.
+Download and install JLinkExe from
+https://www.segger.com/jlink-software.html
+
+#### nrfutil
+nrfutil is used to generate bootloader init packet.
+Clone it from git and install it in python path.
+
+```sh
+git clone https://github.com/NordicSemiconductor/pc-nrfutil.git
+cd pc-nrfutil
+sudo pip install -r requirements.txt
+sudo python setup.py install
+```
+
+## Directory Layout
     nrf51-firmware/
      --sdk/         SDK files.
      --softdevice/  Softdevice binary/hex file(s).
@@ -21,7 +48,7 @@ gcc version(~ >= 4.8.3) with lto support is required.
      --tests/       Unit tests using pytest framework.
      --tools/       Tools releated to BLE.
 
-### Build
+## Build
 
 Since we have multiple boards(development kit, proto, production) board type has to be defined as a macro.
  PCA10028 - Development kit(nrf51-dk).
@@ -68,7 +95,3 @@ make aura-bootloader-flash
 echo "Erase all contents from the flash"
 make erase-all
 ```
-
-### Jlink installation
-Download and install JLinkExe
-https://www.segger.com/jlink-software.html
