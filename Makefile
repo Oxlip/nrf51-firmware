@@ -11,6 +11,9 @@ MAKEFLAGS += --no-print-directory
 %-flash-softdevice:
 	@make -C app/$* flash-softdevice
 
+%-flash-erase-all:
+	@make -C app/$* erase-all
+
 %-start-debug:
 	@make -C app/$* start-debug
 
