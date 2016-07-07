@@ -124,6 +124,7 @@ int main(void)
 
     // Initialize different SOC parts.
     APP_TIMER_APPSH_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
+#if 0
     device_timers_init();
 
     APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
@@ -131,14 +132,26 @@ int main(void)
     leds_init();
 
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
-
+#endif
     ble_init();
+    for (;;)
+    {
+        app_sched_execute();
+#ifdef POWER_MANAGE_ENABLED
+        power_manage();
+#endif
+    }
+
     ble_late_init();
 
+        // Enter main loop
+
+#if 0
     if (!twi_master_init()) {
         printf("Could not init i2c bus\n");
         return false;
     }
+#endif
 
     device_init();
 

@@ -2,11 +2,10 @@ nrf51-firmware
 ==============
 Firmware for nrf51822 based chips.
 
-## Setup
+## Develop
 
-#### Toolchain
-`gcc` is used for compiling and linking so /usr/bin/arm-none-eabi-gcc and binutils 
-needs to be in your system path.
+### Toolchain
+/usr/bin/arm-none-eabi-gcc and binutils are need to be in your system path.
 gcc version(~ >= 4.8.3) with lto support is required. In Ubuntu 14.04 the
 following steps would install it.
 
@@ -17,23 +16,7 @@ sudo apt-get install gcc-arm-none-eabi
 ```
 Ref: https://launchpad.net/~terry.guo/+archive/ubuntu/gcc-arm-embedded
 
-#### JLinkExe
-`JLinkExe` is used for flashing.
-Download and install JLinkExe from
-https://www.segger.com/jlink-software.html
-
-#### nrfutil
-nrfutil is used to generate bootloader init packet.
-Clone it from git and install it in python path.
-
-```sh
-git clone https://github.com/NordicSemiconductor/pc-nrfutil.git
-cd pc-nrfutil
-sudo pip install -r requirements.txt
-sudo python setup.py install
-```
-
-## Directory Layout
+### Directory Layout
     nrf51-firmware/
      --sdk/         SDK files.
      --softdevice/  Softdevice binary/hex file(s).
@@ -48,12 +31,12 @@ sudo python setup.py install
      --tests/       Unit tests using pytest framework.
      --tools/       Tools releated to BLE.
 
-## Build
+### Build
 
 Since we have multiple boards(development kit, proto, production) board type has to be defined as a macro.
- PCA10028 - Development kit(nrf51-dk).
- AURA_V1 - Aura production/proto board.
- LYRA_V1 - Lyra production/proto board.
+ BOARD_PCA10028 - Development kit(nrf51-dk).
+ BOARD_AURA - Aura production/proto board.
+ BOARD_LYRA - Lyra production/proto board.
 
 If no board type is specified then PCA10028 is used.
 
@@ -95,3 +78,7 @@ make aura-bootloader-flash
 echo "Erase all contents from the flash"
 make erase-all
 ```
+
+### Jlink installation
+Download and install JLinkExe
+https://www.segger.com/jlink-software.html

@@ -10,33 +10,11 @@
 #include <platform.h>
 #include <boards.h>
 #include <drivers/cs_78m6610_lmu.h>
+#include <common.h>
 #include "aura.h"
 #include "cs.h"
 
 #define TOUCH_LED       LED_4
-
-static void led_on(int pin)
-{
-#ifdef BOARD_AURA_V1
-    nrf_gpio_pin_clear(pin);
-#else
-    nrf_gpio_pin_set(pin);
-#endif
-}
-
-static void led_off(int pin)
-{
-#ifdef BOARD_AURA_V1
-    nrf_gpio_pin_set(pin);
-#else
-    nrf_gpio_pin_clear(pin);
-#endif
-}
-
-static void led_toggle(int pin)
-{
-    nrf_gpio_pin_toggle(pin);
-}
 
 static void configure_leds()
 {
@@ -76,6 +54,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     {
         case TOUCH_POWER_BUTTON:
             /* Do the actual button press handling here. */
+            led_toggle(TOUCH_LED);
             triac_set(0, TRIAC_OPERATION_TOGGLE);
             break;
 

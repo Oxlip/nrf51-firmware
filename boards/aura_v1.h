@@ -11,6 +11,10 @@
 #define LED_4          4
 #define LED_STOP       4
 
+#define ADVERTISING_LED_PIN_NO      LED_1
+#define CONNECTED_LED_PIN_NO        LED_2
+#define ASSERT_LED_PIN_NO           LED_3
+
 #define LEDS_LIST { LED_1, LED_2, LED_3, LED_4 }
 
 #define BSP_LED_0      LED_1

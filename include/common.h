@@ -9,6 +9,30 @@
 #include <nrf_gpio.h>
 #include <boards.h>
 
+
+static inline void led_on(int pin)
+{
+#ifdef BOARD_PCA10028
+    nrf_gpio_pin_set(pin);
+#else
+    nrf_gpio_pin_clear(pin);
+#endif
+}
+
+static inline void led_off(int pin)
+{
+#ifdef BOARD_PCA10028
+    nrf_gpio_pin_clear(pin);
+#else
+    nrf_gpio_pin_set(pin);
+#endif
+}
+
+static inline void led_toggle(int pin)
+{
+    nrf_gpio_pin_toggle(pin);
+}
+
 /**@brief Helper function to blink LED.
  *
  * @details Blinks given led for specified number of time.
@@ -38,7 +62,11 @@ static inline void blink_assert_led()
 static inline void set_advertisement_indicator(uint8_t on)
 {
 #ifdef ADVERTISING_LED_PIN_NO
-    nrf_gpio_pin_write(ADVERTISING_LED_PIN_NO, !on);
+    if (on) {
+        led_on(ADVERTISING_LED_PIN_NO);
+    } else {
+        led_off(ADVERTISING_LED_PIN_NO);
+    }
 #endif
 }
 
@@ -47,7 +75,11 @@ static inline void set_advertisement_indicator(uint8_t on)
 static inline void set_connection_indicator(uint8_t on)
 {
 #ifdef CONNECTED_LED_PIN_NO
-    nrf_gpio_pin_write(CONNECTED_LED_PIN_NO, !on);
+    if (on) {
+        led_on(CONNECTED_LED_PIN_NO);
+    } else {
+        led_off(CONNECTED_LED_PIN_NO);
+    }
 #endif
 }
 
@@ -56,7 +88,11 @@ static inline void set_connection_indicator(uint8_t on)
 static inline void set_debug_indicator(uint8_t on)
 {
 #ifdef ASSERT_LED_PIN_NO
-    nrf_gpio_pin_write(ASSERT_LED_PIN_NO, !on);
+    if (on) {
+        led_on(ASSERT_LED_PIN_NO);
+    } else {
+        led_off(ASSERT_LED_PIN_NO);
+    }
 #endif
 }
 

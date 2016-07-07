@@ -108,6 +108,7 @@ void advertising_init(void)
 
     err_code = ble_advertising_init(&advdata, NULL, &options, on_adv_evt, NULL);
     APP_ERROR_CHECK(err_code);
+    set_advertisement_indicator(1);
 }
 
 /**@brief Function for setting the service data in the advertisement packets.
@@ -206,12 +207,14 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     {
         case BLE_GAP_EVT_CONNECTED:
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+            set_advertisement_indicator(0);
             set_connection_indicator(1);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             set_connection_indicator(0);
+            set_advertisement_indicator(1);
             ble_advertising_start(BLE_ADV_MODE_FAST);
             break;
 
