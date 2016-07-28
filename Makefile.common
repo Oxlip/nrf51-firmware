@@ -146,8 +146,10 @@ endif
 
 
 ifeq ($(BLD_TYPE),debug)
-CFLAGS+=-DDEBUG -g3
+CFLAGS += -DDEBUG
 endif
+
+CFLAGS += -g3
 
 BLD_DIRECTORY = $(REPO_ROOT)/_build
 
@@ -184,6 +186,7 @@ LDFLAGS += -mcpu=cortex-m0
 LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
 LDFLAGS += --specs=nano.specs
+LDFLAGS += -g3
 
 # Assembler flags
 ASMFLAGS += -x assembler-with-cpp
