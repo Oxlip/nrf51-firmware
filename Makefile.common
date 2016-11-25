@@ -95,6 +95,11 @@ else
 		$(abspath $(SDK_COMPONENT_DIR)/ble/device_manager/device_manager_peripheral.c)
 endif
 
+ifdef NEED_SPI_SLAVE
+	C_SOURCE_FILES += \
+		$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/spi_slave/spi_slave.c)
+endif
+
 #assembly files common to all targets
 ASM_SOURCE_FILES  = $(abspath $(REPO_ROOT)/common/startup_nrf51.s)
 
@@ -131,6 +136,10 @@ INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/softdevice/common/softdevice_handl
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/ble/ble_error_log)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/ble_flash)
 INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/libraries/bootloader_dfu)
+
+ifdef NEED_SPI_SLAVE
+	INC_PATHS += -I$(abspath $(SDK_COMPONENT_DIR)/drivers_nrf/spi_slave)
+endif
 
 # Common platform files
 C_SOURCE_FILES += $(DEVICE_SRCS)

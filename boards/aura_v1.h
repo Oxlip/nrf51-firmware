@@ -11,9 +11,11 @@
 #define LED_4          4
 #define LED_STOP       4
 
+#ifdef BOOTLOADER
 #define ADVERTISING_LED_PIN_NO      LED_1
 #define CONNECTED_LED_PIN_NO        LED_2
 #define ASSERT_LED_PIN_NO           LED_3
+#endif
 
 #define LEDS_LIST { LED_1, LED_2, LED_3, LED_4 }
 
@@ -39,6 +41,11 @@
 #define HWFC           false
 
 #define TRIAC_1        12
+
+#define SPIS_MISO_PIN  21
+#define SPIS_CSN_PIN   25
+#define SPIS_MOSI_PIN  17
+#define SPIS_SCK_PIN   16
 
 #define DEVICE_NAME		"Aura"
 

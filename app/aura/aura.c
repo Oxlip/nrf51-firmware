@@ -112,6 +112,7 @@ triac_set(int triac, triac_operation_t operation)
     ble_dimmer_update_value(&msg);
 }
 
+extern uint32_t spi_slave_esp8266_init(void);
 void
 device_init()
 {
@@ -130,4 +131,6 @@ device_init()
 #ifdef BOARD_AURA_V1
     cs_calibrate();
 #endif
+
+    spi_slave_esp8266_init();
 }
