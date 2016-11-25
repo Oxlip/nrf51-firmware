@@ -82,9 +82,9 @@ static void uart_init(void)
     {
         RX_PIN_NUMBER,
         TX_PIN_NUMBER,
-        -1,
-        -1,
-        false,
+        RTS_PIN_NUMBER,
+        CTS_PIN_NUMBER,
+        HWFC,
         false,
         UART_BAUDRATE_BAUDRATE_Baud115200
     };
@@ -115,7 +115,6 @@ void debug_init(void)
 #endif
 }
 
-
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -124,7 +123,7 @@ int main(void)
 
     // Initialize different SOC parts.
     APP_TIMER_APPSH_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
-#if 0
+
     device_timers_init();
 
     APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
@@ -132,19 +131,10 @@ int main(void)
     leds_init();
 
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
-#endif
+
     ble_init();
-    for (;;)
-    {
-        app_sched_execute();
-#ifdef POWER_MANAGE_ENABLED
-        power_manage();
-#endif
-    }
 
     ble_late_init();
-
-        // Enter main loop
 
 #if 0
     if (!twi_master_init()) {
