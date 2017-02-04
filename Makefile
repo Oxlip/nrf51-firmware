@@ -5,6 +5,9 @@ MAKEFLAGS += --no-print-directory
 %:
 	@make -C app/$*
 
+%-mail:
+	@make -C app/$* mail
+
 %-flash:
 	@make -C app/$* flash
 

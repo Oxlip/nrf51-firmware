@@ -281,3 +281,4 @@ clean: clean_flash_intermediate
 -include $(C_DEPS)
 
 include $(REPO_ROOT)/Makefile.flash
+include $(REPO_ROOT)/Makefile.mail

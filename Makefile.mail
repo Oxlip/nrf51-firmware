@@ -1,0 +1,24 @@
+# Target to send mails with firmware.
+# Read the following link to setup mail to send gmail.
+#  http://tuxtweaks.com/2012/10/send-gmail-from-the-linux-command-line/
+# Read the following link to generate API key for gmail.
+# https://support.google.com/accounts/answer/185833?hl=en
+
+TEMPDIR := $(shell mktemp -d)
+MAIL_FIRMWARE_PATH := $(TEMPDIR)/$(basename $(notdir $(HEX_OUTPUT)))_`date +'%b-%d_%H_%M'`.hex
+MAIL_SUBJECT := "Firmware"
+GIT_COMMITS_FILE := $(TEMPDIR)/commits_not_pushed.diff
+GIT_DIFF_FILE := $(TEMPDIR)/working.diff
+MAIL_MSG := '$(PROJECT_NAME) firmware for board $(BOARD_TYPE). \nBuild Type: $(BLD_TYPE).'
+MAIL_MSG_FILE := $(TEMPDIR)/msg.txt
+
+mail: $(HEX_OUTPUT)
+	echo 'Mailing to : '$(EMAIL_TO)
+	git format-patch @{u} --stdout > $(GIT_COMMITS_FILE)
+	git diff > $(GIT_DIFF_FILE)
+	cp $(HEX_OUTPUT) $(MAIL_FIRMWARE_PATH)
+	echo $(MAIL_MSG) > $(MAIL_MSG_FILE)
+	mail -s $(MAIL_SUBJECT) -a $(MAIL_FIRMWARE_PATH) -a $(GIT_COMMITS_FILE) -a $(GIT_DIFF_FILE) $(EMAIL_TO) < $(MAIL_MSG_FILE)
+
+
+.PHONY: mail
