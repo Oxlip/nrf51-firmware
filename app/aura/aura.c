@@ -14,17 +14,16 @@
 #include "aura.h"
 #include "cs.h"
 
-#define TOUCH_LED       LED_4
+#define TOUCH_LED       LED_1
 
 static void configure_leds()
 {
     // configure LEDs
     nrf_gpio_cfg_output(LED_1);
     nrf_gpio_cfg_output(LED_2);
-    nrf_gpio_cfg_output(LED_3);
-    nrf_gpio_cfg_output(TOUCH_LED);
 
-    led_on(TOUCH_LED);
+    led_off(LED_1);
+    led_off(LED_2);
 }
 
 void device_timers_init()
@@ -45,6 +44,7 @@ void device_timers_start()
  */
 static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
+    static int on=0;
     if (button_action != APP_BUTTON_PUSH)
     {
         return;
@@ -54,7 +54,12 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
     {
         case TOUCH_POWER_BUTTON:
             /* Do the actual button press handling here. */
-            led_toggle(TOUCH_LED);
+            if (on) {
+                led_on(TOUCH_LED);
+            } else {
+                led_off(TOUCH_LED);
+            }
+            on = !on;
             triac_set(0, TRIAC_OPERATION_TOGGLE);
             break;
 
@@ -117,11 +122,6 @@ void
 device_init()
 {
     configure_leds();
-
-#ifdef AURA_CS_RESET
-    nrf_gpio_cfg_output(AURA_CS_RESET);
-    nrf_gpio_pin_set(AURA_CS_RESET);
-#endif
 
     buttons_init();
 
