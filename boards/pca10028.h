@@ -73,10 +73,10 @@
 #define RTS_PIN_NUMBER 8
 #define HWFC           false
 
-#define SPIS_SCK_PIN   26
-#define SPIS_CSN_PIN   27
-#define SPIS_MOSI_PIN  22  // rx of nrf
-#define SPIS_MISO_PIN  21  // tx of nrf
+#define SPIS_SCK_PIN   29
+#define SPIS_MOSI_PIN  25  // rx of nrf
+#define SPIS_MISO_PIN  28  // tx of nrf
+#define SPIS_CSN_PIN   12
 
 #define SPIM0_SCK_PIN       4     /**< SPI clock GPIO pin number. */
 #define SPIM0_MOSI_PIN      1     /**< SPI Master Out Slave In GPIO pin number. */

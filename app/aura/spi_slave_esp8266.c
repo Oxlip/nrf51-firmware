@@ -3,8 +3,9 @@
 #include "spi_slave.h"
 #include "app_error.h"
 #include "boards.h"
+#include <common.h>
 
-#define TX_BUF_SIZE   16u               /**< SPI TX buffer size. */
+#define TX_BUF_SIZE   5u               /**< SPI TX buffer size. */
 #define RX_BUF_SIZE   TX_BUF_SIZE       /**< SPI RX buffer size. */
 #define DEF_CHARACTER 0xAAu             /**< SPI default character. Character clocked out in case of an ignored transaction. */
 #define ORC_CHARACTER 0x55u             /**< SPI over-read character. Character clocked out after an over-read of the transmit buffer. */
@@ -41,7 +42,13 @@ static void spi_slave_event_handle(spi_slave_evt_t event)
     if (event.evt_type == SPI_SLAVE_XFER_DONE)
     {
         //Check if received data is valid.
-        printf("SPI data %c %c %c %c %c\n", m_rx_buf[0], m_rx_buf[1], m_rx_buf[2], m_rx_buf[3], m_rx_buf[4]);
+        printf("SPI data: ");
+        for (int i = 0; i < RX_BUF_SIZE; i++) {
+            printf("%c (%d) ", m_rx_buf[i], m_rx_buf[i]);
+            m_rx_buf[i] = 0;
+            m_tx_buf[i] = 'A' + i;
+        }
+        printf("\n");
 
         //Set buffers.
         err_code = spi_slave_buffers_set(m_tx_buf, m_rx_buf, sizeof(m_tx_buf), sizeof(m_rx_buf));
