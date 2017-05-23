@@ -130,7 +130,7 @@ static void cs_measurement_handler(void * p_context)
 {
     cs_info_t cs_info;
 
-#ifdef BOARD_PCA10028
+#ifndef CURRENT_SENSOR_PRESENT
     cs_info.watts = 250 + (rand() % 10);
     cs_info.volt = 230 + (rand() % 10);
     cs_info.current = (cs_info.watts * 1000) / cs_info.volt;

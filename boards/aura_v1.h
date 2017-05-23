@@ -49,6 +49,8 @@
 
 #define WIFI_ENABLE_PIN 28
 
+#define CURRENT_SENSOR_PRESENT
+
 #define DEVICE_NAME		"Aura"
 
 

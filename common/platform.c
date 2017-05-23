@@ -136,7 +136,7 @@ int main(void)
 
     ble_late_init();
 
-#if 0
+#ifdef CURRENT_SENSOR_PRESENT
     if (!twi_master_init()) {
         printf("Could not init i2c bus\n");
         return false;
