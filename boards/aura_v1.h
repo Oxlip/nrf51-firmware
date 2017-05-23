@@ -4,8 +4,8 @@
 // LEDs definitions for Aura
 #define LEDS_NUMBER    2
 
-#define LED_START      28
-#define LED_1          28
+#define LED_START      27
+#define LED_1          27
 #define LED_2          29
 #define LED_3          LED_1
 #define LED_4          LED_2
@@ -42,10 +42,12 @@
 
 #define TRIAC_1        12
 
-#define SPIS_MISO_PIN  21
-#define SPIS_CSN_PIN   25
-#define SPIS_MOSI_PIN  17
-#define SPIS_SCK_PIN   16
+#define SPIS_MISO_PIN  25
+#define SPIS_CSN_PIN   16
+#define SPIS_MOSI_PIN  24
+#define SPIS_SCK_PIN   26
+
+#define WIFI_ENABLE_PIN 28
 
 #define DEVICE_NAME		"Aura"
 

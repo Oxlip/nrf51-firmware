@@ -132,5 +132,10 @@ device_init()
     cs_calibrate();
 #endif
 
+#ifdef WIFI_ENABLE_PIN
+    nrf_gpio_cfg_output(WIFI_ENABLE_PIN);
+    nrf_gpio_pin_set(WIFI_ENABLE_PIN);
+    //TODO - delay() ?
     spi_slave_esp8266_init();
+#endif
 }
